@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manager OOH</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React + ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel Standalone for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* A simple scrollbar style for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Dropdown animation styles */
+        .ownership-dropdown-menu {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+        .ownership-dropdown-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .cascade-section {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .cascade-section.open {
+            max-height: 200px; /* Adjusted for search input */
+            opacity: 1;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Success Chip Animation */
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateY(20px); }
+          10% { opacity: 1; transform: translateY(0); }
+          90% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(20px); }
+        }
+        .animate-fade-in-out {
+          animation: fadeInOut 3s ease-in-out forwards;
+        }
+
+        /* Filter Popover Animation */
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+    <div id="modal-root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, Fragment, useRef } = React;
+
+        // --- ICONS (Consolidated) ---
+        const HomeIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg> );
+        const WidgetsIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm13 0h8v8h-8V3zM3 13h8v8H3v-8zm13 3h8v8h-8v-8z" /></svg> );
+        const ListIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg> );
+        const ModuleIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> );
+        const CaretUpIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" /></svg> );
+        const AssignmentIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" /></svg> );
+        const CalendarIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg> );
+        const AssignmentCheckIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" /></svg> );
+        const HelpIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg> );
+        const EditIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-4 w-4"} viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg> );
+        const ChevronRightIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg> );
+        const SearchIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg> );
+        const InfoOutlineIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> );
+        const MenuIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg> );
+        const ChevronDownIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg> );
+        const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110 2h5V4a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
+        const DeleteIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /> </svg> );
+        const AlertCircleIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /> </svg> );
+        const PinDropIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /> </svg> );
+        const UploadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" /> </svg> );
+        const CogIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /> </svg> );
+        const CloseIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /> </svg> );
+        const PencilIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path d="M13.586 3.586a2 2 0 112.828 2.828l-1.414 1.414-2.828-2.828 1.414-1.414zM11.086 6.086L3 14.172V17h2.828l8.086-8.086-2.828-2.828z" /> </svg> );
+        const CheckIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /> </svg> );
+        const SmallCloseIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /> </svg> );
+        const InfoIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /> </svg> );
+        const ConfigIcon = ({ className }) => (<svg className={className || "h-5 w-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>);
+
+        
+        // --- MOCK DATA ---
+        const mockSupportData = [
+            { id: 5522, code: 'T-001', type: 'Mobiliario Urbano Impreso - Otros', name: 'Soporte 001 Valla - Concepción 2', minPrice: '$ 1.806.483', monthlyPrice: '$ 2.000.000', cpi: '$ 4,00', comuna: 'Vitacura', address: 'Av. Vitacura 2939', region: 'Metropolitana de Santiago', lat: -33.4143, lng: -70.6033 },
+            { id: 5523, code: 'T-002', type: 'Valla', name: 'Soporte 002 Valla - Renca', minPrice: '$ 1.800.000', monthlyPrice: '$ 2.000.000', cpi: '$ 4,00', comuna: 'Renca', address: 'Av. Kennedy 9001', region: 'Metropolitana de Santiago', lat: -33.399, lng: -70.55 },
+            { id: 5524, code: 'T-003', type: 'Caminero', name: 'Soporte 003 Caminero - Tiltil', minPrice: '$ 1.700.000', monthlyPrice: '$ 2.000.000', cpi: '$ 4,00', comuna: 'Tiltil', address: 'Ruta 5 Norte km 45', region: 'Metropolitana de Santiago', lat: -33.08, lng: -70.93 },
+            { id: 5525, code: 'T-004', type: 'Valla', name: 'Soporte 004 Valla - Renca', minPrice: '$ 1.600.000', monthlyPrice: '$ 1.800.000', cpi: '$ 3,60', comuna: 'Renca', address: 'Av. Américo Vespucio 1501', region: 'Metropolitana de Santiago', lat: -33.41, lng: -70.74 },
+            { id: 5526, code: 'T-005', type: 'Mobiliario Urbano Impreso - Otros', name: 'Soporte 005 Mobiliario Urbano Impreso - Otros - Arica', minPrice: '$ 1.400.000', monthlyPrice: '$ 1.500.000', cpi: '$ 3,00', comuna: 'Arica', address: 'Diego Portales 545', region: 'Arica y Parinacota', lat: -18.47, lng: -70.31 },
+        ];
+        
+        // --- SHARED COMPONENTS ---
+        const SuccessChip = ({ message, show }) => {
+            if (!show) return null;
+
+            return (
+                <div className="fixed bottom-6 right-6 z-50 bg-gray-800 text-white py-2.5 px-5 rounded-lg shadow-xl flex items-center animate-fade-in-out">
+                    <CheckIcon />
+                    <span className="ml-2 font-medium text-sm">{message}</span>
+                </div>
+            );
+        };
+        
+        const FormInput = ({ label, id, helpText, children, labelClass, wrapperClass, ...props }) => (
+            <div className={wrapperClass}>
+                {label && (
+                    <label htmlFor={id} className={`flex items-center text-sm font-medium text-gray-700 mb-1 ${labelClass}`}>
+                        <span>{label}</span>
+                        {helpText && <span className="ml-1 text-gray-400 cursor-help" title={helpText}><HelpIcon className="h-4 w-4" /></span>}
+                    </label>
+                )}
+                <div className="filter-container">
+                    {children ? children : <input id={id} {...props} className="w-full h-[34px] px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />}
+                </div>
+            </div>
+        );
+
+        const FormSelect = ({ label, id, children, helpText, labelClass, wrapperClass, ...props }) => (
+             <div className={wrapperClass}>
+                {label && (
+                    <label htmlFor={id} className={`flex items-center text-sm font-medium text-gray-700 mb-1 ${labelClass}`}>
+                       <span>{label}</span>
+                       {helpText && helpText}
+                    </label>
+                )}
+                <div className="filter-container">
+                    <select id={id} {...props} className={props.className || "w-full pl-3 pr-10 py-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md h-[34px]"}>
+                        {children}
+                    </select>
+                </div>
+            </div>
+        );
+        
+        const NavItem = ({ icon, children, href = "#", active = false, hasSubmenu = false, open = false, onClick }) => {
+            const linkClasses = `flex items-center p-3 my-1 rounded-md transition-colors duration-200 ${ active ? 'bg-slate-700 text-white' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`;
+            return ( <li> <a href={href} className={linkClasses} onClick={onClick}> {icon} <span className="mx-4 font-medium">{children}</span> {hasSubmenu && <ChevronDownIcon className={`ml-auto h-5 w-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />} </a> </li> );
+        };
+
+        const SubMenu = ({ children, open }) => ( <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-screen' : 'max-h-0'}`}> <ul className="pl-8 py-1">{children}</ul> </div> );
+        
+        const SubMenuItem = ({ children, href="#", active = false, onClick }) => ( <li> <a href={href} onClick={onClick} className={`block p-2 text-sm rounded-md ${ active ? 'text-white font-semibold' : 'text-gray-400 hover:bg-slate-700 hover:text-white'}`}> {children} </a> </li> );
+
+        const MainSidebar = ({ onNavigate, currentView }) => {
+            const [openMenu, setOpenMenu] = useState('soportes');
+            const toggleMenu = (menu) => setOpenMenu(openMenu === menu ? null : menu);
+            
+            const handleNav = (e, view) => {
+                e.preventDefault();
+                onNavigate(view);
+            };
+
+            return (
+                <aside className="hidden md:flex flex-col w-64 bg-slate-800 text-white overflow-y-auto">
+                    <div className="flex items-center justify-between h-16 px-6 bg-slate-900">
+                        <span className="text-2xl font-semibold">OOH</span>
+                        <button className="text-gray-300 hover:text-white"> <MenuIcon /> </button>
+                    </div>
+                    <nav className="flex-1 px-4 py-4">
+                        <p className="px-3 text-xs uppercase text-gray-400 tracking-wider">Menú</p>
+                        <ul>
+                            <NavItem icon={<HomeIcon className="h-5 w-5"/>} href="#">Inicio</NavItem>
+                            <NavItem icon={<WidgetsIcon className="h-5 w-5"/>} hasSubmenu open={openMenu === 'soportes'} onClick={(e) => { e.preventDefault(); toggleMenu('soportes'); }}>Soportes</NavItem>
+                            <SubMenu open={openMenu === 'soportes'}>
+                                <SubMenuItem active={currentView === 'catalog' || currentView === 'edit'} onClick={(e) => handleNav(e, 'catalog')}>Catálogo</SubMenuItem>
+                                <SubMenuItem>Disponibilidad</SubMenuItem>
+                                <SubMenuItem active={currentView === 'map'} onClick={(e) => handleNav(e, 'map')}>Mapa</SubMenuItem>
+                            </SubMenu>
+                            <NavItem icon={<AssignmentIcon className="h-5 w-5"/>}>Cotizaciones</NavItem>
+                            <NavItem icon={<CalendarIcon className="h-5 w-5"/>}>Reservas</NavItem>
+                            <NavItem icon={<AssignmentCheckIcon className="h-5 w-5"/>}>Campañas</NavItem>
+                            <NavItem icon={<CogIcon className="h-5 w-5" />} hasSubmenu open={openMenu === 'admin'} onClick={(e) => { e.preventDefault(); toggleMenu('admin'); }}>Admin</NavItem>
+                            <SubMenu open={openMenu === 'admin'}>
+                                <SubMenuItem active={currentView === 'company'} onClick={(e) => handleNav(e, 'company')}>Empresa</SubMenuItem>
+                            </SubMenu>
+                        </ul>
+                    </nav>
+                </aside>
+            );
+        };
+        
+        const Header = ({ view, support, onNavigate }) => {
+            const Breadcrumb = () => {
+                return (
+                    <div className="flex items-center text-sm text-gray-500">
+                        <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700"><HomeIcon className="h-5 w-5"/></a>
+                        <ChevronRightIcon className="h-5 w-5 mx-1" />
+                        
+                        {view === 'catalog' && <><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700">Soportes</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Catálogo</span></>}
+                        {view === 'map' && <><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700">Soportes</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Mapa</span></>}
+                        {view === 'company' && <><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('company'); }} className="hover:text-gray-700">Admin</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Empresa</span></>}
+                        
+                        {view === 'edit' && (
+                            <Fragment>
+                                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700">Soportes</a>
+                                <ChevronRightIcon className="h-5 w-5 mx-1" />
+                                <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700">Catálogo</a>
+                                <ChevronRightIcon className="h-5 w-5 mx-1" />
+                                <span className="font-medium text-gray-800">Editar Soporte {support?.code}</span>
+                            </Fragment>
+                        )}
+                    </div>
+                );
+            };
+            return (
+                <header className="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200">
+                    <div className="flex items-center">
+                        <button className="md:hidden text-gray-500 focus:outline-none focus:text-gray-700"><MenuIcon className="h-6 w-6"/></button>
+                        <Breadcrumb />
+                    </div>
+                </header>
+            );
+        };
+
+        const OwnershipFilter = ({ providers }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [activeParent, setActiveParent] = useState('todas');
+            const [selectedProviders, setSelectedProviders] = useState({});
+            const [searchTerm, setSearchTerm] = useState('');
+            const dropdownRef = useRef(null);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsOpen(false);
+                    }
+                };
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, [dropdownRef]);
+            
+            const handleParentChange = (parent) => {
+                setActiveParent(parent);
+                if (parent !== 'terceros') {
+                    setSelectedProviders({});
+                }
+            };
+
+            const handleProviderChange = (e) => {
+                const { value, checked } = e.target;
+                setActiveParent('terceros');
+                setSelectedProviders(prev => ({
+                    ...prev,
+                    [value]: checked
+                }));
+            };
+
+            const getTriggerLabel = () => {
+                if (activeParent === 'todas') return 'Todas';
+                if (activeParent === 'propios') return 'Propios';
+                if (activeParent === 'terceros') {
+                    const checkedProviders = Object.keys(selectedProviders).filter(p => selectedProviders[p]);
+                    if (checkedProviders.length === 0) return 'Terceros';
+                    if (checkedProviders.length === 1) return checkedProviders[0];
+                    return `${checkedProviders.length} proveedores`;
+                }
+                return 'Seleccionar opciones';
+            };
+
+            const getTooltipText = () => {
+                if (activeParent === 'terceros') {
+                    const checkedProviders = Object.keys(selectedProviders).filter(p => selectedProviders[p]);
+                    if (checkedProviders.length > 1) {
+                        return checkedProviders.join(', ');
+                    }
+                }
+                return null;
+            };
+
+            const labelText = getTriggerLabel();
+            const tooltipText = getTooltipText();
+            const showProviders = activeParent === 'terceros';
+            const filteredProviders = providers.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            return (
+                 <div className="relative w-full group" ref={dropdownRef}>
+                    <button 
+                        type="button"
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="w-full h-[34px] flex items-center justify-between bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    >
+                        <span className={`truncate ${labelText === 'Seleccionar opciones' ? 'text-gray-400' : 'text-gray-800'}`}>{labelText}</span>
+                        <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {tooltipText && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 px-3 bg-gray-800 text-white text-xs font-medium leading-snug rounded shadow-lg z-50 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span>{tooltipText}</span>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-gray-800"></div>
+                        </div>
+                    )}
+
+                    <div className={`ownership-dropdown-menu absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-10 p-2 ${isOpen ? 'show' : ''}`}>
+                        <div className="space-y-1">
+                             <div className="flex items-center space-x-3 p-1 hover:bg-gray-50 rounded-md transition-colors">
+                                <input type="checkbox" id="chk-todas" checked={activeParent === 'todas'} onChange={() => handleParentChange('todas')} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" />
+                                <label htmlFor="chk-todas" className="text-sm font-medium text-gray-700 cursor-pointer select-none flex-1">Todas</label>
+                            </div>
+                            <div className="flex items-center space-x-3 p-1 hover:bg-gray-50 rounded-md transition-colors">
+                                <input type="checkbox" id="chk-propios" checked={activeParent === 'propios'} onChange={() => handleParentChange('propios')} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" />
+                                <label htmlFor="chk-propios" className="text-sm font-medium text-gray-700 cursor-pointer select-none flex-1">Propios</label>
+                            </div>
+                            <div>
+                                <div className="flex items-center space-x-3 p-1 hover:bg-gray-50 rounded-md transition-colors">
+                                    <input type="checkbox" id="chk-terceros" checked={activeParent === 'terceros'} onChange={() => handleParentChange('terceros')} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" />
+                                    <label htmlFor="chk-terceros" className="text-sm font-medium text-gray-700 cursor-pointer select-none flex-1">Terceros</label>
+                                </div>
+                                <div className={`cascade-section ml-6 pl-4 border-l-2 border-blue-100 space-y-2 ${showProviders ? 'open' : ''}`}>
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar proveedor..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full text-sm p-1.5 border border-gray-200 rounded-md shadow-sm mb-2" 
+                                        />
+                                    </div>
+                                    <div className="max-h-24 overflow-y-auto pr-2">
+                                        {filteredProviders.map(provider => (
+                                            <div key={provider} className="flex items-center space-x-3 py-1">
+                                                <input type="checkbox" id={`prov-${provider}`} value={provider} checked={!!selectedProviders[provider]} onChange={handleProviderChange} className="w-3.5 h-3.5 text-blue-500 border-gray-300 rounded cursor-pointer" />
+                                                <label htmlFor={`prov-${provider}`} className="text-sm text-gray-600 cursor-pointer select-none">{provider}</label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- CATALOG VIEW ---
+        const CodeFilter = ({ isThirdPartyFeatureEnabled }) => {
+            const [isConfigOpen, setIsConfigOpen] = useState(false);
+            const [searchType, setSearchType] = useState('exacto');
+            const [searchProviderCode, setSearchProviderCode] = useState(false);
+            const configRef = useRef(null);
+
+            useEffect(() => {
+                if (!isThirdPartyFeatureEnabled) {
+                    setSearchProviderCode(false);
+                }
+            }, [isThirdPartyFeatureEnabled]);
+
+
+            const isDefault = searchType === 'exacto' && !searchProviderCode;
+
+            const toggleConfig = (e) => {
+                e.stopPropagation();
+                setIsConfigOpen(prev => !prev);
+            };
+            
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (configRef.current && !configRef.current.contains(event.target)) {
+                        setIsConfigOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => {
+                    document.removeEventListener('mousedown', handleClickOutside);
+                };
+            }, []);
+
+            let tooltipText = "Búsqueda: ";
+            const activeFilters = [];
+            if (searchType === 'exacto') activeFilters.push("Exacta");
+            else activeFilters.push("Parcial");
+            if (searchProviderCode && isThirdPartyFeatureEnabled) activeFilters.push("Proveedor");
+            tooltipText += activeFilters.join(" + ");
+
+            return (
+                <div className="relative w-full" ref={configRef}>
+                    <div className="relative flex items-center">
+                        <input type="text" placeholder="Ej: 220 LI 80" className="w-full h-[34px] border border-gray-300 rounded-md text-sm px-3 py-1.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors pr-10 shadow-sm" />
+                        <button type="button" onClick={toggleConfig} className="absolute inset-y-0 right-0 flex items-center px-3 focus:outline-none group">
+                            <ConfigIcon className={`w-5 h-5 group-hover:text-blue-600 transition-colors ${isDefault ? 'text-gray-400' : 'text-blue-600'}`} />
+                             <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-max p-2 px-3 bg-gray-800 text-white text-xs font-medium leading-snug rounded shadow-lg z-50 text-center pointer-events-none whitespace-nowrap">
+                                <span>{tooltipText}</span>
+                                <div className="absolute right-3.5 top-full border-4 border-transparent border-t-gray-800"></div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {isConfigOpen && (
+                        <div className="absolute top-full mt-2 left-0 w-72 bg-white border border-gray-200 shadow-xl rounded-md z-50 p-4 animate-fade-in">
+                            <h4 className="text-xs font-bold text-gray-800 mb-4 uppercase tracking-wide border-b border-gray-100 pb-2">Configuración</h4>
+                            <div className="mb-4">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2.5">Tipo de búsqueda</span>
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-1.5">
+                                        <label className="flex items-center gap-1.5 cursor-pointer">
+                                            <input type="radio" name="tipo_codigo" value="exacto" checked={searchType === 'exacto'} onChange={() => setSearchType('exacto')} className="text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
+                                            <span className="text-sm font-semibold text-gray-600">Exacta</span>
+                                        </label>
+                                        <div className="relative flex items-center group">
+                                            <InfoOutlineIcon className="w-4 h-4 text-gray-400 cursor-help group-hover:text-gray-600" />
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-gray-800 text-white text-xs leading-snug rounded shadow-lg z-50 text-center pointer-events-none">
+                                                Busca el código idéntico al ingresado.
+                                                <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-gray-800"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <label className="flex items-center gap-1.5 cursor-pointer">
+                                            <input type="radio" name="tipo_codigo" value="parcial" checked={searchType === 'parcial'} onChange={() => setSearchType('parcial')} className="text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
+                                            <span className="text-sm font-semibold text-gray-600">Parcial</span>
+                                        </label>
+                                        <div className="relative flex items-center group">
+                                            <InfoOutlineIcon className="w-4 h-4 text-gray-400 cursor-help group-hover:text-gray-600" />
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-52 p-2 bg-gray-800 text-white text-xs leading-snug rounded shadow-lg z-50 text-center pointer-events-none">
+                                                Busca códigos que incluyan el texto ingresado.
+                                                <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-gray-800"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {isThirdPartyFeatureEnabled && (
+                                <React.Fragment>
+                                    <div className="h-px bg-gray-100 w-full my-3"></div>
+                                    <div className="pt-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input type="checkbox" checked={searchProviderCode} onChange={(e) => setSearchProviderCode(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
+                                                <span className="text-sm font-semibold text-gray-600">Código de proveedor</span>
+                                            </label>
+                                             <div className="relative flex items-center group">
+                                                <InfoOutlineIcon className="w-4 h-4 text-gray-400 cursor-help group-hover:text-gray-600" />
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 p-2 bg-gray-800 text-white text-xs leading-snug rounded shadow-lg z-50 text-center pointer-events-none">
+                                                    Busca por el código del proveedor ingresado en la ficha del soporte.
+                                                    <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-gray-800"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </React.Fragment>
+                            )}
+                            <div className="mt-5 flex justify-end">
+                                <button type="button" onClick={(e) => { e.stopPropagation(); setIsConfigOpen(false); }} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors px-4 py-1.5 rounded shadow-sm">Listo</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const CatalogView = ({ onEdit, isThirdPartyFeatureEnabled, providers }) => {
+            const [showMoreFilters, setShowMoreFilters] = useState(false);
+            return (
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <div className="p-6">
+                        <div className="space-y-4">
+                            {/* Row 1 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+                                <FormInput wrapperClass="lg:col-span-2" label="Código" id="code" helpText="Puedes ingresar más de una fracción de código, separándolos por un espacio.">
+                                    <CodeFilter isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled} />
+                                </FormInput>
+                                <FormInput wrapperClass="lg:col-span-3" label="Buscar por término" id="term" placeholder="Ej: nombre, ubicación" helpText="Búsqueda parcial por: nombre de soporte, dirección, etc." />
+                                <FormInput wrapperClass="lg:col-span-3" label="Cercano a..." id="near">
+                                    <div className="relative flex items-stretch w-full">
+                                        <input placeholder="Dirección o establecimiento" className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-l-md shadow-sm h-[34px]" />
+                                        <button className="-ml-px relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200">
+                                            <SmallCloseIcon className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </FormInput>
+                                <FormInput wrapperClass="lg:col-span-4" label="Precio (mínimo)" id="price">
+                                    <div className="flex space-x-2">
+                                        <input className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm h-[34px]" placeholder="Desde" />
+                                        <input className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm h-[34px]" placeholder="Hasta" />
+                                    </div>
+                                </FormInput>
+                            </div>
+
+                             {/* Row 2 */}
+                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+                               <FormInput wrapperClass="lg:col-span-4" label="Disponibilidad" id="availability">
+                                   <div className="flex items-center space-x-2">
+                                      <input className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm h-[34px]" placeholder="Desde" />
+                                      <input className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm h-[34px]" placeholder="Hasta" />
+                                      <div className="flex items-center whitespace-nowrap">
+                                        <input id="partial" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                        <label htmlFor="partial" className="ml-1.5 text-sm font-bold text-gray-500">Parcial</label>
+                                      </div>
+                                       <div className="flex items-center whitespace-nowrap">
+                                        <input id="reserved" type="checkbox" className="h-4 w-4 rounded border-gray-300" disabled />
+                                        <label htmlFor="reserved" className="ml-1.5 text-sm text-gray-400">Mostrar reservados</label>
+                                      </div>
+                                   </div>
+                               </FormInput>
+                               <FormSelect wrapperClass="lg:col-span-3" label="Tipo de soporte" id="support_type" helpText={<a href="#" className="ml-1 text-sm text-blue-600 font-bold">Ver clasificación</a>}>
+                                   <option>Todos los Soportes</option>
+                               </FormSelect>
+                               <FormSelect wrapperClass="lg:col-span-2" label="Comuna" id="comuna"><option>Todo Chile</option></FormSelect>
+                               <FormSelect wrapperClass="lg:col-span-2" label="Ordenar por" id="sort_by">
+                                    <option>Código</option>
+                                    <option>Última actualización</option>
+                                    <option>Comuna (a-z)</option>
+                                    <option>Tipo de soporte (a-z)</option>
+                                    <option>Precio (menor a mayor)</option>
+                                    <option>Precio (mayor a menor)</option>
+                                </FormSelect>
+                               <div className="lg:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1 invisible">Filtrar</label>
+                                    <button className="w-full h-[34px] flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                        <SearchIcon className="h-5 w-5" />
+                                    </button>
+                               </div>
+                             </div>
+
+                             {showMoreFilters && (
+                                <div className="space-y-4 pt-4 border-t">
+                                    {/* More Filters Row 1 */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <FormSelect label="Región" id="region"><option>Todo Chile</option></FormSelect>
+                                        <FormSelect label="Circuito" id="circuit"><option>Todos los circuitos</option></FormSelect>
+                                        <FormSelect label="Ruta" id="route"><option>Todas las rutas</option></FormSelect>
+                                    </div>
+                                    {/* More Filters Row 2 */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                                        <FormSelect label="Orientación" id="orientation"><option>Todas las orientaciones</option></FormSelect>
+                                        <FormSelect label="Vista" id="view"><option>Todas las vistas</option></FormSelect>
+                                        {isThirdPartyFeatureEnabled && (
+                                            <FormInput wrapperClass="lg:col-span-1" label="Propiedad del soporte" id="ownership">
+                                                <OwnershipFilter providers={providers} />
+                                            </FormInput>
+                                        )}
+                                        <FormInput wrapperClass="lg:col-span-1" label="Dimensiones" id="dimensions">
+                                            <div className="flex space-x-2">
+                                                <input className="w-full h-[34px] px-3 py-1.5 text-sm border border-gray-300 rounded-md" placeholder="Ancho (mts)" />
+                                                <input className="w-full h-[34px] px-3 py-1.5 text-sm border border-gray-300 rounded-md" placeholder="Alto (mts)" />
+                                            </div>
+                                        </FormInput>
+                                         <FormInput wrapperClass="lg:col-span-1" label="Otros" id="others">
+                                            <div className="flex items-center space-x-4 h-[34px]">
+                                                <div className="flex items-center whitespace-nowrap">
+                                                    <input id="no-photo" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                                    <label htmlFor="no-photo" className="ml-1.5 text-sm text-gray-700">Sin fotografía</label>
+                                                </div>
+                                                <div className="flex items-center whitespace-nowrap">
+                                                    <input id="no-coords" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                                    <label htmlFor="no-coords" className="ml-1.5 text-sm text-gray-700">Sin coordenadas</label>
+                                                </div>
+                                            </div>
+                                         </FormInput>
+                                    </div>
+                                </div>
+                             )}
+                        </div>
+                        {/* Bottom Bar */}
+                        <div className="flex justify-between items-center pt-4 border-t mt-4">
+                            <button onClick={() => setShowMoreFilters(!showMoreFilters)} className="text-sm text-blue-600 hover:text-blue-800 flex items-center shrink-0">
+                                {showMoreFilters ? <CaretUpIcon className="mr-1"/> : <ChevronDownIcon className="mr-1" />}
+                                <span className="whitespace-nowrap underline">
+                                {showMoreFilters ? 'Ver menos filtros' : 'Ver más filtros'}
+                                </span>
+                             </button>
+                             <div className="flex items-center">
+                                <span className="text-sm font-bold mr-2">Visualización</span>
+                                <div className="inline-flex rounded-md shadow-sm">
+                                    <button className="relative inline-flex items-center px-3 py-1.5 rounded-l-md border border-gray-300 bg-gray-800 text-white text-sm font-medium z-10">
+                                        <ListIcon />
+                                    </button>
+                                    <button className="-ml-px relative inline-flex items-center px-3 py-1.5 rounded-r-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium">
+                                        <ModuleIcon />
+                                    </button>
+                                </div>
+                             </div>
+                        </div>
+                        <hr className="my-6" />
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Código</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Tipo de soporte</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Nombre</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Precio mensual</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Comuna</th>
+                                        <th className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {mockSupportData.map((support) => (
+                                        <tr key={support.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{support.code}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-500">{support.type}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-500">{support.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-500">{support.monthlyPrice}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-500">{support.comuna}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                                <div className="flex items-center space-x-3 text-gray-400">
+                                                    <button className="hover:text-blue-600"><InfoOutlineIcon className="h-5 w-5"/></button>
+                                                    <button onClick={() => onEdit(support)} className="hover:text-blue-600"><EditIcon className="h-5 w-5"/></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- MAP VIEW ---
+        const MapView = ({ isThirdPartyFeatureEnabled, providers }) => {
+            const mapFilterData = [
+                { id: '1', name: 'Letrero Publicitario', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/1/marker-letreros-publicitarios.png', children: [
+                    { id: '7', name: 'Tótem' }, { id: '8', name: 'Monumental' }, { id: '9', name: 'Unipole' }, { id: '11', name: 'Valla' }, { id: '12', name: 'Caminero' }, { id: '18', name: 'Topsite' }, { id: '26', name: 'Building' }, { id: '102', name: 'Terracero' }, { id: '105', name: 'Letreros Publicitarios - Otros' }
+                ]},
+                { id: '2', name: 'Mobiliario Urbano', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/2/marker-mobiliario-urbano.png', children: [
+                    { id: '206', name: 'Mobiliario Urbano Impreso - Otros' }, { id: '3403', name: 'Mobiliario Urbano Digital' }
+                ]},
+                { id: '3', name: 'Pantallas Digitales', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/3/marker-pantallas-led.png', children: [
+                    { id: '301', name: 'Pantallas Digitales' }
+                ]},
+                { id: '4', name: 'Bus', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/4/marker-publicidad-en-buses.png', children: [
+                    { id: '404', name: 'Bus - Luneta' }, { id: '409', name: 'Bus - Lateral' }
+                ]},
+                { id: '19', name: 'Metro', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/19/marker-metro.png', children: [
+                    { id: '1906', name: 'Metro - Pantalla Digital' }, { id: '1907', name: 'Metro - Boletería' }, { id: '1908', name: 'Metro - Torniquete' }, { id: '1909', name: 'Metro - Otros' }
+                ]},
+                { id: '20', name: 'Centro Comercial', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/20/marker-mall.png', children: [
+                    { id: '2001', name: 'Centro Comercial - Letrero Publicitario' }, { id: '2002', name: 'Centro Comercial - Pantalla Digital' }, { id: '2004', name: 'Centro Comercial - Paleta' }, { id: '2009', name: 'Centro Comercial - Otros' }
+                ]},
+                { id: '21', name: 'Aeropuerto', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/21/marker-aeropuerto.png', children: [
+                    { id: '2101', name: 'Aeropuerto - Soporte Impreso' }, { id: '2103', name: 'Aeropuerto - Otros' }
+                ]},
+                { id: '22', name: 'Supermercado', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/22/marker-supermercado.png', children: [
+                    { id: '2201', name: 'Supermercado - Soporte Impreso' }, { id: '2203', name: 'Supermercado - Otros' }
+                ]},
+                { id: '36', name: 'Cine', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/36/marker-cine.png', children: [
+                    { id: '3601', name: 'Cine - Soporte Impreso' }
+                ]},
+                { id: '37', name: 'Indoor', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/37/marker-indoor.png', children: [
+                    { id: '3701', name: 'Indoor - Soporte Impreso' }, { id: '7809', name: 'Indoor - Videowall' }, { id: '7810', name: 'Indoor - Mobiliario urbano digital' }
+                ]},
+                { id: '39', name: 'No tradicional', img: 'https://oohmanager-staging.s3.amazonaws.com/uploads/public/format/39/marker-no-tradicional.png', children: [
+                    { id: '28', name: 'Walker' }, { id: '31', name: 'Bicicleta / Scooter' }
+                ]}
+            ];
+
+            const [openCategories, setOpenCategories] = useState({});
+            const [showMoreFilters, setShowMoreFilters] = useState(false);
+            const [filters, setFilters] = useState(() => {
+                const allFilters = { 'all': true };
+                mapFilterData.forEach(cat => {
+                    allFilters[cat.id] = true;
+                    cat.children.forEach(child => {
+                        allFilters[child.id] = true;
+                    });
+                });
+                return allFilters;
+            });
+
+            const toggleCategory = (id) => {
+                setOpenCategories(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            const handleFilterChange = (e) => {
+                const { id, checked, dataset } = e.target;
+                
+                setFilters(prev => {
+                    const newFilters = { ...prev };
+                    newFilters[id] = checked;
+
+                    if (id === 'all') {
+                        Object.keys(newFilters).forEach(key => {
+                            newFilters[key] = checked;
+                        });
+                    } else if (dataset.isParent) {
+                        const parentId = id;
+                        const children = mapFilterData.find(c => c.id === parentId)?.children || [];
+                        children.forEach(child => {
+                            newFilters[child.id] = checked;
+                        });
+                    } else if (dataset.parentId) {
+                        const parentId = dataset.parentId;
+                        const children = mapFilterData.find(c => c.id === parentId)?.children || [];
+                        const allChildrenChecked = children.every(child => newFilters[child.id] || (child.id === id && checked));
+                        const someChildrenChecked = children.some(child => newFilters[child.id] || (child.id === id && checked));
+                         if(checked) {
+                            newFilters[parentId] = true;
+                         } else if(!someChildrenChecked) {
+                            newFilters[parentId] = false;
+                         }
+                    }
+                    
+                    const allParentsChecked = mapFilterData.every(cat => newFilters[cat.id]);
+                    if(allParentsChecked) newFilters['all'] = true;
+                    else newFilters['all'] = false;
+
+
+                    return newFilters;
+                });
+            };
+            
+            const FilterItem = ({ item, isChild, parentId }) => {
+                const isParent = !isChild;
+                const hasChildren = item.children && item.children.length > 0;
+                const isOpen = hasChildren && openCategories[item.id];
+
+                return (
+                    <div className={`${isChild ? 'pl-3 pr-1 py-1 bg-gray-50' : 'px-2 py-1'}`}>
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center space-x-2 cursor-pointer w-full">
+                                <input 
+                                    type="checkbox" 
+                                    id={item.id} 
+                                    checked={!!filters[item.id]}
+                                    onChange={handleFilterChange}
+                                    data-is-parent={isParent}
+                                    data-parent-id={parentId}
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                {item.img && <img src={item.img} className="h-8" />}
+                                <span className={`text-xs ${isParent ? 'font-semibold text-gray-800' : 'text-gray-700'}`}>{item.name}</span>
+                            </label>
+                            {hasChildren && (
+                                <button onClick={() => toggleCategory(item.id)} className="p-1 text-gray-500 hover:text-gray-700">
+                                    <ChevronDownIcon className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                            )}
+                        </div>
+                        {isOpen && (
+                            <div className="pl-4 border-l-2 border-blue-200 mt-1">
+                                {item.children.map(child => <FilterItem key={child.id} item={child} isChild parentId={item.id} />)}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            return (
+                <div className="relative h-[calc(100vh-8rem)]">
+                    {/* Left Filter Panel */}
+                    <div className="absolute top-4 left-4 z-10 w-80 bg-white rounded-lg shadow-lg border flex flex-col max-h-[calc(100%-2rem)]">
+                        <div className="p-2 bg-blue-600 rounded-t-lg text-white">
+                            <label className="flex items-center space-x-2 cursor-pointer w-full">
+                                <input type="checkbox" id="all" checked={!!filters['all']} onChange={handleFilterChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                <span className="font-bold">Todos los soportes</span>
+                            </label>
+                        </div>
+                        
+                        <div className="overflow-y-auto max-h-60">
+                            <div className="divide-y divide-gray-200">
+                                {mapFilterData.map(cat => <FilterItem key={cat.id} item={cat} />)}
+                            </div>
+                        </div>
+
+                        <div className="p-2 border-t mt-auto overflow-y-auto">
+                            <div className="p-1">
+                                <FormInput wrapperClass="w-full" label="Buscar por código/s" id="code" helpText="Puedes ingresar más de una fracción de código, separándolos por un espacio.">
+                                    <CodeFilter isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled} />
+                                </FormInput>
+                            </div>
+
+                            <div className="p-1 mt-2">
+                                <label className="font-bold text-sm text-gray-700">Buscar por disponibilidad</label>
+                                <div className="flex space-x-2 mt-1">
+                                    <input type="text" placeholder="Fecha inicio" className="w-1/2 border border-gray-300 rounded-md text-xs p-2 text-center" />
+                                    <input type="text" placeholder="Fecha fin" className="w-1/2 border border-gray-300 rounded-md text-xs p-2 text-center" />
+                                     <button className="text-gray-400 hover:text-gray-600 p-1">
+                                        <SmallCloseIcon />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-1 mt-2">
+                                <label className="font-bold text-sm text-gray-700">Buscar por circuito</label>
+                                <select className="w-full border border-gray-300 rounded-md text-xs p-2 mt-1">
+                                    <option>Nombre o código</option>
+                                </select>
+                            </div>
+
+                            <div className="divide-y mt-2">
+                                <div className="px-2 py-1">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                        <span className="font-bold text-sm text-gray-700">Tráfico en vivo</span>
+                                        <span title="Congestión vehicular en tiempo real. Verde:Bajo | Amarillo:Medio | Rojo:Alto"><HelpIcon className="h-4 w-4 text-gray-400" /></span>
+                                    </label>
+                                </div>
+                                <div className="px-2 py-1">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                        <span className="font-bold text-sm text-gray-700">Transporte público</span>
+                                        <span title="Muestra paraderos Transantiago y líneas de metro"><HelpIcon className="h-4 w-4 text-gray-400" /></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {isThirdPartyFeatureEnabled && (
+                                <div className="pt-2">
+                                    <button onClick={() => setShowMoreFilters(!showMoreFilters)} className="text-sm text-blue-600 hover:text-blue-800 flex items-center w-full justify-start py-1">
+                                        {showMoreFilters ? <CaretUpIcon className="h-4 w-4 mr-1"/> : <ChevronDownIcon className="h-4 w-4 mr-1" />}
+                                        <span className="whitespace-nowrap underline">
+                                            {showMoreFilters ? 'Ver menos filtros' : 'Ver más filtros'}
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {showMoreFilters && isThirdPartyFeatureEnabled && (
+                                <div className="p-1 mt-2 border-t">
+                                    <div className="p-1 mt-2">
+                                        <FormInput wrapperClass="w-full" label="Propiedad del soporte" id="ownership">
+                                            <OwnershipFilter providers={providers} />
+                                        </FormInput>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-2 border-t">
+                            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                              Aplicar filtros
+                            </button>
+                        </div>
+                    </div>
+                    {/* Map Placeholder */}
+                    <div className="w-full h-full bg-gray-300 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-500 text-2xl">Simulación de Mapa</p>
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- EDIT SUPPORT VIEW (NEW) ---
+        const EditSupportView = ({ support, isThirdPartyFeatureEnabled, providers, setProviders }) => {
+            const [isThirdParty, setIsThirdParty] = useState(false);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            
+            // From: components/Card.tsx
+            const Card = ({ id, title, children }) => (
+                <div id={id} className="bg-white border border-indigo-200 rounded-lg shadow-sm">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+                    </div>
+                    <div className="p-6">
+                        {children}
+                    </div>
+                </div>
+            );
+
+            const ProviderModal = ({ isOpen, onClose, providers, setProviders }) => {
+                if (!isOpen) return null;
+
+                const [newProvider, setNewProvider] = useState('');
+                const [editingProvider, setEditingProvider] = useState(null); // original name
+                const [editedName, setEditedName] = useState(''); // new name
+                const [searchTerm, setSearchTerm] = useState('');
+
+                const handleAddProvider = (e) => {
+                    e.preventDefault();
+                    if (editingProvider) return;
+                    if (newProvider.trim() && !providers.includes(newProvider.trim())) {
+                        setProviders([...providers, newProvider.trim()]);
+                        setNewProvider('');
+                    }
+                };
+
+                const handleDeleteProvider = (providerToDelete) => {
+                    setProviders(providers.filter(p => p !== providerToDelete));
+                };
+
+                const handleStartEdit = (provider) => {
+                    setEditingProvider(provider);
+                    setEditedName(provider);
+                };
+
+                const handleCancelEdit = () => {
+                    setEditingProvider(null);
+                    setEditedName('');
+                };
+
+                const handleSaveEdit = () => {
+                    if (editedName.trim() && editedName.trim() !== editingProvider && !providers.includes(editedName.trim())) {
+                        const updatedProviders = providers.map(p => (p === editingProvider ? editedName.trim() : p));
+                        setProviders(updatedProviders);
+                    }
+                    handleCancelEdit();
+                };
+
+                const filteredProviders = providers.filter(provider => 
+                    provider.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                const modalContent = (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+                        <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                            <div className="flex justify-between items-center p-4 border-b">
+                                <h3 className="text-lg font-semibold text-gray-800">Administrar proveedores</h3>
+                                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                            <div className="p-4 border-b">
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <SearchIcon className="h-5 w-5 text-gray-400" />
+                                    </span>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar proveedor..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="block w-full pl-10 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+                            </div>
+                            <div className="p-4 max-h-64 overflow-y-auto">
+                                <ul className="space-y-2">
+                                    {filteredProviders.map((provider) => (
+                                        <li key={provider} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                                            {editingProvider === provider ? (
+                                                <div className="flex-grow flex items-center gap-2">
+                                                    <input 
+                                                        type="text"
+                                                        value={editedName}
+                                                        onChange={(e) => setEditedName(e.target.value)}
+                                                        className="flex-grow block w-full px-2 py-1 bg-white border border-indigo-300 rounded-md shadow-sm sm:text-sm"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={handleSaveEdit} className="text-green-600 hover:text-green-800 p-1">
+                                                        <CheckIcon />
+                                                    </button>
+                                                    <button onClick={handleCancelEdit} className="text-gray-500 hover:text-gray-700 p-1">
+                                                        <SmallCloseIcon />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <React.Fragment>
+                                                    <span className="text-gray-700">{provider}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => handleStartEdit(provider)} className="text-blue-500 hover:text-blue-700">
+                                                            <PencilIcon />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteProvider(provider)} className="text-red-500 hover:text-red-700">
+                                                            <DeleteIcon />
+                                                        </button>
+                                                    </div>
+                                                </React.Fragment>
+                                            )}
+                                        </li>
+                                    ))}
+                                    {filteredProviders.length === 0 && !editingProvider && (
+                                        <p className="text-center text-gray-500">
+                                            {searchTerm ? 'No se encontraron proveedores.' : 'No hay proveedores.'}
+                                        </p>
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="p-4 border-t">
+                                <form onSubmit={handleAddProvider} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={newProvider}
+                                        onChange={(e) => setNewProvider(e.target.value)}
+                                        placeholder="Nombre del nuevo proveedor"
+                                        className="flex-grow block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
+                                        disabled={!!editingProvider}
+                                    />
+                                    <button type="submit" className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300" disabled={!!editingProvider}>
+                                        Agregar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                );
+                
+                return ReactDOM.createPortal(modalContent, document.getElementById('modal-root'));
+            };
+
+            const InfoSection = ({ 
+                isThirdPartyFeatureEnabled, providers, setProviders,
+                isThirdParty, setIsThirdParty, isModalOpen, setIsModalOpen 
+            }) => {
+                return (
+                    <React.Fragment>
+                    <ProviderModal 
+                        isOpen={isModalOpen} 
+                        onClose={() => setIsModalOpen(false)}
+                        providers={providers}
+                        setProviders={setProviders}
+                    />
+                    <Card id="section-info" title="Información general">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-x-6 gap-y-4">
+                            <div className="form-group md:col-span-3">
+                                <label htmlFor="item_serial" className="block text-sm font-medium text-gray-700">Código</label>
+                                <input type="text" id="item_serial" defaultValue="T-001" required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                            </div>
+                            <div className="form-group md:col-span-7">
+                                <label htmlFor="item_name" className="block text-sm font-medium text-gray-700">Nombre</label>
+                                <input type="text" id="item_name" defaultValue="Soporte 001 Valla - Concepción" required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                            </div>
+                            <div className="form-group md:col-span-2">
+                                <label htmlFor="item_scopesi_id" className="block text-sm font-medium text-gray-700">ID Scopesi</label>
+                                <input type="text" id="item_scopesi_id" defaultValue="3973" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                            </div>
+                            <div className="form-group md:col-span-8">
+                                <label htmlFor="item_format_id" className="block text-sm font-medium text-gray-700">
+                                    Tipo de soporte
+                                    <a href="#" className="ml-2 text-sm text-indigo-600 hover:text-indigo-800 font-bold">Ver clasificación</a>
+                                </label>
+                                <select id="item_format_id" required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option>Mobiliario Urbano Impreso - Otros</option>
+                                    <option>Aeropuerto - Soporte Impreso</option>
+                                    <option>Letrero Publicitario</option>
+                                </select>
+                            </div>
+                            <div className="form-group md:col-span-4">
+                                <label htmlFor="item_max_slots" className="flex items-center text-sm font-medium text-gray-700">
+                                    Máximo de unidades
+                                    <span className="ml-2 cursor-help"><InfoIcon /></span>
+                                </label>
+                                 <div className="mt-1 flex rounded-md shadow-sm">
+                                    <input type="number" id="item_max_slots" defaultValue="2" className="block w-full text-center px-3 py-2 bg-white border border-gray-300 rounded-l-md sm:text-sm" />
+                                    <div className="relative flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 rounded-r-md">
+                                        <input id="item_unlimited_slots" type="checkbox" className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" disabled />
+                                        <label htmlFor="item_unlimited_slots" className="ml-2 text-sm text-gray-500 font-bold">Ilimitado</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="form-group md:col-span-6">
+                                <label htmlFor="item_notes" className="block text-sm font-medium text-gray-700">Información adicional soporte</label>
+                                <textarea id="item_notes" rows={4} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm" defaultValue="Ubicado en Calle Concepción #2242"></textarea>
+                            </div>
+                            <div className="form-group md:col-span-6">
+                                <label htmlFor="item_comments" className="block text-sm font-medium text-gray-700">Comentarios soporte (uso interno)</label>
+                                <textarea id="item_comments" rows={4} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm"></textarea>
+                            </div>
+                            
+                            {isThirdPartyFeatureEnabled && (
+                                <div className="form-group md:col-span-12">
+                                    <label htmlFor="third-party-switch" className="flex items-center cursor-pointer">
+                                        <div className="relative">
+                                            <input type="checkbox" id="third-party-switch" className="sr-only" checked={isThirdParty} onChange={() => setIsThirdParty(!isThirdParty)} />
+                                            <div className={`block w-10 h-6 rounded-full transition-colors ${isThirdParty ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
+                                            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isThirdParty ? 'translate-x-full' : ''}`}></div>
+                                        </div>
+                                        <div className="ml-3 text-sm font-medium text-gray-900">
+                                            Soporte de tercero
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
+
+                            {isThirdPartyFeatureEnabled && isThirdParty && (
+                                <React.Fragment>
+                                    <div className="form-group md:col-span-6">
+                                        <label htmlFor="provider_name" className="block text-sm font-medium text-gray-700">Proveedor</label>
+                                        <div className="mt-1 flex shadow-sm rounded-md">
+                                            <div className="relative flex-grow">
+                                                <select 
+                                                    id="provider_name" 
+                                                    className="block w-full pl-3 pr-10 py-2 text-base border border-r-0 border-gray-300 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-l-md appearance-none"
+                                                >
+                                                    {providers.map(p => <option key={p}>{p}</option>)}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                                    <ChevronDownIcon />
+                                                </div>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setIsModalOpen(true)}
+                                                className="-ml-px relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                            >
+                                                <CogIcon />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="form-group md:col-span-6">
+                                        <label htmlFor="provider_code" className="block text-sm font-medium text-gray-700">Código</label>
+                                        <input type="text" id="provider_code" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                    </div>
+                                </React.Fragment>
+                            )}
+                            
+                            <div className="form-group md:col-span-12">
+                                <label className="block text-sm font-medium text-gray-700">Opciones</label>
+                                <div className="mt-2 space-y-2">
+                                    <div className="flex items-center">
+                                        <input id="item_hide_in_quotation_pdf" name="item_hide_in_quotation_pdf" type="checkbox" className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                                        <label htmlFor="item_hide_in_quotation_pdf" className="ml-2 block text-sm text-gray-900">
+                                            No mostrar ficha en PDF cotización
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                    </React.Fragment>
+                );
+            };
+            
+            const PricingSection = () => {
+                const [rentalPrices, setRentalPrices] = useState([
+                    { id: 1, type: 'Duración', units: 1, months: 3, monthlyPrice: '1,800,000.0', minPrice: '1,700,000.0' },
+                    { id: 2, type: 'Duración', units: 1, months: 6, monthlyPrice: '1,600,000.0', minPrice: '1,500,000.0' },
+                ]);
+
+                const addRentalPrice = () => {
+                    const newPrice = {
+                        id: Date.now(),
+                        type: 'Duración',
+                        units: 1,
+                        months: 1,
+                        monthlyPrice: '0.0',
+                        minPrice: '0.0',
+                    };
+                    setRentalPrices([...rentalPrices, newPrice]);
+                };
+
+                const removeRentalPrice = (id) => {
+                    setRentalPrices(rentalPrices.filter(price => price.id !== id));
+                };
+
+                return (
+                    <Card id="section-sales" title="Precios">
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                            <div className="form-group">
+                                <label htmlFor="item_listed_price" className="block text-sm font-medium text-gray-700">Precio mensual</label>
+                                <input type="text" id="item_listed_price" defaultValue="$ 2,000,000.0" className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm" disabled />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="item_minimum_price" className="block text-sm font-medium text-gray-700">Precio mínimo</label>
+                                <input type="text" id="item_minimum_price" defaultValue="$ 1,806,483.0" className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm" disabled />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="item_production_cost" className="flex items-center text-sm font-medium text-gray-700">
+                                    Precio producción <span className="ml-1 cursor-help"><HelpIcon /></span>
+                                </label>
+                                <div className="mt-1 flex">
+                                    <div className="flex">
+                                        <button type="button" className="inline-flex items-center px-3 py-2 border border-gray-300 bg-gray-200 text-sm font-medium text-gray-700 rounded-l-md">Auto</button>
+                                        <button type="button" className="inline-flex items-center px-3 py-2 border-t border-b border-gray-300 bg-indigo-600 text-white text-sm font-medium"><EditIcon /></button>
+                                    </div>
+                                    <input type="text" defaultValue="$ 394,568.0" className="flex-1 block w-full px-3 py-2 border border-l-0 border-gray-300 rounded-r-md sm:text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <label className="text-md font-semibold text-gray-800 flex items-center">
+                                Precio mensual por duración y/o unidades
+                                <span className="ml-2 cursor-help"><InfoIcon /></span>
+                            </label>
+                            <div className="mt-4 overflow-x-auto">
+                                <div className="min-w-full">
+                                    <div className="grid grid-cols-12 gap-2 text-center text-xs font-semibold text-gray-600 bg-gray-50 p-2 rounded-t-lg">
+                                        <div className="col-span-1">Prioridad</div>
+                                        <div className="col-span-3">Tipo</div>
+                                        <div className="col-span-1">Unidades</div>
+                                        <div className="col-span-1">Desde mes</div>
+                                        <div className="col-span-2">Precio mensual</div>
+                                        <div className="col-span-2">Precio mínimo</div>
+                                        <div className="col-span-2">Acciones</div>
+                                    </div>
+                                    <div className="grid grid-cols-12 gap-2 items-center p-2 border-b border-gray-200 bg-gray-50">
+                                        <div className="col-span-1 text-center font-medium">0</div>
+                                        <div className="col-span-3">
+                                            <select className="w-full text-sm p-1 border border-gray-300 rounded-md" defaultValue="by_duration" disabled>
+                                                <option value="by_duration">Duración</option>
+                                                <option value="by_quantity">Unidades</option>
+                                                <option value="mixed">Mixto</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-span-1"><input type="number" defaultValue="1" className="w-full text-sm p-1 border border-gray-300 rounded-md text-center bg-gray-100" disabled /></div>
+                                        <div className="col-span-1"><input type="number" defaultValue="1" className="w-full text-sm p-1 border border-gray-300 rounded-md text-center bg-gray-100" disabled /></div>
+                                        <div className="col-span-2"><input type="text" defaultValue="2,000,000.0" className="w-full text-sm p-1 border border-gray-300 rounded-md text-right" /></div>
+                                        <div className="col-span-2"><input type="text" defaultValue="1,806,483.0" className="w-full text-sm p-1 border border-gray-300 rounded-md text-right" /></div>
+                                        <div className="col-span-2 flex justify-center items-center">
+                                            <input type="radio" name="default_price" defaultChecked className="h-4 w-4 text-indigo-600 border-gray-300" />
+                                            <span className="ml-2 cursor-help text-gray-400"><InfoIcon /></span>
+                                        </div>
+                                    </div>
+                                    {rentalPrices.map((price, index) => (
+                                         <div key={price.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b border-gray-200">
+                                            <div className="col-span-1 text-center font-medium">{index + 1}</div>
+                                            <div className="col-span-3">
+                                                <select className="w-full text-sm p-1 border border-gray-300 rounded-md" defaultValue={price.type}>
+                                                    <option value="Duración">Duración</option>
+                                                    <option value="Unidades">Unidades</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1"><input type="number" defaultValue={price.units} className="w-full text-sm p-1 border border-gray-300 rounded-md text-center" disabled={price.type === 'Duración'}/></div>
+                                            <div className="col-span-1"><input type="number" defaultValue={price.months} className="w-full text-sm p-1 border border-gray-300 rounded-md text-center" /></div>
+                                            <div className="col-span-2"><input type="text" defaultValue={price.monthlyPrice} className="w-full text-sm p-1 border border-gray-300 rounded-md text-right" /></div>
+                                            <div className="col-span-2"><input type="text" defaultValue={price.minPrice} className="w-full text-sm p-1 border border-gray-300 rounded-md text-right" /></div>
+                                            <div className="col-span-2 flex justify-center items-center space-x-2">
+                                                <input type="radio" name="default_price" className="h-4 w-4 text-indigo-600 border-gray-300" />
+                                                <button type="button" onClick={() => removeRentalPrice(price.id)} className="text-gray-500 hover:text-red-600"><DeleteIcon /></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <button type="button" onClick={addRentalPrice} className="flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    <PlusIcon /> Añadir nuevo precio
+                                </button>
+                            </div>
+                        </div>
+                        <div className="mt-6 text-sm text-gray-600 flex items-center">
+                            <AlertCircleIcon />
+                            <span>Los cambios se verán reflejados <b>sólo al guardar</b> el soporte.</span>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const ServicesSection = () => {
+                return (
+                    <Card id="section-services" title="Servicios adicionales">
+                        <div className="space-y-4">
+                            <button type="button" className="flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <PlusIcon /> Añadir servicio adicional
+                            </button>
+                            <div className="text-sm text-gray-600 flex items-center">
+                                <AlertCircleIcon />
+                                <span>Los cambios se verán reflejados <b>sólo al guardar</b> el soporte.</span>
+                            </div>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const LocationSection = () => {
+                const [activeTab, setActiveTab] = useState('map');
+
+                return (
+                    <Card id="section-loc" title="Ubicación">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label htmlFor="item_latitude" className="block text-sm font-medium text-gray-700">Latitud</label>
+                                        <input type="text" id="item_latitude" defaultValue="-33.4240188" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="item_longitude" className="block text-sm font-medium text-gray-700">Longitud</label>
+                                        <input type="text" id="item_longitude" defaultValue="-70.6124847" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm" />
+                                    </div>
+                                </div>
+                                <div className="flex items-center mb-4">
+                                    <input id="item_hidden" type="checkbox" className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+                                    <label htmlFor="item_hidden" className="ml-2 block text-sm text-gray-900">No mostrar en mapas</label>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="item_address" className="block text-sm font-medium text-gray-700">Dirección</label>
+                                        <div className="mt-1 flex rounded-md shadow-sm">
+                                            <input type="text" id="item_address" defaultValue="Avenida Pedro de Valdivia 25, Providencia" className="flex-1 block w-full rounded-none rounded-l-md sm:text-sm border border-r-0 border-gray-300" />
+                                            <button type="button" className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-800 text-white">
+                                                <PinDropIcon />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="item_region_id" className="block text-sm font-medium text-gray-700">Región</label>
+                                        <select id="item_region_id" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                            <option>RM Región Metropolitana de Santiago</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="item_locality_id" className="block text-sm font-medium text-gray-700">Comuna</label>
+                                        <select id="item_locality_id" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                            <option>Vitacura</option>
+                                            <option>Providencia</option>
+                                            <option>Las Condes</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                         <button type="button" className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                            <PinDropIcon /> <span className="ml-2">Editar en Streetview</span>
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input id="show_floor_plan" type="checkbox" defaultChecked className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+                                        <label htmlFor="show_floor_plan" className="ml-2 flex items-center text-sm text-gray-900">
+                                            Mostrar plano en PDF de cotización
+                                            <span className="ml-1 cursor-help"><HelpIcon /></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="border-b border-gray-200">
+                                    <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+                                        <button onClick={() => setActiveTab('map')} className={`${activeTab === 'map' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>
+                                            Mapa
+                                        </button>
+                                        <button onClick={() => setActiveTab('plan')} className={`${activeTab === 'plan' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}>
+                                            Plano
+                                        </button>
+                                    </nav>
+                                </div>
+                                <div className="mt-2">
+                                    {activeTab === 'map' && (
+                                        <div className="w-full h-96 bg-gray-300 rounded-md flex items-center justify-center border">
+                                            <p className="text-gray-500">Simulación de Mapa</p>
+                                        </div>
+                                    )}
+                                    {activeTab === 'plan' && (
+                                       <div className="border rounded-md overflow-hidden">
+                                            <div className="w-full h-96 bg-gray-200 flex items-center justify-center relative">
+                                                <img src="https://picsum.photos/600/400" alt="Plano de ubicación" className="w-full h-full object-cover"/>
+                                                <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">Zoom: 100%</div>
+                                            </div>
+                                            <div className="bg-white p-2 flex justify-between items-center border-t">
+                                                 <button className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Restablecer</button>
+                                                 <div className="space-x-2">
+                                                     <button className="px-3 py-1 border border-red-300 text-red-600 rounded-md text-sm bg-white hover:bg-red-50">Eliminar</button>
+                                                     <button className="px-3 py-1 border border-indigo-300 text-indigo-600 rounded-md text-sm bg-white hover:bg-indigo-50">Seleccionar</button>
+                                                 </div>
+                                            </div>
+                                       </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const SpecRow = ({ label, helpText, children }) => (
+                <div className="grid grid-cols-1 md:grid-cols-5 items-center">
+                    <label className="col-span-2 text-sm font-medium text-gray-700 md:text-right md:pr-4 flex items-center justify-end">
+                        {label}
+                        {helpText && <span className="ml-1 cursor-help"><HelpIcon /></span>}
+                    </label>
+                    <div className="col-span-3 mt-1 md:mt-0">{children}</div>
+                </div>
+            );
+            const SpecsSection = () => {
+                return (
+                    <Card id="section-specs" title="Especificaciones">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                            <div className="space-y-4">
+                                <SpecRow label="Sub-formato">
+                                    <input type="text" defaultValue="Especial" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" />
+                                </SpecRow>
+                                <SpecRow label="Dimensiones (visible)">
+                                    <div className="flex space-x-2">
+                                        <input type="text" defaultValue="13.6" placeholder="Ancho (mts)" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" />
+                                        <input type="text" defaultValue="6" placeholder="Alto (mts)" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" />
+                                    </div>
+                                </SpecRow>
+                                <SpecRow label="Dimensiones (total)" helpText="Info sobre producción">
+                                    <div className="flex space-x-2">
+                                        <input type="text" defaultValue="1.5" placeholder="Ancho (mts)" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" />
+                                        <input type="text" defaultValue="1.25" placeholder="Alto (mts)" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" />
+                                    </div>
+                                </SpecRow>
+                                 <SpecRow label="Iluminación">
+                                    <div className="flex rounded-md shadow-sm text-sm">
+                                        <button type="button" className="flex-1 p-1.5 border border-gray-300 bg-gray-200 rounded-l-md">Sí</button>
+                                        <button type="button" className="flex-1 p-1.5 border-t border-b border-gray-300 bg-indigo-600 text-white">No</button>
+                                        <button type="button" className="flex-1 p-1.5 border border-gray-300 bg-gray-200 rounded-r-md">N/A</button>
+                                    </div>
+                                </SpecRow>
+                                <SpecRow label="Orientación">
+                                     <select className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" defaultValue="Sur a Norte">
+                                        <option>Norte a Sur</option>
+                                        <option>Sur a Norte</option>
+                                        <option>Este a Oeste</option>
+                                        <option>Oeste a Este</option>
+                                    </select>
+                                </SpecRow>
+                                 <SpecRow label="Ruta">
+                                    <select className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm">
+                                        <option>Sin ruta</option>
+                                        <option>R-5</option>
+                                    </select>
+                                </SpecRow>
+                                <SpecRow label="Kilómetro"><input type="text" defaultValue="8" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                <SpecRow label="N° pasadas diarias"><input type="number" defaultValue="3" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                <SpecRow label="Pixel pitch"><input type="text" defaultValue="2.0" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                <SpecRow label="Resolución"><input type="text" defaultValue="300 dpi, medidas al 10% del tamaño real" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                <SpecRow label="Nombre establecimiento"><input type="text" defaultValue="Privado" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                            </div>
+                            <div className="space-y-4">
+                                 <SpecRow label="Tipo de concesión"><input type="text" defaultValue="Municipal" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Horario de funcionamiento"><input type="text" defaultValue="13:00 a 00:00" placeholder="Ej: 8am a 8pm" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Especificación material"><input type="text" defaultValue="Tela PVC con bolsillos perimetrales de 15 cm" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Formato de envío"><input type="text" defaultValue="PDF" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Fecha envío original"><input type="text" defaultValue="10 días hábiles previo a la fecha de inicio" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Tráfico diario media anual (personas)"><input type="number" defaultValue="30000" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Tráfico diario media anual (vehículos)"><input type="number" defaultValue="20000" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Nivel"><input type="text" defaultValue="Segundo piso" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                                 <SpecRow label="Vista">
+                                     <select className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" defaultValue="cross">
+                                        <option value="">Sin vista</option>
+                                        <option value="natural">Natural</option>
+                                        <option value="cross">Cruzada</option>
+                                    </select>
+                                </SpecRow>
+                                 <SpecRow label="Propiedad del soporte" helpText="Info interna">
+                                     <select className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" defaultValue="third_party">
+                                        <option value="">Sin propiedad</option>
+                                        <option value="proprietary">Propio</option>
+                                        <option value="third_party">Tercero</option>
+                                    </select>
+                                </SpecRow>
+                                <SpecRow label="Otros costos"><input type="text" defaultValue="0.0" className="block w-full text-sm p-1.5 border border-gray-300 rounded-md shadow-sm" /></SpecRow>
+                            </div>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const PhotoUpload = ({ imgSrc, id, hasImage }) => (
+                <div className="text-center">
+                    <img src={imgSrc} alt="Fotografía de soporte" className="w-full h-40 object-cover rounded-md border border-gray-300 mb-2" />
+                    {hasImage && (
+                        <div className="flex items-center justify-center text-sm mb-2">
+                            <input type="checkbox" id={`remove_${id}`} className="h-4 w-4 text-red-600 border-gray-300 rounded" />
+                            <label htmlFor={`remove_${id}`} className="ml-2 text-red-600">Eliminar</label>
+                        </div>
+                    )}
+                    <div>
+                        <input type="file" id={id} className="hidden" />
+                        <label htmlFor={id} className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <UploadIcon />
+                            <span>{hasImage ? 'Reemplazar' : 'Subir imagen'}</span>
+                        </label>
+                    </div>
+                </div>
+            );
+            const PhotosSection = () => {
+                return (
+                    <Card id="section-photos" title="Fotos">
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <PhotoUpload imgSrc="https://picsum.photos/seed/1/300/200" id="photo_1" hasImage={true} />
+                            <PhotoUpload imgSrc="https://placehold.co/300x200/e2e8f0/adb5bd?text=Subir%20Imagen" id="photo_2" hasImage={false} />
+                            <PhotoUpload imgSrc="https://placehold.co/300x200/e2e8f0/adb5bd?text=Subir%20Imagen" id="photo_3" hasImage={false} />
+                        </div>
+                         <div className="mt-6 text-sm text-gray-600 flex items-center bg-gray-50 p-3 rounded-md">
+                            <AlertCircleIcon />
+                            <span>Tamaño máx. <b>5 MB</b>. Imagen idealmente en relación <b>3:2</b> (Ej: 900 x 600 px). Archivos permitidos: <b>.jpg, .jpeg, .png, .gif</b></span>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const LinksSection = () => {
+                const [links, setLinks] = useState([
+                    { id: 1, title: 'Link a GIF', url: 'https://drive.google.com/file/d/...' },
+                    { id: 2, title: 'Link a Video', url: 'https://drive.google.com/file/d/...' },
+                ]);
+
+                const addLink = () => {
+                    setLinks([...links, { id: Date.now(), title: '', url: '' }]);
+                };
+                
+                const removeLink = (id) => {
+                    setLinks(links.filter(link => link.id !== id));
+                };
+
+                return (
+                    <Card id="section-links" title="Enlaces">
+                        <div className="space-y-4">
+                            {links.map(link => (
+                                <div key={link.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                    <div className="md:col-span-5 grid grid-cols-4 items-center">
+                                        <label className="text-sm font-medium text-gray-700 md:text-right pr-4 col-span-1">Título</label>
+                                        <div className="col-span-3">
+                                            <input type="text" defaultValue={link.title} className="w-full text-sm p-2 border border-gray-300 rounded-md shadow-sm" />
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-6 grid grid-cols-4 items-center">
+                                        <label className="text-sm font-medium text-gray-700 md:text-right pr-4 col-span-1">URL</label>
+                                        <div className="col-span-3">
+                                            <input type="url" defaultValue={link.url} className="w-full text-sm p-2 border border-gray-300 rounded-md shadow-sm" />
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-1 text-center">
+                                         <button type="button" onClick={() => removeLink(link.id)} className="text-gray-500 hover:text-red-600 p-2">
+                                            <DeleteIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                             <div className="pt-2">
+                                <button type="button" onClick={addLink} className="flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    <PlusIcon /> Agregar enlace
+                                </button>
+                            </div>
+                             <div className="mt-4 text-sm text-gray-600 flex items-center">
+                                <AlertCircleIcon />
+                                <span>Los cambios se verán reflejados <b>sólo al guardar</b> el soporte.</span>
+                            </div>
+                        </div>
+                    </Card>
+                );
+            };
+            
+            const Actions = () => {
+                return (
+                    <div className="flex items-center space-x-4 pt-4">
+                        <button type="submit" className="px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                            Guardar cambios
+                        </button>
+                        <a href="#" className="px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Ver soporte
+                        </a>
+                        <a href="#" className="flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <DeleteIcon />
+                            <span className="ml-2">Eliminar soporte</span>
+                        </a>
+                    </div>
+                );
+            };
+            
+            const EditFormSidebar = ({ activeSection, setActiveSection, navItems }) => {
+                const handleNavClick = (e, id) => {
+                    e.preventDefault();
+                    const element = document.getElementById(id);
+                    if (element) {
+                        // We use the main content area for scrolling, not window
+                        const mainContent = document.querySelector('main');
+                        if (mainContent) {
+                            mainContent.scrollTo({
+                                top: element.offsetTop - mainContent.offsetTop - 24, // 24px padding offset
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                };
+
+                return (
+                    <aside className="w-64 bg-transparent p-5 hidden lg:block sticky top-6 h-screen">
+                        <div className="aside-header mb-4">
+                            <span className="title text-lg font-bold text-gray-700">Navegación</span>
+                        </div>
+                        <nav>
+                            <ul className="space-y-2">
+                                {navItems.map(item => (
+                                    <li key={item.id}>
+                                        <a 
+                                            href={`#${item.id}`} 
+                                            onClick={(e) => handleNavClick(e, item.id)}
+                                            className={`block px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                activeSection === item.id 
+                                                ? 'bg-indigo-100 text-indigo-700 font-semibold' 
+                                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    </aside>
+                );
+            };
+            
+            const [activeSection, setActiveSection] = useState('section-info');
+
+            const navItems = [
+                { id: 'section-info', label: 'Información general' },
+                { id: 'section-sales', label: 'Precios' },
+                { id: 'section-services', label: 'Servicios adicionales' },
+                { id: 'section-loc', label: 'Ubicación' },
+                { id: 'section-specs', label: 'Especificaciones' },
+                { id: 'section-photos', label: 'Fotos' },
+                { id: 'section-links', label: 'Enlaces' },
+            ];
+
+            useEffect(() => {
+                const mainContent = document.querySelector('main');
+                if (!mainContent) return;
+
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                setActiveSection(entry.target.id);
+                            }
+                        });
+                    },
+                    {
+                        root: mainContent,
+                        rootMargin: "-25% 0px -75% 0px", // Active when in top 25% of viewport
+                    }
+                );
+
+                const sections = navItems.map(item => document.getElementById(item.id));
+                sections.forEach(section => {
+                    if (section) observer.observe(section);
+                });
+
+                return () => sections.forEach(section => {
+                    if (section) observer.unobserve(section);
+                });
+            }, []);
+
+            return (
+                <div className="flex">
+                    <EditFormSidebar activeSection={activeSection} setActiveSection={setActiveSection} navItems={navItems} />
+                    <div className="flex-1">
+                        <form className="space-y-6">
+                            <InfoSection 
+                                isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled} 
+                                providers={providers}
+                                setProviders={setProviders}
+                                isThirdParty={isThirdParty}
+                                setIsThirdParty={setIsThirdParty}
+                                isModalOpen={isModalOpen}
+                                setIsModalOpen={setIsModalOpen}
+                            />
+                            <PricingSection />
+                            <ServicesSection />
+                            <LocationSection />
+                            <SpecsSection />
+                            <PhotosSection />
+                            <LinksSection />
+                            <Actions />
+                        </form>
+                    </div>
+                </div>
+            )
+        };
+        
+        // --- COMPANY VIEW ---
+        const CompanyView = ({ isThirdPartyFeatureEnabled, setIsThirdPartyFeatureEnabled }) => {
+             const [activeSection, setActiveSection] = useState('section-info');
+             const [localThirdPartyEnabled, setLocalThirdPartyEnabled] = useState(isThirdPartyFeatureEnabled);
+             const [showSuccessChip, setShowSuccessChip] = useState(false);
+
+             useEffect(() => {
+                setLocalThirdPartyEnabled(isThirdPartyFeatureEnabled);
+             }, [isThirdPartyFeatureEnabled]);
+
+             const navItems = [
+                { id: 'section-info', label: 'Información General' },
+                { id: 'section-contact', label: 'Datos de contacto' },
+                { id: 'section-description', label: 'Descripción' },
+                { id: 'section-viewport', label: 'Vista de Mapas' },
+                { id: 'section-sections', label: 'Módulos de Empresa' },
+             ];
+             
+             const handleNavClick = (e, id) => {
+                e.preventDefault();
+                const element = document.getElementById(id);
+                if (element) {
+                    const mainContent = document.querySelector('main');
+                    if (mainContent) {
+                        mainContent.scrollTo({ top: element.offsetTop - mainContent.offsetTop - 70, behavior: 'smooth' });
+                    }
+                }
+            };
+            
+            useEffect(() => {
+                const mainContent = document.querySelector('main');
+                if (!mainContent) return;
+
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                setActiveSection(entry.target.id);
+                            }
+                        });
+                    }, { root: mainContent, rootMargin: "-20% 0px -80% 0px" }
+                );
+
+                const sections = navItems.map(item => document.getElementById(item.id));
+                sections.forEach(section => { if (section) observer.observe(section); });
+                return () => sections.forEach(section => { if (section) observer.unobserve(section); });
+            }, []);
+            
+            const [switches, setSwitches] = useState({
+                email: false,
+                hub: false,
+                audience: false,
+                tax: false,
+                taxBreakdown: false,
+                currency: false,
+            });
+
+            const handleSwitchChange = (key) => {
+                setSwitches(prev => ({...prev, [key]: !prev[key]}));
+            };
+
+             const handleSubmit = (e) => {
+                e.preventDefault();
+                setIsThirdPartyFeatureEnabled(localThirdPartyEnabled);
+                setShowSuccessChip(true);
+                setTimeout(() => setShowSuccessChip(false), 3000);
+             };
+
+            const Switch = ({ label, id, checked, onChange, helpText }) => {
+                return (
+                    <tr className="border-b">
+                        <td className="py-2 pr-2">
+                             <label htmlFor={id} className="flex items-center cursor-pointer">
+                                <div className="relative">
+                                    <input type="checkbox" id={id} className="sr-only" checked={checked} onChange={onChange} />
+                                    <div className={`block w-10 h-6 rounded-full transition-colors ${checked ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
+                                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${checked ? 'translate-x-full' : ''}`}></div>
+                                </div>
+                            </label>
+                        </td>
+                        <td className="py-2 text-sm text-gray-700 align-middle">
+                            {label}
+                        </td>
+                    </tr>
+                );
+            };
+
+             return (
+                 <div className="flex">
+                    <aside className="w-56 bg-white p-4 shadow-sm hidden lg:block sticky top-6 h-[calc(100vh-5rem)] rounded-lg border">
+                         <h3 className="text-lg font-bold text-gray-800 mb-4">Navegación</h3>
+                         <ul className="space-y-1">
+                            {navItems.map(item => (
+                                <li key={item.id}>
+                                    <a href={`#${item.id}`} onClick={(e) => handleNavClick(e, item.id)} className={`block px-3 py-2 text-sm rounded-md ${activeSection === item.id ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>
+                                        {item.label}
+                                    </a>
+                                </li>
+                            ))}
+                         </ul>
+                    </aside>
+                    <div className="flex-1 lg:pl-6">
+                        <form className="space-y-6" onSubmit={handleSubmit}>
+                           <div id="section-info" className="bg-white border border-blue-200 rounded-lg shadow-sm">
+                                <div className="p-4 border-b"><h2 className="text-lg font-semibold text-gray-800">Información General</h2></div>
+                                <div className="p-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                                                <div className="flex items-center gap-4">
+                                                    <img alt="Logo" className="h-16 border p-1 rounded" src="https://oohmanager-staging.s3.amazonaws.com/uploads/admin/tenant/thumb_logo_63af7da71d93261e.png" />
+                                                    <div>
+                                                        <button className="px-3 py-1.5 text-sm border rounded-md">Reemplazar</button>
+                                                        <div className="mt-1"><input type="checkbox" id="remove_logo" /><label htmlFor="remove_logo" className="ml-1 text-sm">Eliminar</label></div>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-2">Tamaño máx. 10 MB. Imagen en relación 3:1 (Ej: 540x180px).</p>
+                                            </div>
+                                             <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Favicon</label>
+                                                <div className="flex items-center gap-4">
+                                                     <div className="w-10 h-10 bg-gray-300 flex items-center justify-center text-white text-xs rounded border">1:1</div>
+                                                     <button className="px-3 py-1.5 text-sm border rounded-md">Subir Favicon</button>
+                                                 </div>
+                                                 <p className="text-xs text-gray-500 mt-2">Tamaño máx. 10 MB. Imagen 1:1 (Ej: 40x40px). Tipo: .ico</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <FormInput label="Nombre empresa" id="company_name" defaultValue="Administración" required />
+                                            <FormSelect label="País" id="country" disabled><option>Chile</option></FormSelect>
+                                            <FormSelect label="Idioma" id="language"><option>Español</option><option>English</option></FormSelect>
+                                            <h4 className="text-sm font-bold pt-2">Opciones de empresa</h4>
+                                            <table className="w-full">
+                                                <tbody>
+                                                    <Switch label="Notificaciones por correo" id="switch_email" checked={switches.email} onChange={() => handleSwitchChange('email')} />
+                                                    <Switch label="Compartir inventario con OOH Publicidad" id="switch_hub" checked={switches.hub} onChange={() => handleSwitchChange('hub')} />
+                                                    <Switch label="Medición de audiencia" id="switch_audience" checked={switches.audience} onChange={() => handleSwitchChange('audience')} />
+                                                    <Switch label="Ocultar IVA" id="switch_tax" checked={switches.tax} onChange={() => handleSwitchChange('tax')} />
+                                                    <Switch label="Opción exportar con detalle impuesto" id="switch_tax_breakdown" checked={switches.taxBreakdown} onChange={() => handleSwitchChange('taxBreakdown')} />
+                                                    <Switch label="Elegir moneda al exportar fichas" id="switch_currency" checked={switches.currency} onChange={() => handleSwitchChange('currency')} />
+                                                    <Switch 
+                                                        label="Soportes de tercero" 
+                                                        id="switch_third_party_supports" 
+                                                        checked={localThirdPartyEnabled} 
+                                                        onChange={() => setLocalThirdPartyEnabled(prev => !prev)} 
+                                                    />
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                           </div>
+
+                           <div id="section-contact" className="bg-white border border-blue-200 rounded-lg shadow-sm">
+                                <div className="p-4 border-b"><h2 className="text-lg font-semibold text-gray-800">Datos de contacto</h2></div>
+                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormInput label="Dirección" id="contact_address" />
+                                    <FormInput label="Teléfono" id="contact_phone" />
+                                    <FormInput label="Correo electrónico" id="contact_email" type="email" />
+                                </div>
+                            </div>
+
+                            <div id="section-description" className="bg-white border border-blue-200 rounded-lg shadow-sm">
+                                <div className="p-4 border-b"><h2 className="text-lg font-semibold text-gray-800">Descripción</h2></div>
+                                <div className="p-6">
+                                    <p className="text-sm text-gray-600 mb-2">Ingrese aquí información acerca de su empresa (Ej: Quiénes somos, etc.)</p>
+                                    <div className="border rounded-md">
+                                        <div className="p-2 border-b bg-gray-50 text-xs text-gray-500">Simulación de Toolbar</div>
+                                        <textarea className="w-full h-32 p-2 border-0 focus:ring-0" placeholder="Escribe aquí..."></textarea>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">El contenido de este campo será incluido en las cotizaciones.</p>
+                                </div>
+                            </div>
+                            
+                           <div id="section-viewport" className="bg-white border border-blue-200 rounded-lg shadow-sm">
+                                <div className="p-4 border-b"><h2 className="text-lg font-semibold text-gray-800">Vista de Mapas</h2></div>
+                                <div className="p-6 space-y-4">
+                                     <FormInput id="map_address" placeholder="Ingresa una ciudad o comuna" />
+                                     <div className="w-full h-80 bg-gray-300 rounded-lg flex items-center justify-center border"><p className="text-gray-500">Simulación de Mapa</p></div>
+                                     <p className="text-xs text-gray-500">Esta visualización determinará la ubicación por defecto de todos los mapas.</p>
+                                </div>
+                           </div>
+                           
+                           <div id="section-sections" className="bg-white border border-blue-200 rounded-lg shadow-sm">
+                                <div className="p-4 border-b"><h2 className="text-lg font-semibold text-gray-800">Módulos de Empresa</h2></div>
+                                <div className="p-6 space-y-2">
+                                    <label className="flex items-center"><input type="checkbox" className="h-4 w-4" defaultChecked /> <span className="ml-2 text-sm">Módulo Comercial</span></label>
+                                    <label className="flex items-center"><input type="checkbox" className="h-4 w-4" /> <span className="ml-2 text-sm">Módulo de Operaciones</span></label>
+                                    <label className="flex items-center"><input type="checkbox" className="h-4 w-4" /> <span className="ml-2 text-sm">Módulo de Ubicaciones</span></label>
+                                </div>
+                           </div>
+                           
+                           <button type="submit" className="px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">Guardar cambios</button>
+                        </form>
+                    </div>
+                    <SuccessChip message="¡Cambios guardados con éxito!" show={showSuccessChip} />
+                 </div>
+             );
+        };
+        
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [view, setView] = useState('catalog'); // 'catalog', 'map', 'edit', 'company'
+            const [selectedSupport, setSelectedSupport] = useState(null);
+            const [isThirdPartyFeatureEnabled, setIsThirdPartyFeatureEnabled] = useState(false);
+            const [globalProviders, setGlobalProviders] = useState(['Proveedor A', 'Proveedor B', 'Proveedor C']);
+
+            const handleNavigate = (newView) => {
+                setView(newView);
+                if (newView !== 'edit') {
+                    setSelectedSupport(null);
+                }
+            };
+            
+            const handleEdit = (support) => {
+                setSelectedSupport(support);
+                setView('edit');
+            };
+
+            const renderContent = () => {
+                switch(view) {
+                    case 'catalog':
+                        return <CatalogView 
+                                    onEdit={handleEdit} 
+                                    isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled}
+                                    providers={globalProviders} 
+                                />;
+                    case 'map':
+                        return <MapView isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled} providers={globalProviders} />;
+                    case 'edit':
+                        return <EditSupportView 
+                                    support={selectedSupport} 
+                                    isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled}
+                                    providers={globalProviders}
+                                    setProviders={setGlobalProviders}
+                                />;
+                    case 'company':
+                        return <CompanyView 
+                                    isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled} 
+                                    setIsThirdPartyFeatureEnabled={setIsThirdPartyFeatureEnabled} 
+                                />;
+                    default:
+                        return <CatalogView 
+                                    onEdit={handleEdit}
+                                    isThirdPartyFeatureEnabled={isThirdPartyFeatureEnabled}
+                                    providers={globalProviders} 
+                                />;
+                }
+            };
+
+            return (
+                <div className="flex h-screen bg-gray-100 font-sans">
+                    <MainSidebar onNavigate={handleNavigate} currentView={view} />
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                        <Header view={view} support={selectedSupport} onNavigate={handleNavigate} />
+                        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                           {renderContent()}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
