@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOH Manager - Dashboard Full Width</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            height: 320px;
+            width: 100%;
+        }
+        /* Colores específicos de la interfaz */
+        .bg-ooh-dark { background-color: #264653; }
+        .bg-ooh-teal { background-color: #00a896; }
+        
+        /* Estilos de scrollbar suaves */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+        /* Estilos para el interruptor (Switch) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #00a896; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Modal classes */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-overlay.active { display: flex; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Top Header -->
+    <header class="h-14 bg-white border-b shrink-0">
+        <div class="max-w-[1600px] mx-auto px-12 h-full flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <img src="https://oohmanager-staging.s3.amazonaws.com/uploads/demo/tenant/thumb_logo_e21a7d4f6cf292b2.png" alt="OOH Logo" class="h-8">
+                <span class="text-sm text-gray-500 border-l pl-6">Inicio</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="bg-white border-b shrink-0">
+        <div class="max-w-[1600px] mx-auto px-12 flex space-x-8">
+            <button class="py-3 text-sm font-semibold border-b-2 border-gray-800 text-gray-800">General</button>
+            <button class="py-3 text-sm font-medium text-gray-400 hover:text-gray-600">Soportes</button>
+            <button class="py-3 text-sm font-medium text-gray-400 hover:text-gray-600">Ejecutivos</button>
+            <button class="py-3 text-sm font-medium text-gray-400 hover:text-gray-600">Ventas</button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="flex-1 overflow-y-auto">
+        <main class="max-w-[1600px] mx-auto px-12 py-8 space-y-6">
+            
+            <!-- Filters & Date -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+                <div class="flex items-center space-x-2">
+                    <span id="current-date-label" class="text-xl font-light text-gray-600">Cargando fecha...</span>
+                    <i data-lucide="info" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                
+                <div class="flex items-center space-x-2 border-l pl-8">
+                    <span id="date-range-label" class="text-xl font-light text-gray-600">Cargando rango...</span>
+                    <i data-lucide="info" class="w-4 h-4 text-gray-300"></i>
+                </div>
+
+                <div class="hidden lg:block"></div>
+
+                <!-- Filtro Ejecutivo y Botón de Ajustes -->
+                <div class="flex items-center space-x-2">
+                    <div class="relative flex-1">
+                        <select class="w-full appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option>Ejecutivo (Todos)</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                    </div>
+                    <button onclick="toggleSettingsModal(true)" class="relative p-2 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-50 transition-colors" title="Configuración de métricas">
+                        <i data-lucide="sliders-vertical" class="w-5 h-5"></i>
+                        <span id="settings-indicator" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-ooh-dark rounded-lg p-5 text-white shadow-sm">
+                    <div class="flex items-center space-x-1 text-sm font-light mb-4">
+                        <span>Oportunidades activas</span>
+                        <i data-lucide="info" class="w-3 h-3 text-gray-400"></i>
+                    </div>
+                    <div class="flex justify-between items-baseline mb-2">
+                        <span class="text-xs font-bold uppercase opacity-60">CANTIDAD</span>
+                        <span class="text-2xl font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-xs font-bold uppercase opacity-60">MONTO</span>
+                        <span class="text-2xl font-bold">$ 0</span>
+                    </div>
+                </div>
+
+                <div class="bg-ooh-teal rounded-lg p-5 text-white shadow-sm relative overflow-hidden">
+                    <div class="flex items-center space-x-1 text-sm font-light mb-4">
+                        <span>Campañas exhibidas</span>
+                        <i data-lucide="info" class="w-3 h-3 opacity-60"></i>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-2xl font-bold">$ 124.950.908</div>
+                            <div class="text-[10px] opacity-70 mt-1">2024: $ 70.516.339</div>
+                        </div>
+                        <div class="bg-white/20 rounded-full px-3 py-1 text-sm font-bold">+77,2%</div>
+                    </div>
+                </div>
+
+                <div class="bg-ooh-teal rounded-lg p-5 text-white shadow-sm relative overflow-hidden">
+                    <div class="flex items-center space-x-1 text-sm font-light mb-4">
+                        <span>Campañas notificadas</span>
+                        <i data-lucide="info" class="w-3 h-3 opacity-60"></i>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-2xl font-bold">$ 241.371.978</div>
+                            <div class="text-[10px] opacity-70 mt-1">2024: $ 33.816.400</div>
+                        </div>
+                        <div class="bg-white/20 rounded-full px-3 py-1 text-sm font-bold">+613,0%</div>
+                    </div>
+                </div>
+
+                <div class="bg-ooh-teal rounded-lg p-5 text-white shadow-sm relative overflow-hidden">
+                    <div class="flex items-center space-x-1 text-sm font-light mb-4">
+                        <span>Ocupación</span>
+                        <i data-lucide="info" class="w-3 h-3 opacity-60"></i>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-2xl font-bold">1,1%</div>
+                            <div class="text-[10px] opacity-70 mt-1">2024: 100,0%</div>
+                        </div>
+                        <div class="bg-black/20 rounded-full px-3 py-1 text-sm font-bold">-98,9%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-medium text-gray-500 flex items-center">
+                    Próximos meses <i data-lucide="info" class="ml-2 w-4 h-4 text-gray-300"></i>
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-gray-500 font-medium flex items-center">
+                                Campañas exhibidas <i data-lucide="help-circle" class="ml-2 w-3 h-3 text-gray-300"></i>
+                            </h3>
+                            <label class="flex items-center space-x-2 text-xs text-gray-400 cursor-pointer">
+                                <input type="checkbox" checked class="form-checkbox h-3 w-3 text-teal-600 rounded focus:ring-0">
+                                <span>Monto producción</span>
+                            </label>
+                        </div>
+                        <div id="exhibited-chart" class="chart-container"></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-gray-500 font-medium flex items-center mb-6">
+                            Reservas activas <i data-lucide="help-circle" class="ml-2 w-3 h-3 text-gray-300"></i>
+                        </h3>
+                        <div id="reservations-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+                <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="text-gray-600 font-medium">Campañas por comenzar</h3>
+                        <i data-lucide="help-circle" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-400 font-semibold border-b">
+                                <tr>
+                                    <th class="px-4 py-3">Campaña</th>
+                                    <th class="px-4 py-3">Anunciante</th>
+                                    <th class="px-4 py-3">Fecha inicio</th>
+                                    <th class="px-4 py-3">Estado implementación</th>
+                                    <th class="px-4 py-3">Ver</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y text-gray-600">
+                                <tr><td class="px-4 py-3">CA-6328</td><td class="px-4 py-3">Anunciante de prueba</td><td class="px-4 py-3">01 de nov</td><td class="px-4 py-3">Pendiente</td><td class="px-4 py-3"><button class="text-gray-400"><i data-lucide="external-link" class="w-4 h-4"></i></button></td></tr>
+                                <tr><td class="px-4 py-3">CA-6329</td><td class="px-4 py-3">Anunciante de prueba</td><td class="px-4 py-3">01 de nov</td><td class="px-4 py-3">Pendiente</td><td class="px-4 py-3"><button class="text-gray-400"><i data-lucide="external-link" class="w-4 h-4"></i></button></td></tr>
+                                <tr><td class="px-4 py-3">CA-6350</td><td class="px-4 py-3">Capel</td><td class="px-4 py-3">01 de nov</td><td class="px-4 py-3">Pendiente</td><td class="px-4 py-3"><button class="text-gray-400"><i data-lucide="external-link" class="w-4 h-4"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="text-gray-600 font-medium">Cotizaciones con reservas</h3>
+                        <i data-lucide="help-circle" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-400 font-semibold border-b">
+                                <tr>
+                                    <th class="px-4 py-3">Cotización</th>
+                                    <th class="px-4 py-3">Anunciante</th>
+                                    <th class="px-4 py-3">Vencimiento reserva</th>
+                                    <th class="px-4 py-3">Inicio de campaña</th>
+                                    <th class="px-4 py-3">Ver</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y text-gray-600">
+                                <tr><td class="px-4 py-3">CA-6187</td><td class="px-4 py-3">Banco BCI</td><td class="px-4 py-3">24 de oct 16:30</td><td class="px-4 py-3">01 de nov</td><td class="px-4 py-3"><button class="text-gray-400"><i data-lucide="external-link" class="w-4 h-4"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Ajustes -->
+    <div id="settings-modal" class="modal-overlay fixed inset-0">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all h-[700px] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 class="font-semibold text-gray-700">Configuración de Métricas y Filtros</h3>
+                <button onclick="toggleSettingsModal(false)" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <!-- Tabs Header -->
+            <div class="flex border-b bg-white shrink-0">
+                <button onclick="switchTab('general')" id="tab-btn-general" class="flex-1 py-3 text-sm font-medium text-teal-600 border-b-2 border-teal-600 focus:outline-none transition-colors">General</button>
+                <button onclick="switchTab('soportes')" id="tab-btn-soportes" class="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition-colors">Soportes</button>
+                <button onclick="switchTab('servicio')" id="tab-btn-servicio" class="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition-colors">Servicio</button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto">
+                <!-- Tab: General -->
+                <div id="tab-content-general" class="space-y-4">
+                    <div class="bg-blue-50 border border-blue-100 rounded-md p-3 text-xs text-blue-700 mb-4">
+                        <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
+                        Al desactivar un concepto, no será considerado en los montos mostrados en el dashboard.
+                    </div>
+                    
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Conceptos incluidos</label>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700 font-medium">Arriendo</span>
+                        <label class="switch"><input type="checkbox" id="cb-general-arriendo" checked onchange="validateGeneral(this)"><span class="slider"></span></label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700 font-medium">Producción</span>
+                        <label class="switch"><input type="checkbox" id="cb-general-produccion" checked onchange="validateGeneral(this)"><span class="slider"></span></label>
+                    </div>
+                    <div id="error-msg-general" class="hidden text-xs text-red-500 font-medium">
+                        Debe haber al menos un concepto habilitado.
+                    </div>
+                </div>
+
+                <!-- Tab: Soportes -->
+                <div id="tab-content-soportes" class="hidden flex flex-col h-full">
+                    <div class="bg-blue-50 border border-blue-100 rounded-md p-3 text-xs text-blue-700 mb-4 shrink-0">
+                        <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
+                        Desmarca los soportes que no deseas que sean incluidos en los montos mostrados en el dashboard.
+                    </div>
+
+                    <!-- Resumen Deshabilitados -->
+                    <div class="flex justify-between items-start mb-2 shrink-0">
+                        <div id="disabled-summary-soportes" class="flex flex-wrap gap-1 min-h-[20px] flex-1">
+                            <span class="text-xs text-gray-400 italic">Todos los soportes habilitados</span>
+                        </div>
+                    </div>
+
+                    <div class="relative mb-2 shrink-0">
+                        <input type="text" id="search-supports" placeholder="Buscar soporte..." onkeyup="filterTree('search-supports', 'tree-container')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 placeholder:text-gray-300">
+                        <i data-lucide="search" class="absolute right-3 top-2 w-4 h-4 text-gray-300"></i>
+                    </div>
+
+                    <div class="flex justify-end mb-2 shrink-0">
+                        <button id="btn-enable-all-supports" onclick="enableAllSupports()" class="hidden text-xs text-teal-600 hover:text-teal-800 font-medium whitespace-nowrap underline">
+                            Habilitar todo
+                        </button>
+                    </div>
+                    
+                    <div id="error-msg-soportes" class="hidden text-xs text-red-500 font-medium mb-2 shrink-0">
+                        Debe haber al menos un soporte habilitado.
+                    </div>
+
+                    <div id="tree-container" class="space-y-2 overflow-y-auto flex-1 pr-2">
+                        <!-- Tree content generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Servicio -->
+                <div id="tab-content-servicio" class="hidden flex flex-col h-full">
+                     <div class="bg-blue-50 border border-blue-100 rounded-md p-3 text-xs text-blue-700 mb-4 shrink-0">
+                        <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
+                        Desmarca los servicios que no deseas que sean incluidos en los montos mostrados en el dashboard.
+                    </div>
+
+                     <!-- Resumen Deshabilitados -->
+                     <div class="flex justify-between items-start mb-2 shrink-0">
+                        <div id="disabled-summary-services" class="flex flex-wrap gap-1 min-h-[20px] flex-1">
+                            <span class="text-xs text-gray-400 italic">Todos los servicios habilitados</span>
+                        </div>
+                    </div>
+
+                     <div class="relative mb-2 shrink-0">
+                        <input type="text" id="search-services" placeholder="Buscar servicio..." onkeyup="filterItems('search-services', 'services-list')" class="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 placeholder:text-gray-300">
+                        <i data-lucide="search" class="absolute right-3 top-2 w-4 h-4 text-gray-300"></i>
+                    </div>
+
+                    <div class="flex justify-end mb-2 shrink-0">
+                        <button id="btn-enable-all-services" onclick="enableAllServices()" class="hidden text-xs text-teal-600 hover:text-teal-800 font-medium whitespace-nowrap underline">
+                            Habilitar todo
+                        </button>
+                    </div>
+
+                    <div id="error-msg-services" class="hidden text-xs text-red-500 font-medium mb-2 shrink-0">
+                        Debe haber al menos un servicio habilitado.
+                    </div>
+
+                    <div id="services-list" class="space-y-2 overflow-y-auto flex-1">
+                        <label class="flex items-center space-x-2 cursor-pointer item-row hover:bg-gray-50 p-2 rounded border border-transparent hover:border-gray-100">
+                            <input type="checkbox" checked class="rounded text-teal-600 focus:ring-teal-500 service-cb" id="cb-service-1" data-name="Servicio 1" onchange="validateService(this)"> 
+                            <span class="text-sm text-gray-700">Servicio 1</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer item-row hover:bg-gray-50 p-2 rounded border border-transparent hover:border-gray-100">
+                            <input type="checkbox" checked class="rounded text-teal-600 focus:ring-teal-500 service-cb" id="cb-service-2" data-name="Servicio 2" onchange="validateService(this)"> 
+                            <span class="text-sm text-gray-700">Servicio 2</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 border-t flex justify-end shrink-0 space-x-3">
+                <button onclick="saveSettings()" class="bg-ooh-teal text-white px-6 py-2 rounded-md font-medium hover:bg-teal-700 transition-colors shadow-sm">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Data for Tree ---
+        const supportsData = [
+            {
+                name: "Familia Soporte 1", id: "fam-1", children: [
+                    { name: "Tipo de soporte 1", id: "type-1-1", children: [
+                        { name: "Soporte 1", id: "sup-1-1-1" }, { name: "Soporte 2", id: "sup-1-1-2" }, { name: "Soporte 3", id: "sup-1-1-3" }
+                    ]},
+                    { name: "Tipo de soporte 2", id: "type-1-2", children: [
+                        { name: "Soporte 1", id: "sup-1-2-1" }, { name: "Soporte 2", id: "sup-1-2-2" }
+                    ]}
+                ]
+            },
+            {
+                name: "Familia Soporte 2", id: "fam-2", children: [
+                    { name: "Tipo de soporte 1", id: "type-2-1", children: [
+                        { name: "Soporte 1", id: "sup-2-1-1" }, { name: "Soporte 2", id: "sup-2-1-2" }, { name: "Soporte 3", id: "sup-2-1-3" }
+                    ]},
+                    { name: "Tipo de soporte 2", id: "type-2-2", children: [
+                        { name: "Soporte 1", id: "sup-2-2-1" }, { name: "Soporte 2", id: "sup-2-2-2" }
+                    ]}
+                ]
+            },
+            {
+                name: "Familia Soporte 3", id: "fam-3", children: [
+                    { name: "Tipo de soporte 1", id: "type-3-1", children: [
+                        { name: "Soporte 1", id: "sup-3-1-1" }, { name: "Soporte 2", id: "sup-3-1-2" }, { name: "Soporte 3", id: "sup-3-1-3" }
+                    ]},
+                    { name: "Tipo de soporte 2", id: "type-3-2", children: [
+                        { name: "Soporte 1", id: "sup-3-2-1" }, { name: "Soporte 2", id: "sup-3-2-2" }
+                    ]}
+                ]
+            }
+        ];
+
+        function initTree() {
+            const container = document.getElementById('tree-container');
+            container.innerHTML = '';
+
+            // Render Families directly (no root node)
+            const treeHTML = supportsData.map(fam => renderFamily(fam)).join('');
+            
+            container.innerHTML = treeHTML;
+            lucide.createIcons();
+        }
+
+        function renderFamily(fam) {
+            // Families are rendered as root items now
+            return `
+                <div class="tree-node" id="node-${fam.id}" data-name="${fam.name}">
+                    <div class="flex items-center hover:bg-gray-50 p-1 rounded">
+                        <button onclick="toggleNode('${fam.id}')" class="p-1 text-gray-400 hover:text-gray-600 transition-transform transform rotate-90" id="btn-${fam.id}">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                        <input type="checkbox" id="cb-${fam.id}" checked onchange="checkNode('${fam.id}')" class="rounded text-teal-600 focus:ring-teal-500 ml-1 mr-2">
+                        <label class="text-sm font-medium text-gray-700 cursor-pointer select-none" for="cb-${fam.id}">${fam.name}</label>
+                    </div>
+                    <div id="children-${fam.id}" class="pl-6 border-l border-gray-100 ml-3 space-y-1 mt-1">
+                        ${fam.children.map(type => renderType(type)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderType(type) {
+            return `
+                <div class="tree-node" id="node-${type.id}" data-name="${type.name}">
+                    <div class="flex items-center hover:bg-gray-50 p-1 rounded">
+                        <button onclick="toggleNode('${type.id}')" class="p-1 text-gray-400 hover:text-gray-600 transition-transform" id="btn-${type.id}">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                        <input type="checkbox" id="cb-${type.id}" checked onchange="checkNode('${type.id}')" class="rounded text-teal-600 focus:ring-teal-500 ml-1 mr-2">
+                        <label class="text-sm text-gray-600 cursor-pointer select-none" for="cb-${type.id}">${type.name}</label>
+                    </div>
+                    <div id="children-${type.id}" class="hidden pl-6 border-l border-gray-100 ml-3 space-y-1 mt-1">
+                        ${type.children.map(sup => renderSupport(sup)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSupport(sup) {
+            return `
+                <div class="tree-item flex items-center hover:bg-gray-50 p-1 rounded ml-2" id="node-${sup.id}" data-name="${sup.name}">
+                    <input type="checkbox" id="cb-${sup.id}" checked onchange="checkNode('${sup.id}')" class="rounded text-teal-600 focus:ring-teal-500 mr-2">
+                    <label class="text-sm text-gray-500 cursor-pointer select-none" for="cb-${sup.id}">${sup.name}</label>
+                </div>
+            `;
+        }
+
+        function toggleNode(id) {
+            const children = document.getElementById(`children-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            if (children.classList.contains('hidden')) {
+                children.classList.remove('hidden');
+                btn.classList.add('rotate-90');
+            } else {
+                children.classList.add('hidden');
+                btn.classList.remove('rotate-90');
+            }
+        }
+
+        function checkNode(id) {
+            const cb = document.getElementById(`cb-${id}`);
+            const isChecked = cb.checked;
+            
+            // 1. Update children
+            const node = document.getElementById(`node-${id}`);
+            if (node) {
+                const childCheckboxes = node.querySelectorAll('input[type="checkbox"]');
+                childCheckboxes.forEach(childCb => {
+                    if (childCb.id !== `cb-${id}`) {
+                        childCb.checked = isChecked;
+                        childCb.indeterminate = false;
+                    }
+                });
+            }
+
+            // 2. Update parents (traverse up)
+            updateParents(id);
+            
+            // Validation: Check if at least one support is enabled
+            if (countEnabledSupports() === 0) {
+                // Revert
+                cb.checked = true;
+                // Revert children
+                if (node) {
+                    const childCheckboxes = node.querySelectorAll('input[type="checkbox"]');
+                    childCheckboxes.forEach(childCb => {
+                        if (childCb.id !== `cb-${id}`) {
+                            childCb.checked = true;
+                            childCb.indeterminate = false;
+                        }
+                    });
+                }
+                updateParents(id);
+                document.getElementById('error-msg-soportes').classList.remove('hidden');
+            } else {
+                document.getElementById('error-msg-soportes').classList.add('hidden');
+            }
+
+            // 3. Update Summary
+            updateSupportsSummary();
+            updateEnableAllSupportsBtn();
+        }
+
+        function countEnabledSupports() {
+            let count = 0;
+            supportsData.forEach(fam => {
+                fam.children.forEach(type => {
+                    type.children.forEach(sup => {
+                        const cb = document.getElementById(`cb-${sup.id}`);
+                        if (cb && cb.checked) count++;
+                    });
+                });
+            });
+            return count;
+        }
+
+        function updateEnableAllSupportsBtn() {
+            const btn = document.getElementById('btn-enable-all-supports');
+            let anyUnchecked = false;
+            // Check if any support is unchecked
+             supportsData.forEach(fam => {
+                fam.children.forEach(type => {
+                    type.children.forEach(sup => {
+                        const cb = document.getElementById(`cb-${sup.id}`);
+                        if (cb && !cb.checked) anyUnchecked = true;
+                    });
+                });
+            });
+            
+            if (anyUnchecked) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function validateGeneral(cb) {
+            const arriendo = document.getElementById('cb-general-arriendo').checked;
+            const produccion = document.getElementById('cb-general-produccion').checked;
+            const errorMsg = document.getElementById('error-msg-general');
+
+            if (!arriendo && !produccion) {
+                cb.checked = true;
+                errorMsg.classList.remove('hidden');
+            } else {
+                errorMsg.classList.add('hidden');
+            }
+        }
+
+        function validateService(cb) {
+            const checkboxes = document.querySelectorAll('.service-cb');
+            const checkedCount = Array.from(checkboxes).filter(c => c.checked).length;
+            const errorMsg = document.getElementById('error-msg-services');
+
+            if (checkedCount === 0) {
+                cb.checked = true;
+                errorMsg.classList.remove('hidden');
+            } else {
+                errorMsg.classList.add('hidden');
+            }
+            updateServiceSummary();
+            updateEnableAllServicesBtn();
+        }
+
+        function updateEnableAllServicesBtn() {
+            const btn = document.getElementById('btn-enable-all-services');
+            const checkboxes = document.querySelectorAll('.service-cb');
+            const anyUnchecked = Array.from(checkboxes).some(c => !c.checked);
+            
+            if (anyUnchecked) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function updateParents(id) {
+            // Simple DOM traversal to find parent node
+            let current = document.getElementById(`node-${id}`);
+            while (current) {
+                const parentGroup = current.parentElement; // div#children-XYZ
+                if (!parentGroup || !parentGroup.id.startsWith('children-')) break;
+                
+                const parentId = parentGroup.id.replace('children-', '');
+                // Stop if we reach root (which doesn't exist anymore, but just in case)
+                if (parentId === 'root') break;
+
+                const parentCb = document.getElementById(`cb-${parentId}`);
+                
+                // Check all siblings
+                const siblings = parentGroup.querySelectorAll(':scope > div > div > input[type="checkbox"], :scope > div > input[type="checkbox"]');
+                let allChecked = true;
+                let noneChecked = true;
+                
+                siblings.forEach(sib => {
+                    if (sib.checked) noneChecked = false;
+                    else if (!sib.indeterminate) allChecked = false;
+                    // If indeterminate, then allChecked is false
+                    if (sib.indeterminate) {
+                        allChecked = false;
+                        noneChecked = false;
+                    }
+                });
+
+                if (allChecked) {
+                    parentCb.checked = true;
+                    parentCb.indeterminate = false;
+                } else if (noneChecked) {
+                    parentCb.checked = false;
+                    parentCb.indeterminate = false;
+                } else {
+                    parentCb.checked = false;
+                    parentCb.indeterminate = true;
+                }
+
+                current = document.getElementById(`node-${parentId}`);
+            }
+        }
+
+        function updateSupportsSummary() {
+            const summaryContainer = document.getElementById('disabled-summary-soportes');
+            const disabledItems = [];
+            
+            // Logic: Check all Families.
+            // If Family unchecked -> Family Name. 
+            // If Type unchecked -> Type Name. 
+            // If Support unchecked -> Support Name.
+            
+            let allChecked = true;
+
+            supportsData.forEach(fam => {
+                const famCb = document.getElementById(`cb-${fam.id}`);
+                if (!famCb.checked && !famCb.indeterminate) {
+                    disabledItems.push(fam.name);
+                    allChecked = false;
+                } else if (famCb.indeterminate || famCb.checked) {
+                    // Check Types
+                    fam.children.forEach(type => {
+                        const typeCb = document.getElementById(`cb-${type.id}`);
+                        if (!typeCb.checked && !typeCb.indeterminate) {
+                            disabledItems.push(type.name);
+                            allChecked = false;
+                        } else if (typeCb.indeterminate || typeCb.checked) {
+                            // Check Supports
+                            type.children.forEach(sup => {
+                                const supCb = document.getElementById(`cb-${sup.id}`);
+                                if (!supCb.checked) {
+                                    disabledItems.push(sup.name);
+                                    allChecked = false;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            renderSummary(summaryContainer, disabledItems, "Todos los soportes habilitados");
+        }
+
+        function updateServiceSummary() {
+            const summaryContainer = document.getElementById('disabled-summary-services');
+            const disabledItems = [];
+            const checkboxes = document.querySelectorAll('.service-cb');
+            
+            checkboxes.forEach(cb => {
+                if (!cb.checked) {
+                    disabledItems.push(cb.getAttribute('data-name'));
+                }
+            });
+
+            renderSummary(summaryContainer, disabledItems, "Todos los servicios habilitados");
+        }
+
+        function renderSummary(container, items, emptyText) {
+            container.innerHTML = '';
+            if (items.length === 0) {
+                container.innerHTML = `<span class="text-xs text-gray-400 italic">${emptyText}</span>`;
+                return;
+            }
+            
+            items.forEach(item => {
+                const tag = document.createElement('span');
+                tag.className = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-200';
+                tag.innerText = item;
+                container.appendChild(tag);
+            });
+        }
+
+        // State for settings
+        let savedSettings = {
+            general: {
+                arriendo: true,
+                produccion: true
+            },
+            supports: {}, // Map of id -> checked status
+            services: {
+                'Servicio 1': true,
+                'Servicio 2': true
+            }
+        };
+
+        function initSettings() {
+            // Initialize supports state
+            supportsData.forEach(fam => {
+                savedSettings.supports[fam.id] = true;
+                fam.children.forEach(type => {
+                    savedSettings.supports[type.id] = true;
+                    type.children.forEach(sup => {
+                        savedSettings.supports[sup.id] = true;
+                    });
+                });
+            });
+            
+            // Initial render of summaries
+            updateSupportsSummary();
+            updateServiceSummary();
+        }
+
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('settings-modal');
+            if (show) {
+                modal.classList.add('active');
+                // Restore state from savedSettings when opening
+                restoreSettingsState();
+                updateSupportsSummary();
+                updateServiceSummary();
+                updateEnableAllSupportsBtn();
+                updateEnableAllServicesBtn();
+                switchTab('general');
+            } else {
+                modal.classList.remove('active');
+            }
+        }
+
+        function restoreSettingsState() {
+            // Restore General
+            const cbArriendo = document.getElementById('cb-general-arriendo');
+            const cbProduccion = document.getElementById('cb-general-produccion');
+            if (cbArriendo) cbArriendo.checked = savedSettings.general.arriendo;
+            if (cbProduccion) cbProduccion.checked = savedSettings.general.produccion;
+
+            // Restore Services
+            const cbServ1 = document.getElementById('cb-service-1');
+            const cbServ2 = document.getElementById('cb-service-2');
+            if (cbServ1) cbServ1.checked = savedSettings.services['Servicio 1'];
+            if (cbServ2) cbServ2.checked = savedSettings.services['Servicio 2'];
+
+            // Restore Supports
+            // We set the state of every node based on savedSettings
+            // We need to ensure the tree is rendered first, which initTree() does.
+            // But initTree() renders everything as checked by default in HTML generation?
+            // Actually initTree generates HTML with 'checked' attribute.
+            // We need to update the checkboxes after generation.
+            
+            // However, initTree is called on load. When opening modal, we just need to update checkboxes.
+            // But if we want to persist expanded/collapsed state, that's another thing.
+            // For now, let's just update checked state.
+            
+            Object.keys(savedSettings.supports).forEach(id => {
+                const cb = document.getElementById(`cb-${id}`);
+                if (cb) {
+                    cb.checked = savedSettings.supports[id];
+                    cb.indeterminate = false; 
+                }
+            });
+            
+            // Re-calculate parent states (families and types) based on children
+            // Iterate families
+            supportsData.forEach(fam => {
+                 fam.children.forEach(type => {
+                     // Update type based on supports
+                     updateParents(type.children[0].id); 
+                 });
+                 // Update family based on types (handled by updateParents recursion)
+            });
+        }
+
+        function saveSettings() {
+            // Save General
+            savedSettings.general.arriendo = document.getElementById('cb-general-arriendo').checked;
+            savedSettings.general.produccion = document.getElementById('cb-general-produccion').checked;
+
+            // Save Services
+            savedSettings.services['Servicio 1'] = document.getElementById('cb-service-1').checked;
+            savedSettings.services['Servicio 2'] = document.getElementById('cb-service-2').checked;
+
+            // Save Supports
+            const allCheckboxes = document.querySelectorAll('#tree-container input[type="checkbox"]');
+            allCheckboxes.forEach(cb => {
+                const id = cb.id.replace('cb-', '');
+                savedSettings.supports[id] = cb.checked;
+            });
+
+            updateSettingsIndicator();
+            toggleSettingsModal(false);
+            
+            console.log("Settings saved:", savedSettings);
+        }
+
+        function updateSettingsIndicator() {
+            const indicator = document.getElementById('settings-indicator');
+            let hasChanges = false;
+
+            // Check General
+            if (!savedSettings.general.arriendo || !savedSettings.general.produccion) hasChanges = true;
+
+            // Check Services
+            if (!savedSettings.services['Servicio 1'] || !savedSettings.services['Servicio 2']) hasChanges = true;
+
+            // Check Supports
+            // If any support is unchecked, we have changes.
+            // We iterate through the data structure and check against savedSettings.
+             supportsData.forEach(fam => {
+                fam.children.forEach(type => {
+                    type.children.forEach(sup => {
+                        if (savedSettings.supports[sup.id] === false) hasChanges = true;
+                    });
+                });
+            });
+
+            if (hasChanges) {
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+
+        function enableAllSupports() {
+            const allCheckboxes = document.querySelectorAll('#tree-container input[type="checkbox"]');
+            allCheckboxes.forEach(cb => {
+                cb.checked = true;
+                cb.indeterminate = false;
+            });
+            // Update parents to reflect all checked
+             supportsData.forEach(fam => {
+                 fam.children.forEach(type => {
+                     updateParents(type.children[0].id); 
+                 });
+            });
+            updateSupportsSummary();
+            updateEnableAllSupportsBtn();
+            document.getElementById('error-msg-soportes').classList.add('hidden');
+        }
+
+        function enableAllServices() {
+            const allCheckboxes = document.querySelectorAll('#services-list input[type="checkbox"]');
+            allCheckboxes.forEach(cb => {
+                cb.checked = true;
+            });
+            updateServiceSummary();
+            updateEnableAllServicesBtn();
+            document.getElementById('error-msg-services').classList.add('hidden');
+        }
+
+        // Initialize tree on load
+        initTree();
+        initSettings(); // Initialize settings state
+
+        function switchTab(tabName) {
+            document.getElementById('tab-content-general').classList.add('hidden');
+            document.getElementById('tab-content-soportes').classList.add('hidden');
+            document.getElementById('tab-content-servicio').classList.add('hidden');
+
+            ['general', 'soportes', 'servicio'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('text-teal-600', 'border-b-2', 'border-teal-600');
+                btn.classList.add('text-gray-500', 'hover:text-gray-700');
+            });
+
+            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.classList.remove('text-gray-500', 'hover:text-gray-700');
+            activeBtn.classList.add('text-teal-600', 'border-b-2', 'border-teal-600');
+            
+            lucide.createIcons();
+        }
+
+        function filterTree(inputId, containerId) {
+             // Simple text filter? 
+             // Tree filtering is complex (need to show parents if child matches).
+             // For now, basic implementation: Expand all if searching?
+             // Or just hide non-matching nodes?
+             const input = document.getElementById(inputId);
+             const filter = input.value.toLowerCase();
+             
+             // If filter is empty, maybe reset visibility?
+             // For this demo, let's just filter leaf nodes and show parents
+             
+             if (!filter) {
+                 // Reset visibility logic could be complex without full state re-render
+                 // Let's just re-render
+                 // But we lose checked state if we re-render from scratch without saving state.
+                 // Ideally we hide/show DOM elements.
+                 document.querySelectorAll('.tree-node, .tree-item').forEach(el => el.classList.remove('hidden'));
+                 // Restore default collapsed state?
+                 return;
+             }
+
+             // Hide all first
+             document.querySelectorAll('.tree-node, .tree-item').forEach(el => el.classList.add('hidden'));
+             
+             // Find matches
+             const allItems = document.querySelectorAll('[data-name]');
+             allItems.forEach(el => {
+                 if (el.getAttribute('data-name').toLowerCase().includes(filter)) {
+                     el.classList.remove('hidden');
+                     // Show parents
+                     let parent = el.parentElement.closest('.tree-node');
+                     while(parent) {
+                         parent.classList.remove('hidden');
+                         // Expand parent
+                         const childrenContainer = parent.querySelector('[id^="children-"]');
+                         if(childrenContainer) childrenContainer.classList.remove('hidden');
+                         const btn = parent.querySelector('[id^="btn-"]');
+                         if(btn) btn.classList.add('rotate-90');
+                         
+                         parent = parent.parentElement.closest('.tree-node');
+                     }
+                 }
+             });
+        }
+
+        function filterItems(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const list = document.getElementById(listId);
+            const rows = list.querySelectorAll('.item-row');
+
+            rows.forEach(row => {
+                const text = row.innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    row.classList.remove('hidden');
+                    row.classList.add('flex');
+                } else {
+                    row.classList.remove('flex');
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        function updateDashboardDates() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const currentMonthName = monthNames[now.getMonth()];
+            const day = now.getDate();
+            document.getElementById('current-date-label').innerText = `${day} ${currentMonthName} ${year}`;
+            document.getElementById('date-range-label').innerText = `Enero a ${currentMonthName} ${year}`;
+        }
+
+        function drawExhibitedChart() {
+            const container = d3.select("#exhibited-chart");
+            container.selectAll("*").remove();
+            const rect = container.node().getBoundingClientRect();
+            const width = rect.width, height = rect.height;
+            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+            const data = [
+                { month: 'sep 2025', val: 15, target: 75 },
+                { month: 'oct 2025', val: 32, target: 65 },
+                { month: 'nov 2025', val: 38, target: 85 },
+                { month: 'dic 2025', val: 22, target: 105 },
+                { month: 'ene 2026', val: 2, target: 15 },
+                { month: 'feb 2026', val: 1, target: 15 }
+            ];
+            const svg = container.append("svg").attr("width", width).attr("height", height);
+            const x = d3.scaleBand().domain(data.map(d => d.month)).range([margin.left, width - margin.right]).padding(0.4);
+            const y = d3.scaleLinear().domain([0, 120]).range([height - margin.bottom, margin.top]);
+            svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x).tickSize(0).tickPadding(10)).attr("color", "#9ca3af");
+            svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(d => `$ ${d}M`)).attr("color", "#9ca3af");
+            svg.selectAll("rect").data(data).enter().append("rect").attr("x", d => x(d.month)).attr("y", d => y(d.val)).attr("width", x.bandwidth()).attr("height", d => y(0) - y(d.val)).attr("fill", "#2ea3f2");
+            const line = d3.line().x(d => x(d.month) + x.bandwidth() / 2).y(d => y(d.target));
+            svg.append("path").datum(data).attr("fill", "none").attr("stroke", "#d90429").attr("stroke-width", 2).attr("d", line);
+            svg.selectAll(".dot").data(data).enter().append("circle").attr("cx", d => x(d.month) + x.bandwidth() / 2).attr("cy", d => y(d.target)).attr("r", 4).attr("fill", "#d90429");
+        }
+
+        function drawReservationsChart() {
+            const container = d3.select("#reservations-chart");
+            container.selectAll("*").remove();
+            const rect = container.node().getBoundingClientRect();
+            const width = rect.width, height = rect.height;
+            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+            const data = [ { month: 'oct 2025', val: 0 }, { month: 'nov 2025', val: 6.8 }, { month: 'dic 2025', val: 6.8 }, { month: 'ene 2026', val: 6.8 }, { month: 'feb 2026', val: 6.8 }, { month: 'mar 2026', val: 6.8 } ];
+            const svg = container.append("svg").attr("width", width).attr("height", height);
+            const x = d3.scaleBand().domain(data.map(d => d.month)).range([margin.left, width - margin.right]).padding(0.4);
+            const y = d3.scaleLinear().domain([0, 7]).range([height - margin.bottom, margin.top]);
+            svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`).call(d3.axisBottom(x).tickSize(0).tickPadding(10)).attr("color", "#9ca3af");
+            svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(8).tickFormat(d => `$ ${d}M`)).attr("color", "#9ca3af");
+            svg.selectAll("rect").data(data).enter().append("rect").attr("x", d => x(d.month)).attr("y", d => y(d.val)).attr("width", x.bandwidth()).attr("height", d => y(0) - y(d.val)).attr("fill", "#ffbe33");
+        }
+
+        window.addEventListener('load', () => { 
+            updateDashboardDates(); 
+            drawExhibitedChart(); 
+            drawReservationsChart(); 
+        });
+        window.addEventListener('resize', () => { drawExhibitedChart(); drawReservationsChart(); });
+    </script>
+</body>
+</html>
