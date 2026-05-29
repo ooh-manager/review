@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manager OOH</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React + ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel Standalone for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* A simple scrollbar style for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+    <div id="modal-root"></div>
+
+    <script type="text/babel">
+        /** @jsxRuntime classic */
+        /** @jsx React.createElement */
+        const { useState, useEffect, useRef } = React;
+
+        // --- ICONS (Consolidated) ---
+        const HomeIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg> );
+        const WidgetsIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm13 0h8v8h-8V3zM3 13h8v8H3v-8zm13 3h8v8h-8v-8z" /></svg> );
+        const ListIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg> );
+        const ModuleIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> );
+        const CaretUpIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" /></svg> );
+        const AssignmentIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" /></svg> );
+        const CalendarIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg> );
+        const AssignmentCheckIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" /></svg> );
+        const HelpIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg> );
+        const EditIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-4 w-4"} viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg> );
+        const ChevronRightIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg> );
+        const SearchIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg> );
+        const InfoOutlineIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> );
+        const MenuIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg> );
+        const ChevronDownIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg> );
+        const ChevronUpIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" /></svg> );
+        const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110 2h5V4a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
+        const DeleteIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /> </svg> );
+        const AlertCircleIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /> </svg> );
+        const PinDropIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /> </svg> );
+        const UploadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" /> </svg> );
+        const CogIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /> </svg> );
+        const CloseIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /> </svg> );
+        const PencilIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path d="M13.586 3.586a2 2 0 112.828 2.828l-1.414 1.414-2.828-2.828 1.414-1.414zM11.086 6.086L3 14.172V17h2.828l8.086-8.086-2.828-2.828z" /> </svg> );
+        const CheckIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /> </svg> );
+        const SmallCloseIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /> </svg> );
+        const InfoIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /> </svg> );
+        const TuneIcon = ({className}) => (
+            <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z" />
+            </svg>
+        );
+        const TvIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 24 24" fill="currentColor"><path d="M21,3H3C1.89,3,1,3.89,1,5v12c0,1.1,0.89,2,2,2h5v2h8v-2h5c1.1,0,2-0.9,2-2V5C23,3.89,22.11,3,21,3z M21,17H3V5h18V17z" /></svg> );
+        const OpenInNewIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 24 24" fill="currentColor"><path d="M19,19H5V5h7V3H5C3.89,3,3,3.9,3,5v14c0,1.1,0.89,2,2,2h14c1.1,0,2-0.9,2-2v-7h-2V19z M14,3v2h3.59l-9.83,9.83l1.41,1.41L19,6.41V10h2V3H14z" /></svg> );
+        const DownloadIcon = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-5 w-5"} viewBox="0 0 24 24" fill="currentColor"><path d="M5,20h14v-2H5V20z M19,9h-4V3H9v6H5l7,7L19,9z" /></svg> );
+        
+        
+        // --- SHARED COMPONENTS ---
+        const Card = ({ id, title, children, extra }) => (
+            <div id={id} className="bg-white border border-indigo-200 rounded-lg shadow-sm mb-6">
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+                    {extra}
+                </div>
+                <div className="p-6">
+                    {children}
+                </div>
+            </div>
+        );
+
+        const ProviderModal = ({ isOpen, onClose, providers, setProviders }) => {
+            if (!isOpen) return null;
+
+            const [newProvider, setNewProvider] = useState('');
+            const [editingProvider, setEditingProvider] = useState(null); // original name
+            const [editedName, setEditedName] = useState(''); // new name
+
+            const handleAddProvider = (e) => {
+                e.preventDefault();
+                if (editingProvider) return;
+                if (newProvider.trim() && !providers.includes(newProvider.trim())) {
+                    setProviders([...providers, newProvider.trim()]);
+                    setNewProvider('');
+                }
+            };
+
+            const handleDeleteProvider = (providerToDelete) => {
+                setProviders(providers.filter(p => p !== providerToDelete));
+            };
+
+            const handleStartEdit = (provider) => {
+                setEditingProvider(provider);
+                setEditedName(provider);
+            };
+
+            const handleCancelEdit = () => {
+                setEditingProvider(null);
+                setEditedName('');
+            };
+
+            const handleSaveEdit = () => {
+                if (editedName.trim() && editedName.trim() !== editingProvider && !providers.includes(editedName.trim())) {
+                    const updatedProviders = providers.map(p => (p === editingProvider ? editedName.trim() : p));
+                    setProviders(updatedProviders);
+                }
+                handleCancelEdit();
+            };
+
+            const modalContent = (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                        <div className="flex justify-between items-center p-4 border-b">
+                            <h3 className="text-lg font-semibold text-gray-800">Administrar Proveedores</h3>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="p-4 max-h-64 overflow-y-auto">
+                            <ul className="space-y-2">
+                                {providers.map((provider) => (
+                                    <li key={provider} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                                        {editingProvider === provider ? (
+                                            <div className="flex-grow flex items-center gap-2">
+                                                <input 
+                                                    type="text"
+                                                    value={editedName}
+                                                    onChange={(e) => setEditedName(e.target.value)}
+                                                    className="flex-grow block w-full px-2 py-1 bg-white border border-indigo-300 rounded-md shadow-sm sm:text-sm"
+                                                    autoFocus
+                                                />
+                                                <button onClick={handleSaveEdit} className="text-green-600 hover:text-green-800 p-1">
+                                                    <CheckIcon />
+                                                </button>
+                                                <button onClick={handleCancelEdit} className="text-gray-500 hover:text-gray-700 p-1">
+                                                    <SmallCloseIcon />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <React.Fragment>
+                                                <span className="text-gray-700">{provider}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <button onClick={() => handleStartEdit(provider)} className="text-blue-500 hover:text-blue-700">
+                                                        <PencilIcon />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteProvider(provider)} className="text-red-500 hover:text-red-700">
+                                                        <DeleteIcon />
+                                                    </button>
+                                                </div>
+                                            </React.Fragment>
+                                        )}
+                                    </li>
+                                ))}
+                                {providers.length === 0 && !editingProvider && <li className="text-center text-gray-500 p-4">No hay proveedores.</li>}
+                            </ul>
+                        </div>
+                        <div className="p-4 border-t">
+                            <form onSubmit={handleAddProvider} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newProvider}
+                                    onChange={(e) => setNewProvider(e.target.value)}
+                                    placeholder="Nombre del nuevo proveedor"
+                                    className="flex-grow block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
+                                    disabled={!!editingProvider}
+                                />
+                                <button type="submit" className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300" disabled={!!editingProvider}>
+                                    Agregar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            );
+            
+            return ReactDOM.createPortal(modalContent, document.getElementById('modal-root'));
+        };
+
+        const formatDateDDMMYYYY = (val) => {
+            if (!val || val === '∞' || val === 'Programado') return val;
+            const parts = val.split(' ');
+            const dateParts = parts[0].split('-');
+            if (dateParts.length === 3) {
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                return parts.length > 1 ? `${formattedDate} ${parts[1]}` : formattedDate;
+            }
+            return val;
+        };
+
+        const UnitsModal = ({ isOpen, onClose, units, effectiveUnits, setUnits, history, setHistory, currentSimDate, isUnlimited, setIsUnlimited }) => {
+            if (!isOpen) return null;
+
+            const [draftIsUnlimited, setDraftIsUnlimited] = useState(isUnlimited);
+            const [isEditing, setIsEditing] = useState(false);
+            const [targetTotal, setTargetTotal] = useState(effectiveUnits.length);
+
+            useEffect(() => {
+                if (isOpen) {
+                    setDraftIsUnlimited(isUnlimited);
+                    setIsEditing(false);
+                    setTargetTotal(effectiveUnits.length);
+                }
+            }, [isOpen, isUnlimited, effectiveUnits.length]);
+
+            const handleToggleUnlimited = () => {
+                setDraftIsUnlimited(!draftIsUnlimited);
+            };            const handleSave = () => {
+                let newHistory = [];
+                let newUnits = [...units];
+                let actualUnlimited = isUnlimited;
+                
+                const d = new Date();
+                const nowStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+                if (draftIsUnlimited !== isUnlimited) {
+                    if (!draftIsUnlimited) {
+                        newUnits = units.slice(0, targetTotal);
+                        newHistory.push({
+                            date: nowStr, 
+                            user: 'Admin User', 
+                            oldVal: '∞', 
+                            newVal: targetTotal
+                        });
+                        actualUnlimited = false;
+                    } else {
+                        newHistory.push({
+                            date: nowStr, 
+                            user: 'Admin User', 
+                            oldVal: effectiveUnits.length, 
+                            newVal: '∞'
+                        });
+                        actualUnlimited = true;
+                    }
+                }
+
+                if (!actualUnlimited && isEditing) {
+                    const currentAmount = effectiveUnits.length;
+                    const diff = targetTotal - currentAmount;
+                    
+                    if (diff > 0) {
+                        for (let i = 0; i < diff; i++) {
+                            const newId = Math.max(...units.map(u => u.id), 0) + 1 + i;
+                            newUnits.push({
+                                id: newId,
+                                name: `Unidad ${newId}`,
+                                end_occupation_date: '2026-01-01'
+                            });
+                        }
+                        newHistory.push({
+                            date: nowStr, 
+                            user: 'Admin User', 
+                            oldVal: currentAmount, 
+                            newVal: targetTotal
+                        });
+                    } else if (diff < 0) {
+                        // Immediate reduction
+                        newUnits = units.slice(0, targetTotal);
+                        newHistory.push({
+                            date: nowStr, 
+                            user: 'Admin User', 
+                            oldVal: currentAmount, 
+                            newVal: targetTotal
+                        });
+                    }
+                }
+
+                if (draftIsUnlimited !== isUnlimited) {
+                    setIsUnlimited(draftIsUnlimited);
+                }
+                setUnits(newUnits);
+                
+                if (newHistory.length > 0) {
+                    const sortedNewHistory = [...newHistory].reverse();
+                    setHistory([...sortedNewHistory, ...history]);
+                }
+                
+                setIsEditing(false);
+            };
+
+            const pendingDeletions = units.filter(u => u.scheduled_deletion_date && new Date(u.scheduled_deletion_date) > new Date(currentSimDate)).length;
+
+            const modalContent = (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                        <div className="flex justify-between items-center p-6 border-b shrink-0">
+                            <div className="flex items-center gap-8">
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Capacidad</p>
+                                    <p className="text-2xl font-bold text-indigo-600">{draftIsUnlimited ? '∞' : effectiveUnits.length}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center">
+                                    <span className="mr-2 text-xs font-bold text-gray-500 uppercase">Ilimitado</span>
+                                    <button 
+                                        onClick={handleToggleUnlimited}
+                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${draftIsUnlimited ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${draftIsUnlimited ? 'translate-x-5' : 'translate-x-0'}`} />
+                                    </button>
+                                </div>
+                                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto grow">
+                            <div className="mb-4">
+                                <div className="flex items-center justify-between mb-3 px-1">
+                                    <h4 className="text-sm font-bold text-gray-700 uppercase">Historial de cambios</h4>
+                                    <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded-full flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                                        Ordenado de más reciente a más antiguo
+                                    </span>
+                                </div>
+                                <div className="overflow-x-auto border rounded-lg shadow-sm max-h-64 overflow-y-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 text-left sticky top-0">
+                                            <tr>
+                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Fecha edición</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Usuario</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Unidades anteriores</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Unidades nuevas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-100 text-xs">
+                                            {history.map((h, i) => (
+                                                <tr key={i} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 text-gray-600">{formatDateDDMMYYYY(h.date)}</td>
+                                                    <td className="px-4 py-3 text-gray-900 font-medium">{h.user}</td>
+                                                    <td className="px-4 py-3 text-gray-600">{h.oldVal}</td>
+                                                    <td className="px-4 py-3 text-indigo-600 font-bold">{h.newVal}</td>
+                                                </tr>
+                                            ))}
+                                            {history.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="5" className="px-4 py-8 text-center text-gray-500 italic">No hay registros de historial aún.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {!draftIsUnlimited && !isUnlimited && (
+                                <div className="bg-gray-50 p-4 pb-14 rounded-xl border border-gray-200 relative">
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-center gap-4 h-[42px]">
+                                            <button 
+                                                onClick={() => {
+                                                    setIsEditing(!isEditing);
+                                                    setTargetTotal(effectiveUnits.length);
+                                                }}
+                                                className={`px-6 py-2 rounded-md font-bold transition-all h-[42px] shadow-sm focus:outline-none ${isEditing ? 'bg-white border border-gray-300 text-gray-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                            >
+                                                {isEditing ? 'Cancelar' : 'Editar'}
+                                            </button>
+
+                                            {isEditing && (
+                                                <div className="relative">
+                                                    <div className="w-[180px]">
+                                                        <input 
+                                                            type="number" 
+                                                            value={targetTotal}
+                                                            onChange={(e) => setTargetTotal(Number(e.target.value))}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm bg-white h-[42px] text-center font-bold text-lg"
+                                                            placeholder="Nueva cantidad"
+                                                        />
+                                                    </div>
+                                                    {targetTotal < effectiveUnits.length && (
+                                                        <div className="absolute top-full left-0 mt-2 flex flex-col gap-1">
+                                                            <p className="text-[11px] font-bold text-red-500 flex items-center whitespace-nowrap">
+                                                                <AlertCircleIcon className="w-3.5 h-3.5 mr-1 shrink-0" />
+                                                                Al reducir la capacidad se eliminarán todas las reservas activas asociadas al soporte.
+                                                            </p>
+                                                            <p className="text-[11px] font-medium text-gray-600 flex items-center whitespace-nowrap">
+                                                                <InfoIcon className="w-3.5 h-3.5 mr-1 shrink-0 text-blue-500" />
+                                                                Las campañas activas o por comenzar no son afectadas por la reducción de la capacidad.
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t bg-gray-50 rounded-b-lg shrink-0 flex justify-end">
+                            <button 
+                                onClick={handleSave}
+                                className="px-8 py-2 bg-green-600 text-white rounded-md font-bold hover:bg-green-700 transition-colors shadow-sm h-[42px] focus:outline-none"
+                            >
+                                Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+            
+            return ReactDOM.createPortal(modalContent, document.getElementById('modal-root'));
+        };
+
+        const FormInput = ({ label, id, helpText, children, labelClass, wrapperClass, ...props }) => (
+            <div className={wrapperClass}>
+                {label && (
+                    <label htmlFor={id} className={`flex items-center text-sm font-medium text-gray-700 mb-1 ${labelClass}`}>
+                        <span>{label}</span>
+                        {helpText && <span className="ml-1 text-gray-400 cursor-help"><HelpIcon className="h-4 w-4" /></span>}
+                    </label>
+                )}
+                <div className="filter-container">
+                    {children ? children : <input id={id} {...props} className="w-full px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />}
+                </div>
+            </div>
+        );
+
+        const FormSelect = ({ label, id, children, helpText, labelClass, wrapperClass, ...props }) => (
+             <div className={wrapperClass}>
+                {label && (
+                    <label htmlFor={id} className={`flex items-center text-sm font-medium text-gray-700 mb-1 ${labelClass}`}>
+                       <span>{label}</span>
+                       {helpText && helpText}
+                    </label>
+                )}
+                <div className="filter-container">
+                    <select id={id} {...props} className="w-full pl-3 pr-10 py-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md">
+                        {children}
+                    </select>
+                </div>
+            </div>
+        );
+        
+        // --- EDIT SUPPORT VIEW ---
+        const SpecRow = ({ label, helpText, children }) => (
+            <div className="grid grid-cols-1 md:grid-cols-5 items-center">
+                <label className="col-span-2 text-sm font-medium text-gray-700 md:text-right md:pr-4 flex items-center justify-end">
+                    {label}
+                    {helpText && <span className="ml-1 cursor-help"><HelpIcon /></span>}
+                </label>
+                <div className="col-span-3 mt-1 md:mt-0">{children}</div>
+            </div>
+        );
+
+        const InfoSection = ({ support, units, effectiveUnits, unitsInUse, setUnits, history, setHistory, currentSimDate, isUnlimited, setIsUnlimited }) => {
+            const [isThirdParty, setIsThirdParty] = useState(false);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isUnitsModalOpen, setIsUnitsModalOpen] = useState(false);
+            const [providers, setProviders] = useState(['Proveedor A', 'Proveedor B']);
+
+            return (
+                <div id="info-section-modals">
+                {isModalOpen && (
+                    <ProviderModal 
+                        isOpen={isModalOpen} 
+                        onClose={() => setIsModalOpen(false)}
+                        providers={providers}
+                        setProviders={setProviders}
+                    />
+                )}
+                {isUnitsModalOpen && (
+                    <UnitsModal
+                        isOpen={isUnitsModalOpen}
+                        onClose={() => setIsUnitsModalOpen(false)}
+                        units={units}
+                        effectiveUnits={effectiveUnits}
+                        setUnits={setUnits}
+                        history={history}
+                        setHistory={setHistory}
+                        currentSimDate={currentSimDate}
+                        isUnlimited={isUnlimited}
+                        setIsUnlimited={setIsUnlimited}
+                    />
+                )}
+                <Card id="section-info" title="Información general">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-x-6 gap-y-4 text-[13px]">
+                        <div className="form-group md:col-span-3">
+                            <label htmlFor="item_serial" className="block text-sm font-medium text-gray-700">Código</label>
+                            <input type="text" id="item_serial" value={support.code} readOnly className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm sm:text-sm cursor-not-allowed" />
+                        </div>
+                        <div className="form-group md:col-span-7">
+                            <label htmlFor="item_name" className="block text-sm font-medium text-gray-700">Nombre</label>
+                            <input type="text" id="item_name" defaultValue={`Soporte ${support.code} Valla`} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                        </div>
+                        <div className="form-group md:col-span-2">
+                            <label htmlFor="item_scopesi_id" className="block text-sm font-medium text-gray-700">ID Scopesi</label>
+                            <input type="text" id="item_scopesi_id" defaultValue={Math.floor(Math.random() * 5000) + 1000} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                        </div>
+                        <div className="form-group md:col-span-8">
+                            <label htmlFor="item_format_id" className="block text-sm font-medium text-gray-700">
+                                Tipo de soporte
+                                <a href="#" className="ml-2 text-sm text-indigo-600 hover:text-indigo-800 font-bold">Ver clasificación</a>
+                            </label>
+                            <select id="item_format_id" required className="mt-1 block w-full pl-3 pr-10 h-[42px] text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm bg-white">
+                                <option>Mobiliario Urbano Impreso - Otros</option>
+                                <option>Aeropuerto - Soporte Impreso</option>
+                                <option>Letrero Publicitario</option>
+                            </select>
+                        </div>
+                        <div className="form-group md:col-span-4">
+                            <label htmlFor="item_max_slots" className="flex items-center text-sm font-medium text-gray-700">
+                                Capacidad
+                                <span className="ml-2 cursor-help" title="Cantidad máxima de unidades que se pueden vender al mismo tiempo">
+                                    <InfoIcon />
+                                </span>
+                            </label>
+                            <div className="mt-1 flex items-center h-[42px] border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
+                                {/* Valor Numérico (Izquierda) */}
+                                <div className="flex-none px-5 flex items-center justify-center h-full font-bold text-gray-900 text-lg">
+                                    {isUnlimited ? '∞' : effectiveUnits.length}
+                                </div>
+                                
+                                {/* Estado Ilimitado (Centro) */}
+                                <div className={`flex-1 flex items-center px-4 border-l border-gray-200 h-full ${isUnlimited ? 'bg-indigo-50' : 'bg-gray-50'}`}>
+                                    <input 
+                                        id="item_unlimited_slots" 
+                                        type="checkbox" 
+                                        checked={isUnlimited}
+                                        readOnly
+                                        className={`h-4 w-4 border-gray-300 rounded focus:ring-0 ${isUnlimited ? 'text-indigo-600' : 'text-gray-300'}`}
+                                    />
+                                    <label htmlFor="item_unlimited_slots" className={`ml-2 text-sm font-bold whitespace-nowrap ${isUnlimited ? 'text-indigo-600' : 'text-gray-400'}`}>Ilimitado</label>
+                                </div>
+
+                                {/* Acción de Ajustes (Derecha) */}
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsUnitsModalOpen(true)}
+                                    className="flex-none px-4 h-full text-gray-400 border-l border-gray-200 hover:bg-gray-200 hover:text-indigo-600 transition-colors group"
+                                    title="Configurar capacidad"
+                                >
+                                    <TuneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="form-group md:col-span-6">
+                            <label htmlFor="item_notes" className="block text-sm font-medium text-gray-700">Información adicional soporte</label>
+                            <textarea id="item_notes" rows={4} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm"></textarea>
+                        </div>
+                        <div className="form-group md:col-span-6">
+                            <label htmlFor="item_comments" className="block text-sm font-medium text-gray-700">Comentarios soporte (uso interno)</label>
+                            <textarea id="item_comments" rows={4} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm"></textarea>
+                        </div>
+                        
+                        <div className="form-group md:col-span-12">
+                            <label htmlFor="third-party-switch" className="flex items-center cursor-pointer">
+                                <div className="relative">
+                                    <input type="checkbox" id="third-party-switch" className="sr-only" checked={isThirdParty} onChange={() => setIsThirdParty(!isThirdParty)} />
+                                    <div className={`block w-10 h-6 rounded-full transition-colors ${isThirdParty ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
+                                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isThirdParty ? 'translate-x-full' : ''}`}></div>
+                                </div>
+                                <div className="ml-3 text-sm font-medium text-gray-900">
+                                    Soporte de tercero
+                                </div>
+                            </label>
+                        </div>
+
+                        {isThirdParty && (
+                            <React.Fragment>
+                                <div className="form-group md:col-span-6">
+                                    <label htmlFor="provider_code" className="block text-sm font-medium text-gray-700">Código proveedor</label>
+                                    <input type="text" id="provider_code" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                                </div>
+                                <div className="form-group md:col-span-6">
+                                    <label htmlFor="provider_name" className="block text-sm font-medium text-gray-700">Nombre proveedor</label>
+                                    <div className="mt-1 flex shadow-sm rounded-md">
+                                        <div className="relative flex-grow">
+                                            <select 
+                                                id="provider_name" 
+                                                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-l-md appearance-none"
+                                            >
+                                                {providers.map(p => <option key={p}>{p}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                                <ChevronDownIcon />
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsModalOpen(true)}
+                                            className="-ml-px relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                        >
+                                            <CogIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        )}
+                        
+                        <div className="form-group md:col-span-12">
+                            <label className="block text-sm font-medium text-gray-700">Opciones</label>
+                            <div className="mt-2 space-y-2">
+                                <div className="flex items-center">
+                                    <input id="item_hide_in_quotation_pdf" name="item_hide_in_quotation_pdf" type="checkbox" className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                                    <label htmlFor="item_hide_in_quotation_pdf" className="ml-2 block text-sm text-gray-900">
+                                        No mostrar ficha en PDF cotización
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+                </div>
+            );
+        };
+
+        const Actions = () => {
+            return (
+                <div className="flex items-center space-x-4 pt-4">
+                    <button type="submit" className="px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        Guardar cambios
+                    </button>
+                    <a href="#" className="px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Ver soporte
+                    </a>
+                    <a href="#" className="flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <DeleteIcon />
+                        <span className="ml-2">Eliminar soporte</span>
+                    </a>
+                </div>
+            );
+        };
+
+        const EditSupportView = ({ support, units, setUnits, currentSimDate, effectiveUnits, unitsInUse, history, setHistory, isUnlimited, setIsUnlimited }) => {
+            return (
+                <div className="w-full">
+                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                        <InfoSection 
+                            support={support}
+                            units={units}
+                            effectiveUnits={effectiveUnits}
+                            unitsInUse={unitsInUse}
+                            setUnits={setUnits}
+                            history={history}
+                            setHistory={setHistory}
+                            currentSimDate={currentSimDate}
+                            isUnlimited={isUnlimited}
+                            setIsUnlimited={setIsUnlimited}
+                        />
+                        <Actions />
+                    </form>
+                </div>
+            );
+        };
+
+        const MonthPickerDropdown = ({ viewMonth, setViewMonth }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [currentYear, setCurrentYear] = useState(() => parseInt(viewMonth.split('-')[1], 10));
+            const dropdownRef = useRef(null);
+            
+            useEffect(() => {
+                setCurrentYear(parseInt(viewMonth.split('-')[1], 10));
+            }, [viewMonth]);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            const months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+            const displayMonth = parseInt(viewMonth.split('-')[0], 10);
+            const displayYear = viewMonth.split('-')[1];
+            const fullMonthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
+            return (
+                <div className="relative" ref={dropdownRef}>
+                    <button 
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="px-3 py-1.5 border rounded-md text-sm bg-white font-medium border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none flex items-center justify-between min-w-[140px] shadow-sm hover:bg-gray-50 transition-colors"
+                    >
+                        <span className="capitalize">{fullMonthNames[displayMonth - 1]} {displayYear}</span>
+                        <ChevronDownIcon className={`w-4 h-4 ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isOpen && (
+                        <div className="absolute top-full left-0 mt-2 z-50 bg-white shadow-xl rounded-lg p-4 border border-gray-200 w-64 origin-top-left transition-all">
+                            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                                <button onClick={() => setCurrentYear(y => y - 1)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-900 transition-colors">
+                                    <ChevronUpIcon className="w-4 h-4 -rotate-90" />
+                                </button>
+                                <span className="font-bold text-gray-700 text-lg">{currentYear}</span>
+                                <button onClick={() => setCurrentYear(y => y + 1)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-900 transition-colors">
+                                    <ChevronUpIcon className="w-4 h-4 rotate-90" />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                                {months.map((m, idx) => {
+                                    const monthNum = (idx + 1).toString().padStart(2, '0');
+                                    const isSelected = viewMonth === `${monthNum}-${currentYear}`;
+                                    return (
+                                        <button
+                                            key={m}
+                                            onClick={() => {
+                                                setViewMonth(`${monthNum}-${currentYear}`);
+                                                setIsOpen(false);
+                                            }}
+                                            className={`py-2 text-[11px] font-bold rounded-md transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 scale-105' : 'bg-gray-50 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                                        >
+                                            {m}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- DISPONIBILIDAD VIEW ---
+        const DisponibilidadView = ({ supportsState, realToday, viewMonth, setViewMonth, monthOptions, getEffectiveUnits, getUnitsInUse }) => {
+            const [expandedSupport, setExpandedSupport] = useState(null);
+            const [calendarData, setCalendarData] = useState({ months: [], allStartDates: [] });
+
+            useEffect(() => {
+                const parts = viewMonth.split('-');
+                const startObj = new Date(parts[1] + "-" + parts[0] + "-01T12:00:00");
+                const day = startObj.getDay();
+                let diff = day === 0 ? 1 : (day === 1 ? 0 : 8 - day);
+                const currentWeekStart = new Date(startObj.getTime());
+                currentWeekStart.setDate(startObj.getDate() + diff);
+                
+                const endMonthLimit = new Date(startObj.getTime());
+                endMonthLimit.setMonth(endMonthLimit.getMonth() + 3);
+                
+                const dates = [];
+                const monthsMap = new Map();
+                
+                let d = new Date(currentWeekStart);
+                while (true) {
+                    const monthObj = new Date(d);
+                    monthObj.setDate(monthObj.getDate() + 3);
+                    if (monthObj >= endMonthLimit) {
+                        break;
+                    }
+                    
+                    const dateStr = d.toISOString().split('T')[0];
+                    dates.push(dateStr);
+                    
+                    const monthName = monthObj.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+                    const upperMonthName = monthName.toUpperCase();
+                    
+                    if (!monthsMap.has(upperMonthName)) {
+                        monthsMap.set(upperMonthName, { name: upperMonthName, weeksCount: 0 });
+                    }
+                    monthsMap.get(upperMonthName).weeksCount += 1;
+                    
+                    d.setDate(d.getDate() + 7);
+                }
+                
+                setCalendarData({
+                    allStartDates: dates,
+                    months: Array.from(monthsMap.values())
+                });
+            }, [viewMonth]);
+
+            const { months, allStartDates } = calendarData;
+
+            const getHistoricalCapacity = (code, dateStr) => {
+                const support = supportsState[code];
+                const history = support.history || [];
+                
+                // Convert dateStr (YYYY-MM-DD or YYYY-MM-DDTHH:mm) to the "effective month" 
+                // by adding 3 days (matches the week-to-month visual grouping logic).
+                const targetDate = new Date(dateStr.length === 7 ? `${dateStr}-01T12:00:00` : `${dateStr.split(' ')[0]}T12:00:00`);
+                if (dateStr.length > 7) {
+                    targetDate.setDate(targetDate.getDate() + 3);
+                }
+                const targetMonthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}`;
+                
+                // Aseguramos orden descendente por fecha string (YYYY-MM-DD)
+                const sorted = [...history].sort((a, b) => b.date.localeCompare(a.date));
+                
+                for (let record of sorted) {
+                    const rMonthStr = record.date.substring(0, 7);
+                    if (rMonthStr <= targetMonthStr) {
+                        return record.newVal;
+                    }
+                }
+                
+                if (sorted.length > 0) {
+                    return sorted[sorted.length - 1].oldVal;
+                }
+                
+                return support.isUnlimited ? '∞' : support.units.length;
+            };
+
+            const getEffectiveUnitsForDate = (code, dateStr) => {
+                const support = supportsState[code];
+                const capacity = getHistoricalCapacity(code, dateStr);
+                
+                if (capacity === '∞') return support.units;
+                
+                if (typeof capacity === 'number' || !isNaN(Number(capacity))) {
+                    const numCapacity = Number(capacity);
+                    const units = [...support.units];
+                    if (numCapacity <= units.length) {
+                        return units.slice(0, numCapacity);
+                    } else {
+                        // Rellenar con unidades históricas si no existen
+                        for (let i = units.length; i < numCapacity; i++) {
+                            units.push({
+                                id: `hist-${code}-${i}`,
+                                name: `Unidad ${i + 1}`,
+                                end_occupation_date: '2000-01-01'
+                            });
+                        }
+                        return units;
+                    }
+                }
+                
+                return support.units;
+            };
+
+            const getWeeklyPercent = (code, weekStartDate) => {
+                const support = supportsState[code];
+                const capacity = getHistoricalCapacity(code, weekStartDate);
+                
+                if (capacity === '∞') return 'unlimited';
+                
+                const numCapacity = Number(capacity);
+                if (numCapacity === 0 || isNaN(numCapacity)) return 0;
+                
+                const effectiveUnits = getEffectiveUnitsForDate(code, weekStartDate);
+                
+                let inUseForWeek = 0;
+                effectiveUnits.forEach(u => {
+                    const isOccupied = new Date(u.end_occupation_date) >= new Date(weekStartDate);
+                    if (isOccupied) {
+                        inUseForWeek++;
+                    }
+                });
+
+                return Math.round((1 - (inUseForWeek / numCapacity)) * 100);
+            };
+
+            const getCellStyles = (percent) => {
+                if (percent === 'unlimited') return 'bg-blue-100 text-blue-800';
+                if (percent === 'blocked') return 'bg-slate-100 text-slate-600'; 
+                if (percent === 0) return 'bg-rose-200 text-rose-900'; 
+                if (percent < 100) return 'bg-amber-100 text-amber-900'; 
+                if (percent === 100) return 'bg-emerald-100 text-emerald-900'; 
+                return 'bg-slate-100 text-slate-600'; 
+            };
+
+            return (
+                <div className="bg-white border border-indigo-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    {/* Header Controls */}
+                    <div className="p-4 border-b border-indigo-100 bg-gray-50 flex items-center justify-between">
+                         <div className="flex gap-4">
+                            <div className="flex items-center gap-2 mr-4 relative z-50">
+                                <span className="text-sm font-bold text-gray-700">Mes inicial:</span>
+                                <MonthPickerDropdown viewMonth={viewMonth} setViewMonth={setViewMonth} />
+                            </div>
+                            <select className="px-3 py-1 border rounded-md text-sm bg-white font-medium border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option>Código</option>
+                            </select>
+                            <input type="text" placeholder="Buscar por término..." className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none w-64 shadow-sm" />
+                        </div>
+                        <button className="px-6 py-1.5 bg-indigo-600 text-white rounded-md text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm">
+                            Filtrar
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto flex-grow">
+                        <table className="min-w-full border-collapse">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-indigo-100">
+                                    <th rowSpan="2" className="sticky left-0 bg-gray-50 z-20 px-6 py-2 text-left text-[11px] font-bold text-gray-500 uppercase border-r border-indigo-100 min-w-[240px]">Soporte / Especificación</th>
+                                    {months.map(m => (
+                                        <th key={m.name} colSpan={m.weeksCount} className="px-2 py-2 text-center text-[10px] font-black text-indigo-400 border-r border-indigo-100 uppercase tracking-[0.2em]">{m.name}</th>
+                                    ))}
+                                </tr>
+                                <tr className="bg-gray-50 border-b border-indigo-100">
+                                    {allStartDates.map((date, idx) => (
+                                        <th key={idx} className="px-2 py-2 text-center text-[11px] font-bold text-gray-400 border-r border-indigo-100 min-w-[50px] last:border-r-0">
+                                            {date.split('-')[2]}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.keys(supportsState).map(code => {
+                                    const support = supportsState[code];
+                                    const isExpanded = expandedSupport === code;
+                                    const parts = viewMonth.split('-');
+                                    const targetViewingDate = parts[1] + "-" + parts[0] + "-01";
+                                    const effective = getEffectiveUnitsForDate(code, targetViewingDate);
+                                    const capacityForMonth = getHistoricalCapacity(code, targetViewingDate);
+                                    const inUse = getUnitsInUse(code, targetViewingDate);
+                                    const canExpand = capacityForMonth !== '∞' && effective.length > 1;
+
+                                    return (
+                                        <React.Fragment key={code}>
+                                            <tr className={`border-b border-gray-100 group transition-all duration-300 ${isExpanded ? 'bg-indigo-50/20' : 'hover:bg-gray-50'}`}>
+                                                <td className={`sticky left-0 z-10 px-6 py-2 border-r border-indigo-100 font-medium flex items-center justify-between transition-colors ${isExpanded ? 'bg-indigo-50/40' : 'bg-white group-hover:bg-gray-50'}`}>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[14px] font-black text-gray-800 tracking-tight">{code}</span>
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                                            {capacityForMonth === '∞' ? "Ilimitado" : `${capacityForMonth} Capacidad`}
+                                                        </span>
+                                                    </div>
+                                                    {canExpand && (
+                                                        <button 
+                                                            onClick={() => setExpandedSupport(isExpanded ? null : code)}
+                                                            className={`p-1 rounded-lg transition-all ${isExpanded ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:text-gray-600 hover:bg-gray-100'}`}
+                                                        >
+                                                            {isExpanded ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+                                                        </button>
+                                                    )}
+                                                </td>
+                                                {allStartDates.map((date, idx) => {
+                                                    const percentValue = getWeeklyPercent(code, date);
+                                                    const cellStyle = getCellStyles(percentValue);
+                                                    const isUnlimited = percentValue === 'unlimited';
+                                                    const currentInUse = isUnlimited ? getUnitsInUse(code, date) : 0;
+                                                    
+                                                    return (
+                                                        <td 
+                                                            key={idx} 
+                                                            className={`p-0 text-center relative group/cell h-10 min-w-[50px] border-r ${isUnlimited ? 'border-indigo-300/50' : 'border-indigo-100'} last:border-r-0 ${cellStyle}`}
+                                                            title={isUnlimited ? `Unidades en uso: ${currentInUse}` : `Disponibilidad: ${percentValue}%`}
+                                                        >
+                                                            {!isUnlimited && percentValue !== 'blocked' && (
+                                                                <span className="text-[11px] font-black tracking-tighter select-none">{percentValue}%</span>
+                                                            )}
+                                                            <div className="absolute inset-0 bg-white opacity-0 group-hover/cell:opacity-20 transition-opacity"></div>
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+
+                                            {/* Units expansion */}
+                                            {isExpanded && capacityForMonth !== '∞' && effective.map((unit, unitIdx) => (
+                                                <tr key={unit.id} className="border-b border-gray-50 bg-white">
+                                                    <td className="sticky left-0 bg-white z-10 px-6 py-1.5 pl-12 text-[11px] text-gray-500 border-r border-indigo-100 font-medium italic relative">
+                                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-[1px] bg-indigo-100"></div>
+                                                        {unit.name}
+                                                    </td>
+                                                    {allStartDates.map((date, idx) => {
+                                                        const weekCap = getHistoricalCapacity(code, date);
+                                                        const isBlocked = weekCap !== '∞' && unitIdx >= Number(weekCap);
+                                                        
+                                                        const isOccupied = new Date(unit.end_occupation_date) >= new Date(date);
+                                                        
+                                                        let cellStyleClass = '';
+                                                        let tooltipText = '';
+
+                                                        if (isBlocked) {
+                                                            cellStyleClass = 'bg-slate-100 cursor-not-allowed';
+                                                            tooltipText = 'Bloqueadas';
+                                                        } else {
+                                                            cellStyleClass = isOccupied ? 'bg-rose-200 shadow-sm' : 'bg-emerald-100';
+                                                        }
+                                                        
+                                                        return (
+                                                            <td key={idx} className={`border-r border-indigo-100 bg-white h-8 p-1 last:border-r-0 group/unitcell relative`} title={tooltipText}>
+                                                                <div className={`w-full h-full rounded-sm transition-all duration-300 ${cellStyleClass} flex items-center justify-center`}>
+                                                                    {isBlocked && (
+                                                                        <span className="opacity-0 group-hover/unitcell:opacity-100 text-[8px] font-bold text-slate-400 absolute pointer-events-none">Bloqueadas</span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            ))}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Legend Section */}
+                    <div className="p-4 bg-gray-50 border-t border-indigo-100 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-300 pr-6 h-4 flex items-center">Leyenda</span>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-rose-200 rounded ring-1 ring-black/5"></div>
+                                <span className="text-[11px] font-bold text-gray-600">Vendido (0%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-amber-100 rounded ring-1 ring-black/5"></div>
+                                <span className="text-[11px] font-bold text-gray-600">Parcial</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-emerald-100 rounded ring-1 ring-black/5"></div>
+                                <span className="text-[11px] font-bold text-gray-600">Disponible (100%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-blue-100 rounded ring-1 ring-black/5"></div>
+                                <span className="text-[11px] font-bold text-gray-600">Ilimitado</span>
+                            </div>
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter italic">
+                            Ultima actualización: {new Date().toLocaleDateString()}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('Form');
+            const [activeSupportTab, setActiveSupportTab] = useState('T-001');
+            
+            // Simulation Logic
+            const [realToday] = useState(() => new Date().toISOString().split('T')[0]);
+            const [viewMonth, setViewMonth] = useState(() => {
+                const d = new Date();
+                return `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
+            }); // MM-YYYY
+
+            const generateMonthOptions = () => {
+                const options = [];
+                const d = new Date();
+                d.setDate(1);
+                for (let i = 0; i < 12; i++) {
+                    const value = d.toISOString().slice(0, 7);
+                    const label = d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+                    const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                    options.push({ value, label: capitalizedLabel });
+                    d.setMonth(d.getMonth() + 1);
+                }
+                return options;
+            };
+            const [monthOptions] = useState(generateMonthOptions);
+            
+            // Multi-support state
+            const [supportsState, setSupportsState] = useState({
+                'T-001': {
+                    units: [
+                        { id: 1, name: 'Unidad 1', end_occupation_date: '2026-07-31' },
+                        { id: 2, name: 'Unidad 2', end_occupation_date: '2026-07-31' },
+                        { id: 3, name: 'Unidad 3', end_occupation_date: '2026-07-31' },
+                        { id: 4, name: 'Unidad 4', end_occupation_date: '2026-06-30' },
+                        { id: 5, name: 'Unidad 5', end_occupation_date: '2026-05-31' }
+                    ],
+                    history: [{ date: '2026-01-01 09:00', user: 'Carlos Pérez', oldVal: 0, newVal: 5, applyDate: '2026-01-01' }],
+                    isUnlimited: false,
+                    maxLegacy: 5 // Used when switching from unlimited to limited
+                },
+                'T-002': {
+                    units: [
+                        // 5 unidades: Ocupadas Mayo, Junio y Julio.
+                        ...Array.from({ length: 5 }, (_, i) => ({ id: i + 101, name: `Unidad ${i + 1}`, end_occupation_date: '2026-07-31' })),
+                        // 2 unidades: Ocupadas Mayo y Junio.
+                        ...Array.from({ length: 2 }, (_, i) => ({ id: i + 106, name: `Unidad ${i + 6}`, end_occupation_date: '2026-06-30' })),
+                        // 1 unidad: Ocupada desde Mayo hasta el 15 de Junio.
+                        { id: 108, name: 'Unidad 8', end_occupation_date: '2026-06-15' },
+                        // 2 unidades libres (total 10)
+                        { id: 109, name: 'Unidad 9', end_occupation_date: '2026-01-01' },
+                        { id: 110, name: 'Unidad 10', end_occupation_date: '2026-01-01' }
+                    ],
+                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: 10, applyDate: '2026-01-01' }],
+                    isUnlimited: false,
+                    maxLegacy: 10
+                },
+                'T-003': {
+                    units: [{ id: 201, name: 'Unidad 1', end_occupation_date: '2026-06-30' }],
+                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: 1, applyDate: '2026-01-01' }],
+                    isUnlimited: false,
+                    maxLegacy: 1
+                },
+                'T-004': {
+                    units: Array.from({ length: 18 }, (_, i) => ({ id: i + 301, name: `Unidad ${i + 1}`, end_occupation_date: '2026-06-15' })),
+                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: '∞', applyDate: '2026-01-01' }],
+                    isUnlimited: true,
+                    maxLegacy: 18
+                }
+            });
+
+            const updateSupportState = (code, newState) => {
+                setSupportsState(prev => ({
+                    ...prev,
+                    [code]: { ...prev[code], ...newState }
+                }));
+            };
+
+            // Helper to get effective units (simply returns all units since capacity changes are instant now)
+            const getEffectiveUnits = (code, dateStr) => {
+                const support = supportsState[code];
+                return support.units;
+            };
+
+            const getUnitsInUse = (code, dateStr) => {
+                const targetDate = new Date(dateStr);
+                return supportsState[code].units.filter(u => new Date(u.end_occupation_date) >= targetDate).length;
+            };
+
+            const currentSupport = supportsState[activeSupportTab];
+            const currentEffectiveUnits = getEffectiveUnits(activeSupportTab, realToday);
+            const unitsInUse = getUnitsInUse(activeSupportTab, realToday);
+
+            return (
+                <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-6xl mx-auto mt-10 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                        {/* Tabs Navigation */}
+                        <div className="flex border-b border-gray-200 bg-gray-50">
+                            <button 
+                                onClick={() => setActiveTab('Form')}
+                                className={`px-8 py-4 text-sm font-bold transition-all relative ${activeTab === 'Form' ? 'text-indigo-600 bg-white' : 'text-gray-400 hover:text-gray-700'}`}
+                            >
+                                Form
+                                {activeTab === 'Form' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-indigo-600 rounded-t-full"></div>}
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('Disponibilidad')}
+                                className={`px-8 py-4 text-sm font-bold transition-all relative ${activeTab === 'Disponibilidad' ? 'text-indigo-600 bg-white' : 'text-gray-400 hover:text-gray-700'}`}
+                            >
+                                Disponibilidad
+                                {activeTab === 'Disponibilidad' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-indigo-600 rounded-t-full"></div>}
+                            </button>
+                        </div>
+
+                        {activeTab === 'Form' ? (
+                            <React.Fragment>
+                                <div className="p-8 border-b bg-white flex justify-between items-center">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900">Editar Soporte</h1>
+                                        <p className="text-gray-500 text-sm">Actualiza los detalles y especificaciones del soporte publicitario.</p>
+                                    </div>
+                                    {/* Support Sub-Tabs */}
+                                    <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+                                        {['T-001', 'T-002', 'T-003', 'T-004'].map(code => (
+                                            <button
+                                                key={code}
+                                                onClick={() => setActiveSupportTab(code)}
+                                                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeSupportTab === code ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            >
+                                                {code}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="p-8">
+                                    <EditSupportView 
+                                        support={{id: 5522, code: activeSupportTab}} 
+                                        units={currentSupport.units}
+                                        setUnits={(newUnits) => updateSupportState(activeSupportTab, { units: newUnits })}
+                                        isUnlimited={currentSupport.isUnlimited}
+                                        setIsUnlimited={(val) => updateSupportState(activeSupportTab, { isUnlimited: val })}
+                                        currentSimDate={realToday}
+                                        effectiveUnits={currentEffectiveUnits}
+                                        unitsInUse={unitsInUse}
+                                        history={currentSupport.history}
+                                        setHistory={(newHistory) => updateSupportState(activeSupportTab, { history: newHistory })}
+                                    />
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            <div className="p-8">
+                                <div className="mb-6">
+                                    <h1 className="text-2xl font-bold text-gray-900">Disponibilidad semanal</h1>
+                                    <p className="text-gray-500 text-sm">Consulta el calendario de ocupación para los diferentes soportes.</p>
+                                </div>
+                                <DisponibilidadView 
+                                    supportsState={supportsState}
+                                    realToday={realToday}
+                                    viewMonth={viewMonth}
+                                    setViewMonth={setViewMonth}
+                                    monthOptions={monthOptions}
+                                    getEffectiveUnits={getEffectiveUnits}
+                                    getUnitsInUse={getUnitsInUse}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
