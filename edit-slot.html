@@ -236,8 +236,7 @@
                                             <tr>
                                                 <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Fecha edición</th>
                                                 <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Usuario</th>
-                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Unidades anteriores</th>
-                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Unidades nuevas</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Unidades</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-100 text-xs">
@@ -245,13 +244,12 @@
                                                 <tr key={i} className="hover:bg-gray-50">
                                                     <td className="px-4 py-3 text-gray-600">{formatDateDDMMYYYY(h.date)}</td>
                                                     <td className="px-4 py-3 text-gray-900 font-medium">{h.user}</td>
-                                                    <td className="px-4 py-3 text-gray-600">{h.oldVal}</td>
-                                                    <td className="px-4 py-3 text-indigo-600 font-bold">{h.newVal}</td>
+                                                    <td className="px-4 py-3 text-indigo-600 font-bold">{h.units}</td>
                                                 </tr>
                                             ))}
                                             {history.length === 0 && (
                                                 <tr>
-                                                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500 italic">No hay registros de historial aún.</td>
+                                                    <td colSpan="3" className="px-4 py-8 text-center text-gray-500 italic">No hay registros de historial aún.</td>
                                                 </tr>
                                             )}
                                         </tbody>
@@ -529,37 +527,15 @@
             const handleGlobalSave = () => {
                 let newHistory = [];
                 let newUnits = [...units];
-                let actualUnlimited = isUnlimited;
                 
                 const d = new Date();
-                const nowStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                const normalizedDateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
 
-                if (draftIsUnlimited !== isUnlimited) {
-                    if (!draftIsUnlimited) {
-                        newUnits = units.slice(0, draftTargetTotal);
-                        newHistory.push({
-                            date: nowStr, 
-                            user: 'Admin User', 
-                            oldVal: '∞', 
-                            newVal: draftTargetTotal
-                        });
-                        actualUnlimited = false;
-                    } else {
-                        newHistory.push({
-                            date: nowStr, 
-                            user: 'Admin User', 
-                            oldVal: effectiveUnits.length, 
-                            newVal: '∞'
-                        });
-                        actualUnlimited = true;
-                    }
-                }
+                const isChanged = draftIsUnlimited !== isUnlimited || (!draftIsUnlimited && draftTargetTotal !== effectiveUnits.length);
 
-                if (!actualUnlimited && draftTargetTotal !== effectiveUnits.length) {
-                    const currentAmount = effectiveUnits.length;
-                    const diff = draftTargetTotal - currentAmount;
-                    
-                    if (diff > 0) {
+                if (isChanged) {
+                    if (!draftIsUnlimited && draftTargetTotal > effectiveUnits.length) {
+                        const diff = draftTargetTotal - effectiveUnits.length;
                         for (let i = 0; i < diff; i++) {
                             const newId = Math.max(...units.map(u => u.id), 0) + 1 + i;
                             newUnits.push({
@@ -568,21 +544,15 @@
                                 end_occupation_date: '2026-01-01'
                             });
                         }
-                        newHistory.push({
-                            date: nowStr, 
-                            user: 'Admin User', 
-                            oldVal: currentAmount, 
-                            newVal: draftTargetTotal
-                        });
-                    } else if (diff < 0) {
+                    } else if (!draftIsUnlimited && draftTargetTotal < effectiveUnits.length) {
                         newUnits = units.slice(0, draftTargetTotal);
-                        newHistory.push({
-                            date: nowStr, 
-                            user: 'Admin User', 
-                            oldVal: currentAmount, 
-                            newVal: draftTargetTotal
-                        });
                     }
+                    
+                    newHistory.push({
+                        date: normalizedDateStr, 
+                        user: 'Admin User', 
+                        units: draftIsUnlimited ? '∞' : draftTargetTotal
+                    });
                 }
 
                 if (newHistory.length > 0) {
@@ -762,12 +732,12 @@
                 for (let record of sorted) {
                     const rMonthStr = record.date.substring(0, 7);
                     if (rMonthStr <= targetMonthStr) {
-                        return record.newVal;
+                        return record.units;
                     }
                 }
                 
                 if (sorted.length > 0) {
-                    return sorted[sorted.length - 1].oldVal;
+                    return sorted[sorted.length - 1].units;
                 }
                 
                 return support.isUnlimited ? '∞' : support.units.length;
@@ -1026,9 +996,8 @@
                         { id: 4, name: 'Unidad 4', end_occupation_date: '2026-06-30' },
                         { id: 5, name: 'Unidad 5', end_occupation_date: '2026-05-31' }
                     ],
-                    history: [{ date: '2026-01-01 09:00', user: 'Carlos Pérez', oldVal: 0, newVal: 5, applyDate: '2026-01-01' }],
-                    isUnlimited: false,
-                    maxLegacy: 5 // Used when switching from unlimited to limited
+                    history: [{ date: '2026-01-01', user: 'Carlos Pérez', units: 5 }],
+                    isUnlimited: false
                 },
                 'T-002': {
                     units: [
@@ -1042,21 +1011,18 @@
                         { id: 109, name: 'Unidad 9', end_occupation_date: '2026-01-01' },
                         { id: 110, name: 'Unidad 10', end_occupation_date: '2026-01-01' }
                     ],
-                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: 10, applyDate: '2026-01-01' }],
-                    isUnlimited: false,
-                    maxLegacy: 10
+                    history: [{ date: '2026-01-01', user: 'Admin', units: 10 }],
+                    isUnlimited: false
                 },
                 'T-003': {
                     units: [{ id: 201, name: 'Unidad 1', end_occupation_date: '2026-06-30' }],
-                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: 1, applyDate: '2026-01-01' }],
-                    isUnlimited: false,
-                    maxLegacy: 1
+                    history: [{ date: '2026-01-01', user: 'Admin', units: 1 }],
+                    isUnlimited: false
                 },
                 'T-004': {
-                    units: Array.from({ length: 18 }, (_, i) => ({ id: i + 301, name: `Unidad ${i + 1}`, end_occupation_date: '2026-06-15' })),
-                    history: [{ date: '2026-01-01 09:00', user: 'Admin', oldVal: 0, newVal: '∞', applyDate: '2026-01-01' }],
-                    isUnlimited: true,
-                    maxLegacy: 18
+                    units: [{ id: 301, name: 'Unidad 1', end_occupation_date: '2026-06-15' }],
+                    history: [{ date: '2026-01-01', user: 'Admin', units: '∞' }],
+                    isUnlimited: true
                 }
             });
 
