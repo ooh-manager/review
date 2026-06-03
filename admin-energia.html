@@ -323,7 +323,7 @@
         };
 
         // --- CATALOG VIEW ---
-        const CatalogView = ({ onEdit, isOutdoorLinkEnabled, providers }) => {
+        const CatalogView = ({ onEdit, isOutdoorLinkEnabled, providers, supports }) => {
             return (
                 <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div className="p-6">
@@ -347,7 +347,7 @@
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {mockSupportData.map((support) => (
+                                    {supports?.map((support) => (
                                         <tr key={support.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{support.code}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-gray-500">{support.type}</td>
@@ -427,36 +427,44 @@
         // --- RELAY PANEL ---
         const RelayPanel = ({ relays, toggleRelay }) => {
             return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {relays.map(relay => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {relays.map((relay, index) => {
                         const isOn = relay.status === 'ON';
                         return (
-                            <div key={relay.id} className={`p-4 rounded-xl border flex justify-between items-start transition-all duration-200 shadow-sm ${isOn ? 'bg-[#eefcf2] border-[#cbedd8]' : 'bg-[#fff0f1] border-[#fce3e5]'}`}>
-                                <div>
-                                    <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none">Relay {relay.id}</h4>
-                                    <h3 className="text-base font-bold text-gray-800 mt-1 mb-0.5 leading-none">{relay.name}</h3>
-                                    <p className="text-xs text-gray-400 mb-3 leading-none">{relay.power}</p>
-                                    
-                                    <div className="flex flex-wrap items-center text-[12px] text-gray-500 gap-3 font-medium">
-                                        <div className="flex items-center">
-                                            <div className={`w-2.5 h-2.5 rounded-full mr-1.5 shadow-sm ${isOn ? 'bg-[#05a069]' : 'bg-[#f43f5e]'}`}></div>
-                                            <span className={`${isOn ? 'text-[#05a069] font-bold' : 'text-gray-500'}`}>{relay.status}</span>
-                                        </div>
-                                        <div className="flex items-center text-gray-400">
-                                            <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            {relay.runtime}
-                                        </div>
-                                        <div className="flex items-center text-gray-400">
-                                            <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"></path></svg>
-                                            {relay.fixtures}
+                            <div key={relay.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                                <div className="bg-[#1e90ff] text-white p-3 flex justify-between items-center">
+                                    <span className="font-semibold text-[15px]">Relé {index + 1}</span>
+                                    <div className="flex items-center gap-1">
+                                        <button 
+                                            type="button"
+                                            onClick={() => toggleRelay(relay.id)} 
+                                            className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${isOn ? 'text-red-500 bg-white hover:bg-red-50' : 'text-white border border-white/30 hover:bg-white/10'}`}
+                                        >
+                                            <PowerButtonIcon className="w-4 h-4"/>
+                                        </button>
+                                        <button className="text-white hover:bg-white/20 p-1.5 rounded-full transition-colors flex items-center justify-center">
+                                            <MoreVerticalIcon className="w-5 h-5"/>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col flex-1 divide-y divide-gray-100">
+                                    <div className="p-3.5">
+                                        <div className="text-xs text-gray-500 mb-2 font-medium">Caras | Valla Publicitaria Estática</div>
+                                        <div className="text-sm font-semibold text-gray-800">Cara {String.fromCharCode(65 + index % 26)}</div>
+                                        <div className="text-sm text-gray-400 mt-0.5">-</div>
+                                    </div>
+                                    <div className="p-3.5">
+                                        <div className="text-xs text-gray-500 mb-3 font-medium">Horarios</div>
+                                        <div className="space-y-2.5">
+                                            <div className="flex items-start">
+                                                <span className="text-sm text-gray-600">1. Horario Inactivo</span>
+                                            </div>
+                                            <div className="border-t border-gray-50"></div>
+                                            <div className="flex items-start">
+                                                <span className="text-sm text-gray-600">2. Horario Inactivo</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    {relay.extra && <div className="mt-2 text-[11px] text-gray-400 font-medium">{relay.extra}</div>}
-                                </div>
-                                <div className="pt-1">
-                                    <button type="button" onClick={() => toggleRelay(relay.id)} className={`w-10 h-10 rounded-full flex justify-center items-center shadow-sm transition-all border ${isOn ? 'bg-[#05a069] border-[#05a069] text-white' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'}`}>
-                                        <PowerButtonIcon className="w-5 h-5"/>
-                                    </button>
                                 </div>
                             </div>
                         );
@@ -808,14 +816,96 @@
         };
         
         // --- EDIT SUPPORT VIEW ---
-        const EditSupportView = ({ support, isOutdoorLinkEnabled, providers, setProviders }) => {
+        const EditSupportView = ({ support, isOutdoorLinkEnabled, providers, setProviders, energyProviders, setSupports }) => {
             const [isThirdParty, setIsThirdParty] = useState(false);
             const [isModalOpen, setIsModalOpen] = useState(false);
+            const [localLinkedSiteId, setLocalLinkedSiteId] = useState(support?.linkedSiteId || '');
             
-            const Card = ({ id, title, children }) => (
+            const [localSiteRelays, setLocalSiteRelays] = useState(() => {
+                if (support?.linkedSiteId && support?.siteRelays) {
+                     const outdoorLinkProvider = energyProviders.find(p => p.type === 'Outdoor Link');
+                     const syncedSites = outdoorLinkProvider?.syncHistory?.items || [];
+                     const site = syncedSites.find(s => s.idExterno === support.linkedSiteId);
+                     if (site) {
+                         return Array.from({ length: site.relays }, (_, i) => {
+                             const existing = support.siteRelays.find(r => r.id === i + 1);
+                             return existing ? { ...existing, isSelected: true } : {
+                                 id: i + 1,
+                                 name: `Circuito ${i + 1}`,
+                                 power: '100W',
+                                 status: 'ON',
+                                 runtime: 'Runtime pending',
+                                 fixtures: '1 fixtures',
+                                 extra: '',
+                                 isSelected: false
+                             };
+                         });
+                     }
+                }
+                return support?.siteRelays || [];
+            });
+            
+            const [showSuccessChip, setShowSuccessChip] = useState(false);
+            const [isConfigMode, setIsConfigMode] = useState(!support?.linkedSiteId);
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            
+            const handleSiteChange = (e) => {
+                const siteId = e.target.value;
+                setLocalLinkedSiteId(siteId);
+                if (!siteId) {
+                    setLocalSiteRelays([]);
+                    return;
+                }
+                const outdoorLinkProvider = energyProviders.find(p => p.type === 'Outdoor Link');
+                const syncedSites = outdoorLinkProvider?.syncHistory?.items || [];
+                const site = syncedSites.find(s => s.idExterno === siteId);
+                if (site) {
+                    // Start all as checked
+                    const newRelays = Array.from({ length: site.relays }, (_, i) => ({
+                        id: i + 1,
+                        name: `Circuito ${i + 1}`,
+                        power: '100W',
+                        status: 'ON',
+                        runtime: 'Runtime pending',
+                        fixtures: '1 fixtures',
+                        extra: '',
+                        isSelected: true
+                    }));
+                    setLocalSiteRelays(newRelays);
+                } else {
+                    setLocalSiteRelays([]);
+                }
+            };
+
+            const toggleRelaySelection = (id) => {
+                setLocalSiteRelays(localSiteRelays.map(r => r.id === id ? { ...r, isSelected: !r.isSelected } : r));
+            };
+
+            const toggleRelayStatus = (id) => {
+                setLocalSiteRelays(localSiteRelays.map(r => r.id === id ? { ...r, status: r.status === 'ON' ? 'OFF' : 'ON' } : r));
+            };
+            
+            const handleSave = () => {
+                setIsConfigMode(false);
+                const activeRelays = localSiteRelays.filter(r => r.isSelected);
+                
+                if (setSupports && support) {
+                    setSupports(prev => prev.map(s => s.id === support.id ? {
+                        ...s,
+                        linkedSiteId: localLinkedSiteId,
+                        siteRelays: activeRelays
+                    } : s));
+                }
+                
+                setShowSuccessChip(true);
+                setTimeout(() => setShowSuccessChip(false), 3000);
+            };
+            
+            const Card = ({ id, title, action, children }) => (
                 <div id={id} className="bg-white border border-indigo-200 rounded-lg shadow-sm">
-                    <div className="px-6 py-4 border-b border-gray-200">
+                    <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                         <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+                        {action && <div>{action}</div>}
                     </div>
                     <div className="p-6">{children}</div>
                 </div>
@@ -828,13 +918,9 @@
                             <label className="block text-sm font-medium text-gray-700">Código</label>
                             <input type="text" defaultValue={support?.code || "T-001"} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
                         </div>
-                        <div className="form-group md:col-span-7">
+                        <div className="form-group md:col-span-9">
                             <label className="block text-sm font-medium text-gray-700">Nombre</label>
                             <input type="text" defaultValue={support?.name || "Soporte Valla"} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
-                        </div>
-                        <div className="form-group md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">ID Sitio Outdoor Link</label>
-                            <input type="text" defaultValue="3973" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white" />
                         </div>
                         <div className="form-group md:col-span-8">
                             <label className="block text-sm font-medium text-gray-700">Tipo de soporte</label>
@@ -856,39 +942,13 @@
                 </Card>
             );
 
-            const OutdoorLinkSection = () => {
-                const [relays, setRelays] = useState([
-                    { id: 1, name: 'Tower PC', power: '114W', status: 'ON', runtime: 'Runtime pending', fixtures: '1 fixtures', extra: '' },
-                    { id: 2, name: 'Test Bulb1', power: '12W LED', status: 'OFF', runtime: 'Runtime pending', fixtures: '1 fixtures', extra: '1x12W' },
-                    { id: 3, name: 'Server 1', power: '42W LED', status: 'ON', runtime: 'Runtime pending', fixtures: '1 fixtures', extra: '' },
-                    { id: 4, name: 'Server 2 - Public', power: '25W', status: 'ON', runtime: 'Runtime pending', fixtures: '1 fixtures', extra: '' },
-                ]);
-
-                const toggleRelay = (id) => {
-                    setRelays(relays.map(r => r.id === id ? { ...r, status: r.status === 'ON' ? 'OFF' : 'ON' } : r));
-                };
-
-                return (
-                    <Card id="section-outdoor-link" title={
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center text-gray-800">
-                                <PowerButtonIcon className="w-5 h-5 mr-2" />
-                                <span>Controles Outdoor Link</span>
-                            </div>
-                        </div>
-                    }>
-                        <RelayPanel relays={relays} toggleRelay={toggleRelay} />
-                    </Card>
-                );
-            };
-
             const navItems = [
                 { id: 'section-info', label: 'Información general' },
                 ...(isOutdoorLinkEnabled ? [{ id: 'section-outdoor-link', label: 'Outdoor Link' }] : [])
             ];
 
             return (
-                <div className="flex">
+                <div className="flex relative">
                     <aside className="w-64 p-5 hidden lg:block sticky top-6 h-screen">
                         <div className="mb-4"><span className="text-lg font-bold text-gray-700">Navegación</span></div>
                         <nav>
@@ -903,11 +963,81 @@
                     </aside>
                     <div className="flex-1 space-y-6">
                         <InfoSection />
-                        {isOutdoorLinkEnabled && <OutdoorLinkSection />}
+                        {isOutdoorLinkEnabled && (
+                            <Card id="section-outdoor-link" title="Outdoor Link" action={
+                                !isConfigMode && (
+                                    <div className="relative">
+                                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
+                                            <MoreVerticalIcon className="w-[18px] h-[18px]" />
+                                        </button>
+                                        {isMenuOpen && (
+                                            <>
+                                                <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)}></div>
+                                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-20 overflow-hidden">
+                                                    <button onClick={() => { setIsConfigMode(true); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium">
+                                                        Editar configuración
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )
+                            }>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Vincular con Sitio Outdoor Link</label>
+                                    <div className="relative">
+                                        <div className="flex items-center absolute inset-y-0 left-0 pl-3 pointer-events-none">
+                                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                        </div>
+                                        <select 
+                                            className="mt-1 block w-full pl-9 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed bg-white"
+                                            value={localLinkedSiteId}
+                                            onChange={handleSiteChange}
+                                            disabled={!isConfigMode}
+                                        >
+                                            <option value="">{energyProviders.find(p => p.type === 'Outdoor Link')?.syncHistory?.items?.length ? 'Buscar sitio...' : 'No hay sitios sincronizados disponibles'}</option>
+                                            {energyProviders.find(p => p.type === 'Outdoor Link')?.syncHistory?.items?.map(site => (
+                                                <option key={site.idExterno} value={site.idExterno}>[{site.idExterno}] {site.support} - {site.type}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                {isConfigMode && localSiteRelays.length > 0 && (
+                                    <div className="mt-6 bg-gray-50 p-4 border border-gray-200 rounded-md">
+                                        <h3 className="text-sm font-medium text-gray-700 mb-3">Relés disponibles en el sitio</h3>
+                                        <div className="space-y-2">
+                                            {localSiteRelays.map(relay => (
+                                                <label key={relay.id} className="flex items-center cursor-pointer group">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-3"
+                                                        checked={relay.isSelected}
+                                                        onChange={() => toggleRelaySelection(relay.id)}
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">{relay.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!isConfigMode && localSiteRelays.filter(r => r.isSelected).length > 0 && (
+                                    <>
+                                        <hr className="my-6 border-gray-200" />
+                                        <div>
+                                            <h3 className="text-[15px] font-semibold text-gray-800 mb-4">Control Relés</h3>
+                                            <RelayPanel relays={localSiteRelays.filter(r => r.isSelected)} toggleRelay={toggleRelayStatus} />
+                                        </div>
+                                    </>
+                                )}
+                            </Card>
+                        )}
                         <div className="pt-4">
-                            <button type="button" className="px-6 py-3 rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Guardar cambios</button>
+                            <button onClick={handleSave} type="button" className="px-6 py-3 rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Guardar cambios</button>
                         </div>
                     </div>
+                    <SuccessChip message="¡Soporte guardado con éxito!" show={showSuccessChip} />
                 </div>
             );
         };
@@ -1007,9 +1137,9 @@
                      syncHistory: {
                          timestamp: formatter.format(now),
                          items: [
-                             { support: 'T-004', type: 'Valla', relays: 2, status: 'OK' },
-                             { support: 'T-005', type: 'Mobiliario Urbano', relays: 4, status: 'OK' },
-                             { support: 'T-006', type: 'Caminero', relays: 1, status: 'OK' },
+                             { idExterno: '4829104', support: 'T-004', type: 'Valla', relays: 2, status: 'OK' },
+                             { idExterno: '7392815', support: 'T-005', type: 'Mobiliario Urbano', relays: 4, status: 'OK' },
+                             { idExterno: '1049283', support: 'T-006', type: 'Caminero', relays: 1, status: 'OK' },
                          ]
                      }
                  });
@@ -1221,16 +1351,16 @@
                                                                 <table className="w-full text-left text-xs bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
                                                                     <thead className="bg-gray-100 text-gray-500">
                                                                         <tr>
-                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Soporte</th>
-                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Tipo</th>
-                                                                            <th className="px-4 py-2 font-semibold text-center border-b border-gray-200">Relés cargados</th>
+                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200 w-24">ID</th>
+                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Sitios</th>
+                                                                            <th className="px-4 py-2 font-semibold text-center border-b border-gray-200">Relés disponibles</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="divide-y divide-gray-100 text-gray-700">
                                                                         {energyProviders[activeEnergyTab].syncHistory.items.map((item, idx) => (
                                                                             <tr key={idx} className="hover:bg-gray-50">
+                                                                                <td className="px-4 py-2 font-mono text-gray-500">{item.idExterno}</td>
                                                                                 <td className="px-4 py-2 font-medium">{item.support}</td>
-                                                                                <td className="px-4 py-2">{item.type}</td>
                                                                                 <td className="px-4 py-2 text-center">{item.relays}</td>
                                                                             </tr>
                                                                         ))}
@@ -1258,6 +1388,7 @@
             const [view, setView] = useState('home'); 
             const [selectedSupport, setSelectedSupport] = useState(null);
             const [selectedCampaign, setSelectedCampaign] = useState(null);
+            const [supports, setSupports] = useState(mockSupportData);
             const [isEnergyAdminEnabled, setIsEnergyAdminEnabled] = useState(false);
             const [energyProviders, setEnergyProviders] = useState([]);
             const [globalProviders, setGlobalProviders] = useState(['Proveedor A', 'Proveedor B', 'Proveedor C']);
@@ -1279,8 +1410,8 @@
             const renderContent = () => {
                 switch(view) {
                     case 'home': return <HomeView campaigns={mockCampaignsData} onSelectCampaign={handleSelectCampaign} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} />;
-                    case 'catalog': return <CatalogView onEdit={handleEdit} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} />;
-                    case 'edit': return <EditSupportView support={selectedSupport} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} setProviders={setGlobalProviders} />;
+                    case 'catalog': return <CatalogView onEdit={handleEdit} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} supports={supports} />;
+                    case 'edit': return <EditSupportView support={selectedSupport} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} setProviders={setGlobalProviders} energyProviders={energyProviders} setSupports={setSupports} />;
                     case 'company': return <CompanyView 
                                                 isEnergyAdminEnabled={isEnergyAdminEnabled} 
                                                 setIsEnergyAdminEnabled={setIsEnergyAdminEnabled}
@@ -1289,7 +1420,7 @@
                                              />;
                     case 'campaigns': return <CampaignsListView onSelectCampaign={handleSelectCampaign} />;
                     case 'campaign-detail': return <CampaignDetailView campaign={selectedCampaign} onNavigate={handleNavigate} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} isAutoSyncEnabled={isAutoSyncEnabled} />;
-                    default: return <CatalogView onEdit={handleEdit} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} />;
+                    default: return <CatalogView onEdit={handleEdit} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} supports={supports} />;
                 }
             };
 
