@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manager OOH</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%231fa882' d='M49.9 12.5C28.5 12.5 11.2 29.8 11.2 51.2c0 21.4 17.3 38.7 38.7 38.7 21.4 0 38.7-17.3 38.7-38.7 0-21.4-17.3-38.7-38.7-38.7zm0 63.3c-13.6 0-24.6-11-24.6-24.6 0-13.6 11-24.6 24.6-24.6 13.6 0 24.6 11 24.6 24.6 0 13.6-11 24.6-24.6 24.6z'/%3E%3Cpath fill='%231fa882' d='M65.3 35.8c-2.3-2.3-6.1-2.3-8.5 0-2.3 2.3-2.3 6.1 0 8.5 4.7 4.7 4.7 12.4 0 17.1-4.7 4.7-12.4 4.7-17.1 0-4.7-4.7-4.7-12.4 0-17.1 2.3-2.3 2.3-6.1 0-8.5-2.3-2.3-6.1-2.3-8.5 0-9.4 9.4-9.4 24.7 0 34.1 9.4 9.4 24.7 9.4 34.1 0 9.4-9.4 9.4-24.7 0-34.1z'/%3E%3C/svg%3E" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -438,7 +439,7 @@
                                         <button 
                                             type="button"
                                             onClick={() => toggleRelay(relay.id)} 
-                                            className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${isOn ? 'text-red-500 bg-white hover:bg-red-50' : 'text-white border border-white/30 hover:bg-white/10'}`}
+                                            className={`p-1.5 rounded-full transition-colors flex items-center justify-center text-white ${isOn ? 'bg-[#05a069] hover:bg-green-700' : 'bg-[#f43f5e] hover:bg-red-700'}`}
                                         >
                                             <PowerButtonIcon className="w-4 h-4"/>
                                         </button>
@@ -869,7 +870,7 @@
                         runtime: 'Runtime pending',
                         fixtures: '1 fixtures',
                         extra: '',
-                        isSelected: true
+                        isSelected: false
                     }));
                     setLocalSiteRelays(newRelays);
                 } else {
