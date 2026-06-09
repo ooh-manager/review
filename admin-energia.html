@@ -82,6 +82,9 @@
         const MoreVerticalIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>);
         const DownloadIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>);
         const UploadIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>);
+        const MapIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>);
+        const ClipboardCopyIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>);
+        const SignalIcon = ({className}) => (<svg className={className || "w-5 h-5"} fill="currentColor" viewBox="0 0 24 24"><path d="M4 18h2v2H4zM8 14h2v6H8zM12 10h2v10h-2zM16 6h2v14h-2zM20 2h2v18h-2z"/></svg>);
 
         // --- MOCK DATA ---
         const mockSupportData = [
@@ -165,6 +168,9 @@
                             <NavItem icon={<WidgetsIcon className="h-5 w-5"/>} hasSubmenu open={openMenu === 'soportes'} onClick={(e) => { e.preventDefault(); toggleMenu('soportes'); }}>Soportes</NavItem>
                             <SubMenu open={openMenu === 'soportes'}>
                                 <SubMenuItem active={currentView === 'catalog' || currentView === 'edit'} onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }}>Catálogo</SubMenuItem>
+                                {isOutdoorLinkEnabled && (
+                                    <SubMenuItem active={currentView === 'outdoor-link-sites' || currentView === 'outdoor-link-detail'} onClick={(e) => { e.preventDefault(); onNavigate('outdoor-link-sites'); }}>Sitios Outdoor Link</SubMenuItem>
+                                )}
                             </SubMenu>
                             <NavItem active={currentView === 'campaigns' || currentView === 'campaign-detail'} icon={<AssignmentCheckIcon className="h-5 w-5"/>} onClick={(e) => { e.preventDefault(); onNavigate('campaigns'); }}>Campañas</NavItem>
                             <NavItem icon={<CogIcon className="h-5 w-5" />} hasSubmenu open={openMenu === 'admin'} onClick={(e) => { e.preventDefault(); toggleMenu('admin'); }}>Admin</NavItem>
@@ -177,7 +183,7 @@
             );
         };
         
-        const Header = ({ view, support, campaign, onNavigate }) => {
+        const Header = ({ view, support, campaign, site, onNavigate }) => {
             return (
                 <header className="flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200 shrink-0">
                     <div className="flex items-center">
@@ -188,6 +194,8 @@
                             {view === 'catalog' && <><span className="hover:text-gray-700">Soportes</span><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Catálogo</span></>}
                             {view === 'company' && <><span className="hover:text-gray-700">Admin</span><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Empresa</span></>}
                             {view === 'edit' && <><span className="hover:text-gray-700">Soportes</span><ChevronRightIcon className="h-5 w-5 mx-1" /><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} className="hover:text-gray-700">Catálogo</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Editar Soporte {support?.code}</span></>}
+                            {view === 'outdoor-link-sites' && <><span className="hover:text-gray-700">Soportes</span><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Sitios Outdoor Link</span></>}
+                            {view === 'outdoor-link-detail' && <><span className="hover:text-gray-700">Soportes</span><ChevronRightIcon className="h-5 w-5 mx-1" /><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('outdoor-link-sites'); }} className="hover:text-gray-700">Sitios Outdoor Link</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">Sitio {site?.idExterno}</span></>}
                             {view === 'campaigns' && <span className="font-medium text-gray-800">Campañas</span>}
                             {view === 'campaign-detail' && <><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('campaigns'); }} className="hover:text-gray-700">Campañas</a><ChevronRightIcon className="h-5 w-5 mx-1" /><span className="font-medium text-gray-800">{campaign?.id}</span></>}
                         </div>
@@ -998,7 +1006,7 @@
                                         >
                                             <option value="">{energyProviders.find(p => p.type === 'Outdoor Link')?.syncHistory?.items?.length ? 'Buscar sitio...' : 'No hay sitios sincronizados disponibles'}</option>
                                             {energyProviders.find(p => p.type === 'Outdoor Link')?.syncHistory?.items?.map(site => (
-                                                <option key={site.idExterno} value={site.idExterno}>[{site.idExterno}] {site.support} - {site.type}</option>
+                                                <option key={site.idExterno} value={site.idExterno}>[{site.idExterno}] {site.siteName} - {site.panelType}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -1043,10 +1051,260 @@
             );
         };
         
+        // --- OUTDOOR LINK SITES VIEW ---
+        const OutdoorLinkSitesView = ({ sites, onEditSite }) => {
+            if (!sites || sites.length === 0) {
+                return (
+                    <div className="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col items-center justify-center p-12 text-center h-full min-h-[400px]">
+                        <div className="bg-gray-100 p-4 rounded-full mb-4 text-gray-400">
+                            <WidgetsIcon className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">No hay sitios registrados</h3>
+                        <p className="text-gray-500 max-w-sm">Para visualizar sus sitios aquí, por favor vaya a la administración de energía y cargue los sitios desde Outdoor Link.</p>
+                    </div>
+                );
+            }
+            return (
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <div className="p-6">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase w-32">ID</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Tipo panel</th>
+                                        <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase">Nombre</th>
+                                        <th className="px-6 py-3 text-center font-medium text-gray-500 uppercase w-24">N° Relés</th>
+                                        <th className="px-6 py-3 text-right font-medium text-gray-500 uppercase w-32">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {sites.map((site) => (
+                                        <tr key={site.idExterno} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap font-mono text-gray-500">{site.idExterno}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-700">{site.panelType}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{site.siteName}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-gray-700">{site.relays}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="flex items-center justify-end space-x-3 text-gray-400">
+                                                    <button onClick={() => onEditSite(site)} className="hover:text-indigo-600 transition-colors" title="Editar"><EditIcon className="w-5 h-5"/></button>
+                                                    <button className="hover:text-blue-600 transition-colors" title="Sincronizar"><RefreshCwIcon className="w-5 h-5"/></button>
+                                                    <button className="hover:text-red-600 transition-colors" title="Eliminar"><DeleteIcon className="w-5 h-5"/></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- OUTDOOR LINK SITE DETAIL VIEW ---
+        const OutdoorLinkSiteDetailView = ({ site }) => {
+            const [relays, setRelays] = useState(() => Array.from({ length: site?.relays || 2 }, (_, i) => ({
+                id: i + 1,
+                name: `Relé ${i + 1}`,
+                status: 'ON',
+                panelRef: site?.panelType === 'Valla Digital' && i === 0 ? 'IPTV CAM' : (i===1 ? 'LED Lights' : 'Circuito genérico'),
+                faces: site?.panelType || 'Valla Publicitaria Estática'
+            })));
+
+            const toggleRelayStatus = (id) => {
+                setRelays(relays.map(r => r.id === id ? { ...r, status: r.status === 'ON' ? 'OFF' : 'ON' } : r));
+            };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-6 max-w-full">
+                    {/* INFO PANELS LEFT */}
+                    <div className="flex flex-col gap-6 w-full lg:w-80 shrink-0">
+                        {/* Panel 1 */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-[#1e90ff] text-white p-3 flex justify-between items-center">
+                                <h3 className="font-semibold text-base">Detalles de la Estructura</h3>
+                                <button className="hover:bg-white/20 p-1 rounded-full"><MoreVerticalIcon className="w-5 h-5"/></button>
+                            </div>
+                            <div className="divide-y divide-gray-100 flex flex-col">
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Nombre</div>
+                                    <div className="text-sm text-gray-800 font-medium">{site?.siteName || 'Serie-2-DC prueba'}</div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Descripción</div>
+                                    <div className="text-sm text-gray-800">{site?.siteName || 'Serie-2-DC prueba'}</div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Ubicación</div>
+                                    <div className="text-sm text-gray-800 min-h-[1.25rem]"></div>
+                                </div>
+                                <div className="p-4 flex justify-between items-center">
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Coordenadas GPS</div>
+                                        <div className="text-sm text-gray-800">8.9781° N, 79.5216° W</div>
+                                    </div>
+                                    <MapIcon className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Zona Horaria</div>
+                                    <div className="text-sm text-gray-800">EST</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Panel 2 */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-[#4CAF50] text-white p-3 flex justify-between items-center">
+                                <h3 className="font-semibold text-base">Bitácora de Mantenimiento</h3>
+                            </div>
+                            <div className="px-4 py-3 flex gap-4 text-xs font-bold tracking-wider text-gray-500">
+                                <button className="hover:text-gray-800">HISTORIAL</button>
+                                <button className="text-[#1e90ff]">CREAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* INFO PANELS MIDDLE */}
+                    <div className="flex flex-col gap-6 w-full lg:w-80 shrink-0">
+                        {/* Panel 3 */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-[#4CAF50] text-white p-3 flex justify-between items-center">
+                                <h3 className="font-semibold text-base">Detalles del Dispositivo</h3>
+                                <button className="hover:bg-white/20 p-1 rounded-full"><MoreVerticalIcon className="w-5 h-5"/></button>
+                            </div>
+                            <div className="divide-y divide-gray-100 flex flex-col">
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">ICCID <CheckIcon className="w-4 h-4 text-[#05a069]" /></div>
+                                    <div className="text-sm text-gray-800 flex items-center justify-between">
+                                        <span className="font-mono text-gray-600">8910390000071496806</span>
+                                        <button className="text-gray-400 hover:text-gray-600"><ClipboardCopyIcon className="w-4 h-4" /></button>
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Dispositivo</div>
+                                    <div className="text-sm text-gray-800">2-Series DC</div>
+                                </div>
+                                <div className="p-4 flex justify-between items-center">
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Estado de Comunicación</div>
+                                        <div className="text-sm text-gray-800">En Línea</div>
+                                    </div>
+                                    <SignalIcon className="w-6 h-6 text-[#4CAF50]" />
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-xs text-gray-500 mb-1">Última Comunicación</div>
+                                    <div className="text-sm text-gray-800">hace 7 minutos</div>
+                                </div>
+                                <div className="p-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+                                    <span className="text-sm text-gray-700">Comandos Recientes</span>
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Panel 4 */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-[#4CAF50] text-white p-3 flex justify-between items-center">
+                                <h3 className="font-semibold text-base">Alarmas</h3>
+                                <button className="hover:bg-white/20 p-1 rounded-full"><MoreVerticalIcon className="w-5 h-5"/></button>
+                            </div>
+                            <div className="px-4 py-3 flex gap-4 text-xs font-bold tracking-wider text-gray-500">
+                                <button className="hover:text-gray-800">HISTORIAL</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RELAY PANELS RIGHT */}
+                    <div className="flex-1 w-full gap-4">
+                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 auto-rows-max items-start">
+                             {relays.map((relay, index) => {
+                                const isOn = relay.status === 'ON';
+                                return (
+                                    <div key={relay.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+                                        <div className="bg-[#1e90ff] text-white p-3 flex justify-between items-center shrink-0">
+                                            <span className="font-semibold text-[15px]">Relé {index + 1}</span>
+                                            <div className="flex items-center gap-1">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => toggleRelayStatus(relay.id)} 
+                                                    className={`p-1.5 rounded-full transition-colors flex items-center justify-center text-white ${isOn ? 'bg-[#05a069] hover:bg-green-700' : 'bg-[#f43f5e] hover:bg-red-700'}`}
+                                                >
+                                                    <PowerButtonIcon className="w-4 h-4"/>
+                                                </button>
+                                                <button className="text-white hover:bg-white/20 p-1.5 rounded-full transition-colors flex items-center justify-center">
+                                                    <MoreVerticalIcon className="w-5 h-5"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col flex-1 divide-y divide-gray-100">
+                                            <div className="p-3.5">
+                                                <div className="text-xs text-gray-500 mb-2 font-medium">Caras | {relay.faces}</div>
+                                                <div className="text-sm font-semibold text-gray-800">{relay.panelRef || `Cara ${String.fromCharCode(65 + index % 26)}`}</div>
+                                                <div className="text-sm text-gray-400 mt-0.5">-</div>
+                                            </div>
+                                            <div className="p-3.5 flex-1">
+                                                <div className="text-xs text-gray-500 mb-3 font-medium">Horarios</div>
+                                                <div className="space-y-2.5">
+                                                    {index === 0 ? (
+                                                        <>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm font-medium text-gray-800">1. Todos los Días</span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-500 mt-0.5 space-y-0.5 leading-snug">
+                                                                <div>Encender: 09:00 AM</div>
+                                                                <div>Apagar: 05:00 PM</div>
+                                                                <div>Brightness (%): 100</div>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">2. Horario Inactivo</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">3. Horario Inactivo</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">4. Horario Inactivo</span>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">1. Horario Inactivo</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">2. Horario Inactivo</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">3. Horario Inactivo</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-50"></div>
+                                                            <div className="flex items-start">
+                                                                <span className="text-sm text-gray-600">4. Horario Inactivo</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                         </div>
+                    </div>
+                </div>
+            );
+        };
+
         // --- COMPANY VIEW ---
         const CompanyView = ({ 
             isEnergyAdminEnabled, setIsEnergyAdminEnabled,
-            energyProviders, setEnergyProviders
+            energyProviders, setEnergyProviders,
+            onRegisterOutdoorSites
         }) => {
              const [activeTab, setActiveTab] = useState('section-info');
              const [localEnergyAdminEnabled, setLocalEnergyAdminEnabled] = useState(isEnergyAdminEnabled);
@@ -1138,9 +1396,9 @@
                      syncHistory: {
                          timestamp: formatter.format(now),
                          items: [
-                             { idExterno: '4829104', support: 'T-004', type: 'Valla', relays: 2, status: 'OK' },
-                             { idExterno: '7392815', support: 'T-005', type: 'Mobiliario Urbano', relays: 4, status: 'OK' },
-                             { idExterno: '1049283', support: 'T-006', type: 'Caminero', relays: 1, status: 'OK' },
+                             { idExterno: '4829104', panelType: 'Valla Digital', siteName: 'Ruta 5 Norte Km 12', relays: 2 },
+                             { idExterno: '7392815', panelType: 'Monoposte', siteName: 'Plaza Italia Central', relays: 4 },
+                             { idExterno: '1049283', panelType: 'Valla Estática', siteName: 'Av. Kennedy 5400', relays: 1 },
                          ]
                      }
                  });
@@ -1333,12 +1591,15 @@
 
                                             <div className="bg-white border border-blue-200 rounded-lg shadow-sm">
                                                 <div className="p-4 border-b flex justify-between items-center">
-                                                    <h2 className="text-lg font-semibold text-gray-800">Sincronización</h2>
+                                                    <h2 className="text-lg font-semibold text-gray-800">Sitios disponibles</h2>
                                                 </div>
                                                 <div className="p-6">
-                                                    <div className="mb-6">
+                                                    <div className="mb-6 flex justify-between items-center">
                                                         <button type="button" onClick={() => handleSyncNow(activeEnergyTab)} disabled={!energyProviders[activeEnergyTab].isCredentialsSaved} className={`px-5 py-2.5 rounded-md text-sm font-medium shadow-sm transition-all focus:outline-none ${!energyProviders[activeEnergyTab].isCredentialsSaved ? 'bg-gray-50 text-gray-400 border border-gray-200 opacity-60 cursor-not-allowed' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}>
-                                                            Sincronizar
+                                                            Cargar sitios
+                                                        </button>
+                                                        <button type="button" onClick={() => onRegisterOutdoorSites(energyProviders[activeEnergyTab].syncHistory?.items || [])} disabled={!energyProviders[activeEnergyTab].syncHistory} className={`px-5 py-2.5 rounded-md text-sm font-medium shadow-sm transition-all focus:outline-none ${!energyProviders[activeEnergyTab].syncHistory ? 'bg-gray-50 text-gray-400 border border-gray-200 opacity-60 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                                                            Crear
                                                         </button>
                                                     </div>
                                                     
@@ -1353,15 +1614,17 @@
                                                                     <thead className="bg-gray-100 text-gray-500">
                                                                         <tr>
                                                                             <th className="px-4 py-2 font-semibold border-b border-gray-200 w-24">ID</th>
-                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Sitios</th>
-                                                                            <th className="px-4 py-2 font-semibold text-center border-b border-gray-200">Relés disponibles</th>
+                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Tipo panel</th>
+                                                                            <th className="px-4 py-2 font-semibold border-b border-gray-200">Nombre</th>
+                                                                            <th className="px-4 py-2 font-semibold text-center border-b border-gray-200">N° Relés</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="divide-y divide-gray-100 text-gray-700">
                                                                         {energyProviders[activeEnergyTab].syncHistory.items.map((item, idx) => (
                                                                             <tr key={idx} className="hover:bg-gray-50">
                                                                                 <td className="px-4 py-2 font-mono text-gray-500">{item.idExterno}</td>
-                                                                                <td className="px-4 py-2 font-medium">{item.support}</td>
+                                                                                <td className="px-4 py-2 font-medium">{item.panelType}</td>
+                                                                                <td className="px-4 py-2 font-medium">{item.siteName}</td>
                                                                                 <td className="px-4 py-2 text-center">{item.relays}</td>
                                                                             </tr>
                                                                         ))}
@@ -1384,18 +1647,19 @@
              );
         };
         
-        // --- MAIN APP COMPONENT ---
         const App = () => {
             const [view, setView] = useState('home'); 
             const [selectedSupport, setSelectedSupport] = useState(null);
+            const [selectedSite, setSelectedSite] = useState(null);
             const [selectedCampaign, setSelectedCampaign] = useState(null);
             const [supports, setSupports] = useState(mockSupportData);
             const [isEnergyAdminEnabled, setIsEnergyAdminEnabled] = useState(false);
             const [energyProviders, setEnergyProviders] = useState([]);
             const [globalProviders, setGlobalProviders] = useState(['Proveedor A', 'Proveedor B', 'Proveedor C']);
+            const [outdoorSites, setOutdoorSites] = useState([]);
             
             const outdoorLinkProvider = energyProviders.find(p => p.type === 'Outdoor Link');
-            const isOLConfigEnabled = isEnergyAdminEnabled && energyProviders.length > 0;
+            const isOLConfigEnabled = isEnergyAdminEnabled && energyProviders.length > 0 && outdoorLinkProvider?.isCredentialsSaved;
             const isOutdoorLinkFullyConfigured = isEnergyAdminEnabled && outdoorLinkProvider && outdoorLinkProvider.isCredentialsSaved && outdoorLinkProvider.syncHistory !== null;
             const isAutoSyncEnabled = outdoorLinkProvider ? outdoorLinkProvider.isAutoSyncEnabled : false;
 
@@ -1403,10 +1667,12 @@
                 setView(newView);
                 if (newView !== 'edit') { setSelectedSupport(null); }
                 if (newView !== 'campaign-detail') { setSelectedCampaign(null); }
+                if (newView !== 'outdoor-link-detail') { setSelectedSite(null); }
             };
             
             const handleEdit = (support) => { setSelectedSupport(support); setView('edit'); };
             const handleSelectCampaign = (campaign) => { setSelectedCampaign(campaign); setView('campaign-detail'); };
+            const handleEditSite = (site) => { setSelectedSite(site); setView('outdoor-link-detail'); };
 
             const renderContent = () => {
                 switch(view) {
@@ -1418,22 +1684,32 @@
                                                 setIsEnergyAdminEnabled={setIsEnergyAdminEnabled}
                                                 energyProviders={energyProviders}
                                                 setEnergyProviders={setEnergyProviders}
+                                                onRegisterOutdoorSites={(sites) => {
+                                                    setOutdoorSites(sites);
+                                                    setShowSuccessChip(true);
+                                                    setTimeout(() => setShowSuccessChip(false), 3000);
+                                                }}
                                              />;
                     case 'campaigns': return <CampaignsListView onSelectCampaign={handleSelectCampaign} />;
                     case 'campaign-detail': return <CampaignDetailView campaign={selectedCampaign} onNavigate={handleNavigate} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} isAutoSyncEnabled={isAutoSyncEnabled} />;
+                    case 'outdoor-link-sites': return <OutdoorLinkSitesView sites={outdoorSites} onEditSite={handleEditSite} />;
+                    case 'outdoor-link-detail': return <OutdoorLinkSiteDetailView site={selectedSite} />;
                     default: return <CatalogView onEdit={handleEdit} isOutdoorLinkEnabled={isOutdoorLinkFullyConfigured} providers={globalProviders} supports={supports} />;
                 }
             };
+
+            const [showSuccessChip, setShowSuccessChip] = useState(false);
 
             return (
                 <div className="flex h-screen bg-gray-100 font-sans">
                     <MainSidebar onNavigate={handleNavigate} currentView={view} isOutdoorLinkEnabled={isOLConfigEnabled} />
                     <div className="flex-1 flex flex-col overflow-hidden">
-                        <Header view={view} support={selectedSupport} campaign={selectedCampaign} onNavigate={handleNavigate} />
+                        <Header view={view} support={selectedSupport} campaign={selectedCampaign} site={selectedSite} onNavigate={handleNavigate} />
                         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                            {renderContent()}
                         </main>
                     </div>
+                    <SuccessChip message="¡Acción completada con éxito!" show={showSuccessChip} />
                 </div>
             );
         };
