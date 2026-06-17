@@ -7,10 +7,17 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React + ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <!-- Babel Standalone for JSX compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        Babel.registerPreset('react-classic', {
+            presets: [
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
     <style>
         /* A simple scrollbar style for webkit browsers */
         ::-webkit-scrollbar {
@@ -33,9 +40,7 @@
     <div id="root"></div>
     <div id="modal-root"></div>
 
-    <script type="text/babel">
-        /** @jsxRuntime classic */
-        /** @jsx React.createElement */
+    <script type="text/babel" data-presets="react-classic,env">
         const { useState, useEffect, useRef } = React;
 
         // --- ICONS (Consolidated) ---
@@ -415,7 +420,7 @@
                                     <div className="flex flex-col gap-2">
                                         <p className="text-[11px] font-bold text-red-500 flex items-start">
                                             <AlertCircleIcon className="w-4 h-4 mr-1.5 shrink-0 mt-0.5" />
-                                            <span>Al reducir la capacidad, las reservas podrían cambiar de prioridad o ser eliminadas según la nueva disponibilidad del soporte</span>
+                                            <span>Al reducir la capacidad, las reservas podrían cambiar de prioridad o ser eliminadas según la nueva disponibilidad del soporte.</span>
                                         </p>
                                         <p className="text-[11px] font-medium text-gray-600 flex items-start">
                                             <InfoIcon className="w-4 h-4 mr-1.5 shrink-0 mt-0.5 text-blue-500" />
