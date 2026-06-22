@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupos - OOH Manager</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beagle: {
+                            sidebar: '#27293d',
+                            sidebarHover: '#1f2130',
+                            sidebarActive: '#1a1c29',
+                            primary: '#4285f4',
+                            success: '#34a853',
+                            danger: '#ea4335',
+                            dark: '#404040'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Material Design Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React & Babel CDN para prototipado rápido -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        // Configuración de un preset de Babel personalizado para forzar el runtime clásico de React
+        // Esto evita errores de "Cannot use import statement outside a module" y conflictos de "importSource"
+        Babel.registerPreset('custom-react', {
+            presets: [
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
+
+    <style>
+        /* Estilos personalizados para emular Beagle Layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden text-slate-700">
+
+    <!-- Contenedor del Montaje de React -->
+    <div id="root" class="h-full"></div>
+
+    <!-- Script Babel utilizando el preset personalizado -->
+    <script type="text/babel" data-presets="custom-react">
+        const { useState, useEffect, useMemo } = React;
+
+        function App() {
+            // --- Soportes con Código Simulado, Tipos y Usuarios Base ---
+            const baseSoportesConCodigo = [
+                'COD482915 - Soporte 1 - Valla Costanera',
+                'COD193847 - Soporte 2 - Pantalla Kennedy',
+                'COD572819 - Soporte 3 - Unipolar Vespucio',
+                'COD928374 - Soporte 4 - Prados del Maipo',
+                'COD103948 - Soporte 5 - Viña del Mar Centro',
+                'COD582019 - Soporte 6 - Metro Tobalaba Digital',
+                'COD748291 - Soporte 7 - Carretera 5 Norte Unipolar'
+            ];
+
+            const baseTipos = [
+                'Digital',
+                'Estático',
+                'Vallas',
+                'Pantallas LED',
+                'Mobiliario Urbano',
+                'Metro/Transporte'
+            ];
+
+            const baseUsuarios = [
+                'Andrés Admin',
+                'Constanza Valdés',
+                'Ricardo Lagos',
+                'Juan Pérez',
+                'María González',
+                'Sofía Larraín',
+                'Felipe Muñoz'
+            ];
+
+            // --- Estado de Grupos ---
+            const [grupos, setGrupos] = useState([
+                { 
+                    id: 59, 
+                    nombre: 'Test Grupo Operaciones', 
+                    soportesSeleccionados: ['COD482915 - Soporte 1 - Valla Costanera', 'COD193847 - Soporte 2 - Pantalla Kennedy', 'COD572819 - Soporte 3 - Unipolar Vespucio'],
+                    tiposSeleccionados: ['Vallas', 'Pantallas LED'],
+                    usuariosSeleccionados: ['Andrés Admin', 'Constanza Valdés', 'Ricardo Lagos']
+                },
+                { 
+                    id: 60, 
+                    nombre: 'Ejecutivos de Ventas Nacionales', 
+                    soportesSeleccionados: ['COD582019 - Soporte 6 - Metro Tobalaba Digital'],
+                    tiposSeleccionados: ['Digital', 'Metro/Transporte'],
+                    usuariosSeleccionados: ['Juan Pérez', 'María González']
+                }
+            ]);
+
+            // --- Estados de Navegación / UI ---
+            const [currentView, setCurrentView] = useState('grupos');
+            const [sidebarOpen, setSidebarOpen] = useState(true);
+            const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+            const [activeMenuParent, setActiveMenuParent] = useState('usuarios');
+            const [isVisitorMode, setIsVisitorMode] = useState(false);
+            
+            // --- Modales ---
+            const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+            const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+            const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+            const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+            const [isSupportOpen, setIsSupportOpen] = useState(false);
+            const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+            // --- Objetos de Trabajo para Formularios ---
+            const [selectedGrupo, setSelectedGrupo] = useState(null);
+            const [deleteTargetId, setDeleteTargetId] = useState(null);
+            
+            // --- Nuevos Estados de Formulario de Grupo ---
+            const [formData, setFormData] = useState({ 
+                nombre: '', 
+                soportesSeleccionados: [], 
+                tiposSeleccionados: [],
+                usuariosSeleccionados: [] 
+            });
+
+            // --- Estado para Errores de Validación Locales ---
+            const [formErrors, setFormErrors] = useState({});
+
+            // --- Buscadores y Tabs internos de los Modales ---
+            const [searchSoporteQuery, setSearchSoporteQuery] = useState('');
+            const [searchTipoQuery, setSearchTipoQuery] = useState('');
+            const [searchUserQuery, setSearchUserQuery] = useState('');
+            const [activeTab, setActiveTab] = useState('tipo'); // 'tipo' o 'codigo'
+
+            const [supportFormData, setSupportFormData] = useState({ subject: '', message: '' });
+
+            // --- Alertas / Flash Alerts ---
+            const [alerts, setAlerts] = useState([]);
+
+            const triggerAlert = (message, type = 'success') => {
+                const id = Date.now();
+                setAlerts((prev) => [...prev, { id, message, type }]);
+                setTimeout(() => {
+                    setAlerts((prev) => prev.filter((a) => a.id !== id));
+                }, 4000);
+            };
+
+            // --- Validación Estricta de Formulario ---
+            const validateForm = () => {
+                const errors = {};
+                let isValid = true;
+
+                if (!formData.nombre.trim()) {
+                    errors.nombre = "El nombre del grupo es obligatorio.";
+                    isValid = false;
+                }
+                if (formData.usuariosSeleccionados.length === 0) {
+                    errors.usuarios = "Debes asociar al menos un (1) usuario al grupo.";
+                    isValid = false;
+                }
+                if (formData.soportesSeleccionados.length === 0 && formData.tiposSeleccionados.length === 0) {
+                    errors.soportes = "Debes asignar al menos un (1) soporte o tipo al grupo.";
+                    isValid = false;
+                }
+
+                const isAllTiposSelected = formData.tiposSeleccionados.length === baseTipos.length && baseTipos.length > 0;
+                const isAllSoportesSelected = formData.soportesSeleccionados.length === baseSoportesConCodigo.length && baseSoportesConCodigo.length > 0;
+
+                if (isAllTiposSelected || isAllSoportesSelected) {
+                    triggerAlert("No está permitido seleccionar la totalidad de los tipos o códigos de soportes. Para dar acceso completo al inventario, el usuario no debe pertenecer a ningún grupo.", "warning");
+                    isValid = false;
+                }
+
+                setFormErrors(errors);
+
+                if (!isValid) {
+                    if (Object.keys(errors).length > 0) {
+                        triggerAlert("No se puede guardar el grupo. Faltan campos obligatorios por completar.", "danger");
+                    }
+                }
+                return isValid;
+            };
+
+            // --- Acciones de Formulario ---
+            const handleAddClick = () => {
+                if (isVisitorMode) {
+                    triggerAlert("No puedes crear grupos en modo visita.", "warning");
+                    return;
+                }
+                setFormData({ 
+                    nombre: '', 
+                    soportesSeleccionados: [], 
+                    tiposSeleccionados: [],
+                    usuariosSeleccionados: [] 
+                });
+                setFormErrors({});
+                setSearchSoporteQuery('');
+                setSearchTipoQuery('');
+                setSearchUserQuery('');
+                setActiveTab('tipo');
+                setIsCreateModalOpen(true);
+            };
+
+            const handleCreateSubmit = (e) => {
+                e.preventDefault();
+                if (isVisitorMode) return;
+                
+                // Ejecutamos validación, si falla se detiene el flujo sin cerrar el modal
+                if (!validateForm()) return; 
+
+                const newGrupo = {
+                    id: Date.now(),
+                    nombre: formData.nombre,
+                    soportesSeleccionados: formData.soportesSeleccionados,
+                    tiposSeleccionados: formData.tiposSeleccionados,
+                    usuariosSeleccionados: formData.usuariosSeleccionados
+                };
+                setGrupos([...grupos, newGrupo]);
+                setIsCreateModalOpen(false);
+                triggerAlert("Grupo de usuarios creado exitosamente: " + newGrupo.nombre);
+            };
+
+            const handleEditClick = (grupo) => {
+                if (isVisitorMode) {
+                    triggerAlert("No puedes editar grupos en modo visita.", "warning");
+                    return;
+                }
+                setSelectedGrupo(grupo);
+                setFormData({
+                    nombre: grupo.nombre,
+                    soportesSeleccionados: grupo.soportesSeleccionados || [],
+                    tiposSeleccionados: grupo.tiposSeleccionados || [],
+                    usuariosSeleccionados: grupo.usuariosSeleccionados || []
+                });
+                setFormErrors({});
+                setSearchSoporteQuery('');
+                setSearchTipoQuery('');
+                setSearchUserQuery('');
+                setActiveTab('tipo');
+                setIsEditModalOpen(true);
+            };
+
+            const handleEditSubmit = (e) => {
+                e.preventDefault();
+                if (isVisitorMode) return;
+
+                // Ejecutamos validación, si falla se detiene el flujo sin cerrar el modal
+                if (!validateForm()) return; 
+
+                setGrupos(grupos.map(g => g.id === selectedGrupo.id ? {
+                    ...g,
+                    nombre: formData.nombre,
+                    soportesSeleccionados: formData.soportesSeleccionados,
+                    tiposSeleccionados: formData.tiposSeleccionados,
+                    usuariosSeleccionados: formData.usuariosSeleccionados
+                } : g));
+                setIsEditModalOpen(false);
+                triggerAlert("Grupo " + formData.nombre + " actualizado correctamente.");
+            };
+
+            const handleDeleteClick = (id) => {
+                if (isVisitorMode) {
+                    triggerAlert("No puedes eliminar grupos en modo visita.", "warning");
+                    return;
+                }
+                setDeleteTargetId(id);
+                setIsDeleteModalOpen(true);
+            };
+
+            const confirmDelete = () => {
+                setGrupos(grupos.filter(g => g.id !== deleteTargetId));
+                setIsDeleteModalOpen(false);
+                triggerAlert("Grupo eliminado correctamente.", "danger");
+            };
+
+            const handleDetailClick = (grupo) => {
+                setSelectedGrupo(grupo);
+                setIsDetailModalOpen(true);
+            };
+
+            const handleSupportSubmit = (e) => {
+                e.preventDefault();
+                setIsSupportOpen(false);
+                triggerAlert("Soporte contactado con éxito. Ticket generado.");
+                setSupportFormData({ subject: '', message: '' });
+            };
+
+            const closeModal = (setter) => {
+                setter(false);
+                setFormErrors({});
+            };
+
+            // --- Toggles de Selección del Formulario ---
+            const handleSoporteToggle = (soporte) => {
+                setFormData(prev => {
+                    const yaSeleccionado = prev.soportesSeleccionados.includes(soporte);
+                    const nuevosSoportes = yaSeleccionado 
+                        ? prev.soportesSeleccionados.filter(s => s !== soporte)
+                        : [...prev.soportesSeleccionados, soporte];
+                    return { ...prev, soportesSeleccionados: nuevosSoportes };
+                });
+                // Limpiar error asociado si el usuario interactúa
+                if (formErrors.soportes) setFormErrors(prev => ({ ...prev, soportes: null }));
+            };
+
+            const handleTipoToggle = (tipo) => {
+                setFormData(prev => {
+                    const yaSeleccionado = prev.tiposSeleccionados.includes(tipo);
+                    const nuevosTipos = yaSeleccionado 
+                        ? prev.tiposSeleccionados.filter(t => t !== tipo)
+                        : [...prev.tiposSeleccionados, tipo];
+                    return { ...prev, tiposSeleccionados: nuevosTipos };
+                });
+                // Limpiar error asociado si el usuario interactúa
+                if (formErrors.soportes) setFormErrors(prev => ({ ...prev, soportes: null }));
+            };
+
+            const handleUsuarioToggle = (usuario) => {
+                setFormData(prev => {
+                    const yaSeleccionado = prev.usuariosSeleccionados.includes(usuario);
+                    const nuevosUsuarios = yaSeleccionado 
+                        ? prev.usuariosSeleccionados.filter(u => u !== usuario)
+                        : [...prev.usuariosSeleccionados, usuario];
+                    return { ...prev, usuariosSeleccionados: nuevosUsuarios };
+                });
+                // Limpiar error asociado si el usuario interactúa
+                if (formErrors.usuarios) setFormErrors(prev => ({ ...prev, usuarios: null }));
+            };
+
+            // --- Listas Filtradas de Búsqueda y Multi-Búsqueda ---
+            const filteredSoportes = useMemo(() => {
+                if (!searchSoporteQuery.trim()) return baseSoportesConCodigo;
+                
+                // Separar los términos de búsqueda por espacio para soportar multi-selección
+                const queryTerms = searchSoporteQuery.toLowerCase().split(/\s+/).filter(Boolean);
+                
+                return baseSoportesConCodigo.filter(soporte => {
+                    const soporteLower = soporte.toLowerCase();
+                    // Mostrar soporte si coincide con CUALQUIERA de los términos de búsqueda
+                    return queryTerms.some(term => soporteLower.includes(term));
+                });
+            }, [searchSoporteQuery]);
+
+            const filteredTipos = useMemo(() => {
+                return baseTipos.filter(tipo => 
+                    tipo.toLowerCase().includes(searchTipoQuery.toLowerCase())
+                );
+            }, [searchTipoQuery]);
+
+            const filteredUsuariosList = useMemo(() => {
+                return baseUsuarios.filter(usuario => 
+                    usuario.toLowerCase().includes(searchUserQuery.toLowerCase())
+                );
+            }, [searchUserQuery]);
+
+            // --- Lógica de Selección Masiva (Seleccionar Todos los visibles) ---
+            const allVisibleSoportesSelected = filteredSoportes.length > 0 && filteredSoportes.every(s => formData.soportesSeleccionados.includes(s));
+
+            const handleToggleAllVisibleSoportes = () => {
+                setFormData(prev => {
+                    if (allVisibleSoportesSelected) {
+                        // Remover todos los visibles de la selección actual
+                        const newSelected = prev.soportesSeleccionados.filter(s => !filteredSoportes.includes(s));
+                        return { ...prev, soportesSeleccionados: newSelected };
+                    } else {
+                        // Añadir todos los visibles (sin duplicados)
+                        const newSelected = [...new Set([...prev.soportesSeleccionados, ...filteredSoportes])];
+                        return { ...prev, soportesSeleccionados: newSelected };
+                    }
+                });
+                if (formErrors.soportes) setFormErrors(prev => ({ ...prev, soportes: null }));
+            };
+
+            const allVisibleTiposSelected = filteredTipos.length > 0 && filteredTipos.every(t => formData.tiposSeleccionados.includes(t));
+
+            const handleToggleAllVisibleTipos = () => {
+                setFormData(prev => {
+                    if (allVisibleTiposSelected) {
+                        const newSelected = prev.tiposSeleccionados.filter(t => !filteredTipos.includes(t));
+                        return { ...prev, tiposSeleccionados: newSelected };
+                    } else {
+                        const newSelected = [...new Set([...prev.tiposSeleccionados, ...filteredTipos])];
+                        return { ...prev, tiposSeleccionados: newSelected };
+                    }
+                });
+                if (formErrors.soportes) setFormErrors(prev => ({ ...prev, soportes: null }));
+            };
+
+            return (
+                <div className="h-full flex flex-col">
+                    
+                    {/* BANDEJA DE FLASH ALERTS DINÁMICA (OVERLAY GLOBAL Z-[2000]) */}
+                    <div id="flash-alerts-only" className="fixed top-20 right-6 z-[2000] w-full max-w-sm flex flex-col items-end space-y-2 pointer-events-none">
+                        {alerts.map((alert) => (
+                            <div 
+                                key={alert.id} 
+                                className={`pointer-events-auto flex items-center justify-between p-4 rounded-md border text-sm shadow-2xl transition-all w-full ${
+                                    alert.type === 'danger' 
+                                        ? 'bg-rose-50 border-rose-200 text-rose-800' 
+                                        : alert.type === 'warning'
+                                        ? 'bg-amber-50 border-amber-200 text-amber-800'
+                                        : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                                }`}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <i className={`icon mdi ${alert.type === 'danger' ? 'mdi-alert-circle' : alert.type === 'warning' ? 'mdi-alert' : 'mdi-checkbox-marked-circle'} text-lg`}></i>
+                                    <span>{alert.message}</span>
+                                </div>
+                                <button 
+                                    onClick={() => setAlerts((prev) => prev.filter((a) => a.id !== alert.id))}
+                                    className="text-slate-400 hover:text-slate-600 focus:outline-hidden ml-2"
+                                >
+                                    <i className="icon mdi mdi-close"></i>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* TOP NAVBAR ORIGINAL */}
+                    <nav className="bg-white border-b border-slate-200 h-[60px] flex items-center justify-between px-4 z-[1030] fixed top-0 left-0 right-0 shadow-xs">
+                        <div className="flex items-center space-x-3">
+                            <button 
+                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                className="text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors focus:outline-hidden"
+                            >
+                                <i className="icon mdi mdi-menu text-2xl"></i>
+                            </button>
+                            <a href="#" className="flex items-center">
+                                <img 
+                                    alt="Demo" 
+                                    className="h-8 max-w-full object-contain" 
+                                    src="https://oohmanager-staging.s3.amazonaws.com/uploads/demo/tenant/thumb_logo_e21a7d4f6cf292b2.png" 
+                                />
+                            </a>
+                        </div>
+
+                        {/* Page title "Grupos" */}
+                        <div className="hidden sm:block text-slate-800 font-semibold text-lg border-l border-slate-200 pl-4 ml-2">
+                            <span>Grupos</span>
+                        </div>
+
+                        <div className="flex items-center space-x-4 ml-auto">
+                            <ul className="flex items-center">
+                                <li className="relative">
+                                    <button 
+                                        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                                        className="flex items-center space-x-2 text-slate-700 hover:text-slate-900 focus:outline-hidden py-1 px-2 rounded-lg hover:bg-slate-50 transition-all"
+                                    >
+                                        <i className="icon mdi mdi-account-circle text-2xl align-middle text-slate-400"></i>
+                                        <span className="user-name font-medium text-sm hidden md:inline">Andrés</span>
+                                        <i className="icon mdi mdi-chevron-down text-xs text-slate-400"></i>
+                                    </button>
+
+                                    {/* USER MENU DROPDOWN */}
+                                    {userDropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-50">
+                                            <div className="bg-beagle-sidebar text-white p-4 rounded-t-lg">
+                                                <div className="text-xs font-light text-slate-300">Módulo Comercial</div>
+                                                <div className="font-bold text-base mt-1">Andrés</div>
+                                                <div className="text-xs text-slate-300">Administrador/a de empresa</div>
+                                            </div>
+
+                                            <div className="p-1 border-b border-slate-150">
+                                                <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Abriendo mi cuenta..."); }} className="flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-md transition-colors">
+                                                    <i className="icon mdi mdi-face text-lg text-slate-400"></i>
+                                                    <span>Mi cuenta</span>
+                                                </a>
+                                                <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Cerrando sesión..."); }} className="flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-md transition-colors">
+                                                    <i className="icon mdi mdi-power text-lg text-slate-400"></i>
+                                                    <span>Cerrar sesión</span>
+                                                </a>
+                                            </div>
+
+                                            {/* Selector de módulos */}
+                                            <div className="p-3 border-b border-slate-150">
+                                                <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-2">Módulo</div>
+                                                <select className="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-beagle-primary outline-hidden">
+                                                    <option value="comercial">Módulo Comercial</option>
+                                                    <option value="operaciones">Módulo de Operaciones</option>
+                                                    <option value="ubicaciones">Módulo de Ubicaciones</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Toggle Modo Visita */}
+                                            <div className="p-2">
+                                                <button 
+                                                    onClick={() => {
+                                                        setIsVisitorMode(!isVisitorMode);
+                                                        setUserDropdownOpen(false);
+                                                        triggerAlert(
+                                                            !isVisitorMode ? "Modo visita activado. Se han deshabilitado acciones comerciales." : "Modo visita desactivado. Permisos de edición restaurados.",
+                                                            !isVisitorMode ? "warning" : "success"
+                                                        );
+                                                    }}
+                                                    className={`w-full flex items-center justify-center space-x-2 py-2 px-3 text-xs rounded font-medium transition-all ${
+                                                        isVisitorMode 
+                                                            ? 'bg-amber-100 hover:bg-amber-200 text-amber-800' 
+                                                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                                    }`}
+                                                >
+                                                    <i className={`icon mdi ${isVisitorMode ? 'mdi-circle' : 'mdi-circle-outline'} text-sm`}></i>
+                                                    <span>Modo visita: {isVisitorMode ? 'Activado' : 'Desactivado'}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+
+                    {/* WRAPPER PRINCIPAL */}
+                    <div className="flex flex-1 pt-[60px] h-full overflow-hidden">
+                        
+                        {/* LEFT SIDEBAR (BEAGLE STYLE) */}
+                        <aside 
+                            className={`bg-beagle-sidebar text-slate-300 w-[240px] flex-shrink-0 flex flex-col justify-between transition-all duration-300 ${
+                                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:-ml-[240px]'
+                            } overflow-y-auto h-full z-40 border-r border-slate-800`}
+                        >
+                            <div className="py-4">
+                                <ul className="space-y-1">
+                                    <li className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-6 py-2">Menú</li>
+                                    
+                                    {/* Inicio */}
+                                    <li>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Navegando a Inicio..."); }} className="flex items-center px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all text-slate-400">
+                                            <i className="icon mdi mdi-home text-lg mr-3"></i>
+                                            <span>Inicio</span>
+                                        </a>
+                                    </li>
+
+                                    {/* Soportes */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'soportes' ? '' : 'soportes')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'soportes' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-widgets text-lg mr-3"></i>
+                                                    <span>Soportes</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'soportes' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'soportes' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Catálogo</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Disponibilidad</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Mapa</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Circuitos</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Bloqueos</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Servicios adicionales</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Proveedores</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Importadores</a></li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Cotizaciones */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'cotizaciones' ? '' : 'cotizaciones')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'cotizaciones' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-assignment text-lg mr-3"></i>
+                                                    <span>Cotizaciones</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'cotizaciones' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'cotizaciones' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Ver cotizaciones</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Crear cotización</a></li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Reservas */}
+                                    <li>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Navegando a Reservas..."); }} className="flex items-center px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all text-slate-400">
+                                            <i className="icon mdi mdi-calendar-alt text-lg mr-3"></i>
+                                            <span>Reservas</span>
+                                        </a>
+                                    </li>
+
+                                    {/* Campañas */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'campanas' ? '' : 'campanas')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'campanas' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-assignment-check text-lg mr-3"></i>
+                                                    <span>Campañas</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'campanas' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'campanas' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Ver campañas</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Autorizar campañas</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Importar campañas</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Campañas eliminadas</a></li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Anunciantes */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'anunciantes' ? '' : 'anunciantes')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'anunciantes' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-folder-person text-lg mr-3"></i>
+                                                    <span>Anunciantes</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'anunciantes' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'anunciantes' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Ver anunciantes</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Crear anunciante</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Importar anunciantes</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Traspasar anunciantes</a></li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Agencias */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'agencias' ? '' : 'agencias')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'agencias' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-city text-lg mr-3"></i>
+                                                    <span>Agencias</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'agencias' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'agencias' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Ver agencias</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Crear agencia</a></li>
+                                                    <li><a href="#" className="block py-1 hover:text-white text-slate-400">Importar agencias</a></li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Reportes */}
+                                    <li>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Navegando a Reportes..."); }} className="flex items-center px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all text-slate-400">
+                                            <i className="icon mdi mdi-chart text-lg mr-3"></i>
+                                            <span>Reportes</span>
+                                        </a>
+                                    </li>
+
+                                    <li className="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-6 py-2 pt-4">Admin</li>
+                                    
+                                    {/* Admin -> Usuarios con la sección Grupos */}
+                                    <li>
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'usuarios' ? '' : 'usuarios')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'usuarios' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-accounts-alt text-lg mr-3"></i>
+                                                    <span>Usuarios</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'usuarios' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'usuarios' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1 border-l-2 border-slate-700 ml-6">
+                                                    <li><a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Viendo usuarios..."); }} className="block py-1.5 px-2 hover:text-white text-slate-400">Ver usuarios</a></li>
+                                                    <li><a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Formulario crear usuario..."); }} className="block py-1.5 px-2 hover:text-white text-slate-400">Crear usuario</a></li>
+                                                    
+                                                    {/* --- SUBSECCIÓN: GRUPOS --- */}
+                                                    <li className="active">
+                                                        <a 
+                                                            href="#grupos" 
+                                                            onClick={(e) => { e.preventDefault(); setCurrentView('grupos'); }}
+                                                            className={`block py-1.5 px-2 font-semibold rounded-l transition-all ${currentView === 'grupos' ? 'bg-beagle-primary text-white' : 'text-slate-300 hover:text-white'}`}
+                                                        >
+                                                            Grupos
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+
+                                    {/* Modulo */}
+                                    <li>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Cargando Ajustes de Módulo..."); }} className="flex items-center px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all text-slate-400">
+                                            <i className="icon mdi mdi-view-module text-lg mr-3"></i>
+                                            <span>Módulo</span>
+                                        </a>
+                                    </li>
+
+                                    {/* Empresa */}
+                                    <li>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); triggerAlert("Cargando Configuración de Empresa..."); }} className="flex items-center px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all text-slate-400">
+                                            <i className="icon mdi mdi-settings text-lg mr-3"></i>
+                                            <span>Empresa</span>
+                                        </a>
+                                    </li>
+
+                                    {/* Ayuda con modales de atajos y contacto */}
+                                    <li className="border-t border-slate-800 mt-4 pt-4">
+                                        <div className="flex flex-col">
+                                            <button 
+                                                onClick={() => setActiveMenuParent(activeMenuParent === 'ayuda' ? '' : 'ayuda')}
+                                                className={`flex items-center justify-between px-6 py-2.5 text-sm hover:text-white hover:bg-beagle-sidebarHover transition-all ${activeMenuParent === 'ayuda' ? 'text-white' : 'text-slate-400'}`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <i className="icon mdi mdi-help text-lg mr-3"></i>
+                                                    <span>Ayuda</span>
+                                                </div>
+                                                <i className={`icon mdi ${activeMenuParent === 'ayuda' ? 'mdi-chevron-down' : 'mdi-chevron-right'} text-xs`}></i>
+                                            </button>
+                                            {activeMenuParent === 'ayuda' && (
+                                                <ul className="bg-beagle-sidebarActive/40 pl-6 py-1 text-xs space-y-1.5 border-l-2 border-slate-700 ml-6">
+                                                    <li>
+                                                        <button onClick={() => setIsSupportOpen(true)} className="w-full text-left py-1 hover:text-white text-slate-400 focus:outline-hidden">
+                                                            Contáctanos
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button onClick={() => setIsShortcutsOpen(true)} className="w-full text-left py-1 hover:text-white text-slate-400 focus:outline-hidden">
+                                                            Atajos de teclado
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <a href="https://coda.io/@soporte/ooh-manager" target="_blank" rel="noreferrer" className="block py-1 hover:text-white text-slate-400">
+                                                            Centro de ayuda
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </aside>
+
+                        {/* ÁREA DE CONTENIDO CENTRAL */}
+                        <main className="flex-1 bg-[#f5f5f5] p-6 overflow-y-auto h-full relative">
+                            
+                            {/* ALERTA DE MODO VISITA ACTIVO */}
+                            {isVisitorMode && (
+                                <div className="mb-4 bg-amber-500 text-white rounded-lg p-3 text-xs font-semibold flex items-center space-x-2 shadow-xs">
+                                    <i className="icon mdi mdi-alert-circle text-lg"></i>
+                                    <span>Estás visualizando el sistema comercial en Modo Visita. Las acciones de creación, modificación y eliminación están restringidas.</span>
+                                </div>
+                            )}
+
+                            {/* BREADCRUMB */}
+                            <div className="page-head pb-3 border-b border-slate-200 mb-6 flex items-center justify-between">
+                                <nav aria-label="breadcrumb" role="navigation">
+                                    <ol className="flex items-center space-x-2 text-xs text-slate-500">
+                                        <li>
+                                            <a href="#" className="hover:text-beagle-primary transition-colors">
+                                                <i className="icon mdi mdi-home text-sm"></i>
+                                            </a>
+                                        </li>
+                                        <li className="before:content-['/'] before:mr-2 before:text-slate-300">
+                                            <span className="text-slate-700 font-medium">Grupos</span>
+                                        </li>
+                                    </ol>
+                                </nav>
+                            </div>
+
+                            {/* MENSAJE EXPLICATIVO DE LA VISTA */}
+                            <div className="mb-6 bg-blue-50 border-l-4 border-beagle-primary p-4 rounded-r-md text-sm text-slate-700 shadow-sm">
+                                <p><strong>Los grupos permiten limitar el acceso al inventario</strong>, permitiendo únicamente el acceso a los soportes asignados al grupo. <br className="hidden sm:block"/>Importante: los usuarios que no estén asociados a ningún grupo mantendrán acceso a la totalidad del inventario de la empresa.</p>
+                            </div>
+
+                            {/* MAIN CONTENT VIEW */}
+                            <div className="space-y-6 animate-fade-in">
+                                
+                                {/* BOTÓN DE CREACIÓN SUPERIOR */}
+                                <div className="flex justify-end">
+                                    <button 
+                                        onClick={handleAddClick}
+                                        className="bg-beagle-primary hover:bg-blue-600 text-white font-semibold text-xs py-2 px-4 rounded-md shadow-xs transition-colors flex items-center space-x-2 focus:outline-hidden"
+                                    >
+                                        <i className="icon mdi mdi-plus text-sm"></i>
+                                        <span>Crear grupo</span>
+                                    </button>
+                                </div>
+
+                                {/* TABLA DE GRUPOS DE USUARIOS */}
+                                <div className="bg-white rounded-lg shadow-xs border-t-4 border-beagle-primary overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left text-sm text-slate-700">
+                                            <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase text-[11px] font-bold tracking-wider">
+                                                <tr>
+                                                    <th className="px-6 py-4">Nombre del Grupo</th>
+                                                    <th className="px-6 py-4 text-center">N° Usuarios</th>
+                                                    <th className="px-6 py-4">Restricción</th>
+                                                    <th className="px-6 py-4 text-right">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-150">
+                                                {grupos.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="4" className="text-center py-8 text-slate-400 text-xs">
+                                                            No hay grupos de usuarios registrados en el sistema.
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    grupos.map((grupo) => (
+                                                        <tr key={grupo.id} className="hover:bg-slate-50/70 transition-colors">
+                                                            <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
+                                                                {grupo.nombre}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center text-slate-800 font-semibold whitespace-nowrap">
+                                                                <span className="inline-block bg-slate-100 rounded-full px-3 py-1 text-xs">
+                                                                    {grupo.usuariosSeleccionados ? grupo.usuariosSeleccionados.length : 0}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
+                                                                <div className="flex flex-col space-y-1">
+                                                                    <span className="inline-flex items-center space-x-1.5 bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-100 w-max">
+                                                                        <i className="icon mdi mdi-tag"></i>
+                                                                        <span>Tipos ({grupo.tiposSeleccionados ? grupo.tiposSeleccionados.length : 0})</span>
+                                                                    </span>
+                                                                    <span className="inline-flex items-center space-x-1.5 bg-teal-50 text-teal-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-teal-100 w-max">
+                                                                        <i className="icon mdi mdi-billboard"></i>
+                                                                        <span>Código ({grupo.soportesSeleccionados ? grupo.soportesSeleccionados.length : 0})</span>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right whitespace-nowrap align-middle">
+                                                                <div className="inline-flex space-x-2">
+                                                                    <button 
+                                                                        onClick={() => handleDetailClick(grupo)}
+                                                                        className="p-1.5 text-slate-400 hover:text-beagle-primary hover:bg-blue-50 rounded-md transition-colors focus:outline-hidden"
+                                                                        title="Ver detalles"
+                                                                    >
+                                                                        <i className="icon mdi mdi-eye-outline text-lg"></i>
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleEditClick(grupo)}
+                                                                        className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors focus:outline-hidden"
+                                                                        title="Editar grupo"
+                                                                    >
+                                                                        <i className="icon mdi mdi-pencil-outline text-lg"></i>
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleDeleteClick(grupo.id)}
+                                                                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors focus:outline-hidden"
+                                                                        title="Eliminar grupo"
+                                                                    >
+                                                                        <i className="icon mdi mdi-delete-outline text-lg"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* FOOTER DE LA TABLA */}
+                                    <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                                        <div className="text-xs text-slate-500">
+                                            Mostrando <strong className="text-slate-800">{grupos.length}</strong> {grupos.length === 1 ? 'grupo' : 'grupos'}
+                                        </div>
+                                        <div className="flex space-x-1">
+                                            <button disabled className="px-3 py-1 bg-white border border-slate-200 text-slate-400 text-xs rounded cursor-not-allowed">
+                                                Anterior
+                                            </button>
+                                            <button disabled className="px-3 py-1 bg-white border border-slate-200 text-slate-400 text-xs rounded cursor-not-allowed">
+                                                Siguiente
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+
+                    {/* --- MODALES INTERACTIVOS --- */}
+
+                    {/* MODAL: CREAR GRUPO */}
+                    {isCreateModalOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden my-8">
+                                <div className="bg-beagle-primary text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 className="font-bold text-base">Crear grupo</h3>
+                                    <button onClick={() => closeModal(setIsCreateModalOpen)} className="text-white hover:text-slate-200">
+                                        <i className="icon mdi mdi-close text-xl"></i>
+                                    </button>
+                                </div>
+                                <form onSubmit={handleCreateSubmit} className="p-6 space-y-5">
+                                    
+                                    {/* Campo 1: Nombre */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
+                                            Nombre del Grupo<span className="text-rose-500 ml-1">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            value={formData.nombre} 
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, nombre: e.target.value });
+                                                if (formErrors.nombre) setFormErrors(prev => ({ ...prev, nombre: null }));
+                                            }}
+                                            placeholder="Ej: Ejecutivos Ventas Norte"
+                                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-hidden ${formErrors.nombre ? 'border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-200 focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary'}`} 
+                                        />
+                                        {formErrors.nombre && <p className="text-rose-600 text-xs mt-1.5 font-medium animate-fade-in">{formErrors.nombre}</p>}
+                                    </div>
+
+                                    {/* Campo 2: Selector de Usuarios */}
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center space-x-1">
+                                            <i className="icon mdi mdi-account-multiple-plus text-sm"></i>
+                                            <span>Asociar Usuarios ({formData.usuariosSeleccionados.length})<span className="text-rose-500 ml-1">*</span></span>
+                                        </div>
+                                        {formErrors.usuarios && <p className="text-rose-600 text-xs font-medium animate-fade-in">{formErrors.usuarios}</p>}
+                                        
+                                        <div className="relative">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Buscar usuario..."
+                                                value={searchUserQuery}
+                                                onChange={(e) => setSearchUserQuery(e.target.value)}
+                                                className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                            />
+                                            <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                        </div>
+
+                                        <div className={`bg-slate-50 border rounded-lg p-3 max-h-32 overflow-y-auto space-y-2 ${formErrors.usuarios ? 'border-rose-500' : 'border-slate-200'}`}>
+                                            {filteredUsuariosList.length === 0 ? (
+                                                <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron usuarios</div>
+                                            ) : (
+                                                filteredUsuariosList.map((usuario, idx) => (
+                                                    <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={formData.usuariosSeleccionados.includes(usuario)}
+                                                            onChange={() => handleUsuarioToggle(usuario)}
+                                                            className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                        />
+                                                        <span>{usuario}</span>
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Campo 3: Asignar Soportes (Tabs) */}
+                                    <div className="space-y-2 pt-2">
+                                        <div className="text-xs font-bold text-teal-600 uppercase tracking-wider flex items-center space-x-1 mb-1">
+                                            <i className="icon mdi mdi-format-list-checks text-sm"></i>
+                                            <span>Asignar Soportes<span className="text-rose-500 ml-1">*</span></span>
+                                        </div>
+                                        {formErrors.soportes && <p className="text-rose-600 text-xs font-medium animate-fade-in">{formErrors.soportes}</p>}
+
+                                        {/* Tabs Navigation */}
+                                        <div className={`flex border-b ${formErrors.soportes ? 'border-rose-200' : 'border-slate-200'}`}>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setActiveTab('tipo')} 
+                                                className={`px-4 py-2 text-xs font-semibold focus:outline-hidden ${activeTab === 'tipo' ? 'text-beagle-primary border-b-2 border-beagle-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Tipo ({formData.tiposSeleccionados.length})
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setActiveTab('codigo')} 
+                                                className={`px-4 py-2 text-xs font-semibold focus:outline-hidden ${activeTab === 'codigo' ? 'text-beagle-primary border-b-2 border-beagle-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Código ({formData.soportesSeleccionados.length})
+                                            </button>
+                                        </div>
+
+                                        {/* Tab Content: Tipo */}
+                                        {activeTab === 'tipo' && (
+                                            <div className="animate-fade-in space-y-2 mt-2">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Buscar por tipo..."
+                                                        value={searchTipoQuery}
+                                                        onChange={(e) => setSearchTipoQuery(e.target.value)}
+                                                        className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                                    />
+                                                    <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                                </div>
+
+                                                <div className={`bg-slate-50 border rounded-lg p-3 max-h-48 overflow-y-auto ${formErrors.soportes ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+                                                        <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                                                            <input 
+                                                                type="checkbox"
+                                                                checked={allVisibleTiposSelected}
+                                                                onChange={handleToggleAllVisibleTipos}
+                                                                className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                            />
+                                                            <span>Seleccionar todos</span>
+                                                        </label>
+                                                        <span className="text-[10px] text-slate-400">{filteredTipos.length} resultados</span>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        {filteredTipos.length === 0 ? (
+                                                            <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron tipos</div>
+                                                        ) : (
+                                                            filteredTipos.map((tipo, idx) => (
+                                                                <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={formData.tiposSeleccionados.includes(tipo)}
+                                                                        onChange={() => handleTipoToggle(tipo)}
+                                                                        className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                                    />
+                                                                    <span>{tipo}</span>
+                                                                </label>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Tab Content: Código */}
+                                        {activeTab === 'codigo' && (
+                                            <div className="animate-fade-in space-y-2 mt-2">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Buscar códigos (ej: COD123 COD456)..."
+                                                        value={searchSoporteQuery}
+                                                        onChange={(e) => setSearchSoporteQuery(e.target.value)}
+                                                        className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                                    />
+                                                    <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                                </div>
+
+                                                <div className={`bg-slate-50 border rounded-lg p-3 max-h-48 overflow-y-auto ${formErrors.soportes ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+                                                        <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                                                            <input 
+                                                                type="checkbox"
+                                                                checked={allVisibleSoportesSelected}
+                                                                onChange={handleToggleAllVisibleSoportes}
+                                                                className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                            />
+                                                            <span>Seleccionar todos</span>
+                                                        </label>
+                                                        <span className="text-[10px] text-slate-400">{filteredSoportes.length} resultados</span>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        {filteredSoportes.length === 0 ? (
+                                                            <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron soportes</div>
+                                                        ) : (
+                                                            filteredSoportes.map((soporte, idx) => (
+                                                                <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={formData.soportesSeleccionados.includes(soporte)}
+                                                                        onChange={() => handleSoporteToggle(soporte)}
+                                                                        className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                                    />
+                                                                    <span>{soporte}</span>
+                                                                </label>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="pt-4 border-t border-slate-100 flex justify-end space-x-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => closeModal(setIsCreateModalOpen)}
+                                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            className="px-4 py-2 bg-beagle-primary text-white rounded text-xs font-semibold hover:bg-blue-600 transition-colors"
+                                        >
+                                            Crear grupo
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: EDITAR GRUPO */}
+                    {isEditModalOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden my-8">
+                                <div className="bg-amber-600 text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 className="font-bold text-base">Editar grupo: {selectedGrupo?.nombre}</h3>
+                                    <button onClick={() => closeModal(setIsEditModalOpen)} className="text-white hover:text-slate-200">
+                                        <i className="icon mdi mdi-close text-xl"></i>
+                                    </button>
+                                </div>
+                                <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
+                                    
+                                    {/* Campo 1: Nombre */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
+                                            Nombre del Grupo<span className="text-rose-500 ml-1">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            value={formData.nombre} 
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, nombre: e.target.value });
+                                                if (formErrors.nombre) setFormErrors(prev => ({ ...prev, nombre: null }));
+                                            }}
+                                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-hidden ${formErrors.nombre ? 'border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-200 focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary'}`} 
+                                        />
+                                        {formErrors.nombre && <p className="text-rose-600 text-xs mt-1.5 font-medium animate-fade-in">{formErrors.nombre}</p>}
+                                    </div>
+
+                                    {/* Campo 2: Selector de Usuarios */}
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center space-x-1">
+                                            <i className="icon mdi mdi-account-multiple-plus text-sm"></i>
+                                            <span>Asociar Usuarios ({formData.usuariosSeleccionados.length})<span className="text-rose-500 ml-1">*</span></span>
+                                        </div>
+                                        {formErrors.usuarios && <p className="text-rose-600 text-xs font-medium animate-fade-in">{formErrors.usuarios}</p>}
+                                        
+                                        <div className="relative">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Buscar usuario..."
+                                                value={searchUserQuery}
+                                                onChange={(e) => setSearchUserQuery(e.target.value)}
+                                                className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                            />
+                                            <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                        </div>
+
+                                        <div className={`bg-slate-50 border rounded-lg p-3 max-h-32 overflow-y-auto space-y-2 ${formErrors.usuarios ? 'border-rose-500' : 'border-slate-200'}`}>
+                                            {filteredUsuariosList.length === 0 ? (
+                                                <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron usuarios</div>
+                                            ) : (
+                                                filteredUsuariosList.map((usuario, idx) => (
+                                                    <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={formData.usuariosSeleccionados.includes(usuario)}
+                                                            onChange={() => handleUsuarioToggle(usuario)}
+                                                            className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                        />
+                                                        <span>{usuario}</span>
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Campo 3: Asignar Soportes (Tabs) */}
+                                    <div className="space-y-2 pt-2">
+                                        <div className="text-xs font-bold text-teal-600 uppercase tracking-wider flex items-center space-x-1 mb-1">
+                                            <i className="icon mdi mdi-format-list-checks text-sm"></i>
+                                            <span>Asignar Soportes<span className="text-rose-500 ml-1">*</span></span>
+                                        </div>
+                                        {formErrors.soportes && <p className="text-rose-600 text-xs font-medium animate-fade-in">{formErrors.soportes}</p>}
+
+                                        {/* Tabs Navigation */}
+                                        <div className={`flex border-b ${formErrors.soportes ? 'border-rose-200' : 'border-slate-200'}`}>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setActiveTab('tipo')} 
+                                                className={`px-4 py-2 text-xs font-semibold focus:outline-hidden ${activeTab === 'tipo' ? 'text-beagle-primary border-b-2 border-beagle-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Tipo ({formData.tiposSeleccionados.length})
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setActiveTab('codigo')} 
+                                                className={`px-4 py-2 text-xs font-semibold focus:outline-hidden ${activeTab === 'codigo' ? 'text-beagle-primary border-b-2 border-beagle-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Código ({formData.soportesSeleccionados.length})
+                                            </button>
+                                        </div>
+
+                                        {/* Tab Content: Tipo */}
+                                        {activeTab === 'tipo' && (
+                                            <div className="animate-fade-in space-y-2 mt-2">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Buscar por tipo..."
+                                                        value={searchTipoQuery}
+                                                        onChange={(e) => setSearchTipoQuery(e.target.value)}
+                                                        className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                                    />
+                                                    <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                                </div>
+
+                                                <div className={`bg-slate-50 border rounded-lg p-3 max-h-48 overflow-y-auto ${formErrors.soportes ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+                                                        <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                                                            <input 
+                                                                type="checkbox"
+                                                                checked={allVisibleTiposSelected}
+                                                                onChange={handleToggleAllVisibleTipos}
+                                                                className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                            />
+                                                            <span>Seleccionar todos</span>
+                                                        </label>
+                                                        <span className="text-[10px] text-slate-400">{filteredTipos.length} resultados</span>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        {filteredTipos.length === 0 ? (
+                                                            <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron tipos</div>
+                                                        ) : (
+                                                            filteredTipos.map((tipo, idx) => (
+                                                                <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={formData.tiposSeleccionados.includes(tipo)}
+                                                                        onChange={() => handleTipoToggle(tipo)}
+                                                                        className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                                    />
+                                                                    <span>{tipo}</span>
+                                                                </label>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Tab Content: Código */}
+                                        {activeTab === 'codigo' && (
+                                            <div className="animate-fade-in space-y-2 mt-2">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Buscar códigos (ej: COD123 COD456)..."
+                                                        value={searchSoporteQuery}
+                                                        onChange={(e) => setSearchSoporteQuery(e.target.value)}
+                                                        className="w-full border border-slate-200 rounded pl-9 pr-3 py-1.5 text-xs focus:border-beagle-primary focus:ring-1 focus:ring-beagle-primary outline-hidden" 
+                                                    />
+                                                    <i className="icon mdi mdi-magnify absolute left-3 top-1.5 text-slate-400 text-base"></i>
+                                                </div>
+
+                                                <div className={`bg-slate-50 border rounded-lg p-3 max-h-48 overflow-y-auto ${formErrors.soportes ? 'border-rose-500' : 'border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+                                                        <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                                                            <input 
+                                                                type="checkbox"
+                                                                checked={allVisibleSoportesSelected}
+                                                                onChange={handleToggleAllVisibleSoportes}
+                                                                className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                            />
+                                                            <span>Seleccionar todos</span>
+                                                        </label>
+                                                        <span className="text-[10px] text-slate-400">{filteredSoportes.length} resultados</span>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        {filteredSoportes.length === 0 ? (
+                                                            <div className="text-[11px] text-slate-400 text-center py-2">No se encontraron soportes</div>
+                                                        ) : (
+                                                            filteredSoportes.map((soporte, idx) => (
+                                                                <label key={idx} className="flex items-center space-x-2.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={formData.soportesSeleccionados.includes(soporte)}
+                                                                        onChange={() => handleSoporteToggle(soporte)}
+                                                                        className="rounded border-slate-300 text-beagle-primary focus:ring-beagle-primary h-4 w-4"
+                                                                    />
+                                                                    <span>{soporte}</span>
+                                                                </label>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="pt-4 border-t border-slate-100 flex justify-end space-x-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => closeModal(setIsEditModalOpen)}
+                                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            className="px-4 py-2 bg-amber-600 text-white rounded text-xs font-semibold hover:bg-amber-700 transition-colors"
+                                        >
+                                            Guardar Cambios
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: DETALLE DE GRUPO */}
+                    {isDetailModalOpen && selectedGrupo && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
+                                <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 className="font-bold text-sm uppercase tracking-wider">Detalles del Grupo</h3>
+                                    <button onClick={() => setIsDetailModalOpen(false)} className="text-white hover:text-slate-200">
+                                        <i className="icon mdi mdi-close text-xl"></i>
+                                    </button>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    {/* 1. Nombre del Grupo */}
+                                    <div className="border-b border-slate-100 pb-2">
+                                        <span className="text-xs text-slate-400 font-semibold uppercase block">Nombre del grupo</span>
+                                        <span className="text-sm font-bold text-beagle-primary">{selectedGrupo.nombre}</span>
+                                    </div>
+
+                                    {/* 2. Usuarios Asociados */}
+                                    <div className="border-b border-slate-100 pb-2">
+                                        <span className="text-xs text-slate-400 font-semibold uppercase block mb-1">Usuarios Asociados ({selectedGrupo.usuariosSeleccionados?.length || 0})</span>
+                                        <ul className="text-xs text-slate-600 mt-1.5 list-disc pl-4 max-h-24 overflow-y-auto">
+                                            {selectedGrupo.usuariosSeleccionados?.map((u, idx) => <li key={idx} className="font-medium text-slate-700">{u}</li>)}
+                                        </ul>
+                                    </div>
+
+                                    {/* 3. Soportes Asignados (Inventario) */}
+                                    <div className="pb-2">
+                                        <span className="text-xs text-slate-400 font-semibold uppercase block mb-2">Restricciones de Inventario</span>
+                                        
+                                        <div className="space-y-3">
+                                            {/* Mostrar Tipos Restringidos */}
+                                            <div>
+                                                <span className="inline-flex items-center space-x-1 text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">
+                                                    <i className="icon mdi mdi-tag"></i>
+                                                    <span>Por Tipo ({selectedGrupo.tiposSeleccionados?.length || 0})</span>
+                                                </span>
+                                                {selectedGrupo.tiposSeleccionados && selectedGrupo.tiposSeleccionados.length > 0 && (
+                                                    <ul className="text-[11px] text-slate-500 mt-1.5 list-disc pl-4 max-h-20 overflow-y-auto">
+                                                        {selectedGrupo.tiposSeleccionados.map((t, idx) => <li key={idx}>{t}</li>)}
+                                                    </ul>
+                                                )}
+                                            </div>
+
+                                            {/* Mostrar Soportes Específicos Restringidos (Renombrado a Código) */}
+                                            <div>
+                                                <span className="inline-flex items-center space-x-1 text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200 text-[11px]">
+                                                    <i className="icon mdi mdi-billboard"></i>
+                                                    <span>Código ({selectedGrupo.soportesSeleccionados?.length || 0})</span>
+                                                </span>
+                                                {selectedGrupo.soportesSeleccionados && selectedGrupo.soportesSeleccionados.length > 0 && (
+                                                    <ul className="text-[11px] text-slate-500 mt-1.5 list-disc pl-4 max-h-20 overflow-y-auto">
+                                                        {selectedGrupo.soportesSeleccionados.map((s, idx) => <li key={idx}>{s}</li>)}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 px-6 py-3 flex justify-end">
+                                    <button 
+                                        onClick={() => setIsDetailModalOpen(false)}
+                                        className="px-4 py-1.5 bg-slate-800 text-white rounded text-xs font-semibold hover:bg-slate-900 transition-colors"
+                                    >
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: CONFIRMACIÓN DE ELIMINACIÓN */}
+                    {isDeleteModalOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
+                                <div className="p-6 flex items-start space-x-4">
+                                    <div className="bg-rose-100 text-rose-600 p-3 rounded-full flex-shrink-0">
+                                        <i className="icon mdi mdi-alert-circle text-2xl"></i>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-slate-900 text-base">¿Estás seguro que deseas eliminar este grupo?</h4>
+                                        <p className="text-xs text-slate-500">Esta acción es irreversible y removerá las restricciones asignadas a este conjunto de usuarios.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 px-6 py-3 flex justify-end space-x-2">
+                                    <button 
+                                        onClick={() => setIsDeleteModalOpen(false)}
+                                        className="px-4 py-2 border border-slate-200 text-slate-600 rounded text-xs font-semibold hover:bg-slate-100"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button 
+                                        onClick={confirmDelete}
+                                        className="px-4 py-2 bg-rose-600 text-white rounded text-xs font-semibold hover:bg-rose-700 transition-colors"
+                                    >
+                                        Confirmar eliminación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: ATAJOS DE TECLADO */}
+                    {isShortcutsOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden">
+                                <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 className="font-bold text-sm uppercase tracking-wider">Atajos de teclado</h3>
+                                    <button onClick={() => setIsShortcutsOpen(false)} className="text-white hover:text-slate-200">
+                                        <i className="icon mdi mdi-close text-xl"></i>
+                                    </button>
+                                </div>
+                                <div className="p-6">
+                                    <table className="w-full text-left text-xs text-slate-600">
+                                        <thead>
+                                            <tr className="border-b border-slate-200">
+                                                <th className="py-2 font-bold text-slate-500">Acción</th>
+                                                <th className="py-2 font-bold text-slate-500 text-center">Mac</th>
+                                                <th className="py-2 font-bold text-slate-500 text-center">Windows</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            <tr>
+                                                <td className="py-3 text-slate-800">Abre disponibilidad</td>
+                                                <td className="py-3 text-center"><kbd className="bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-[10px]">Fn + F2</kbd></td>
+                                                <td className="py-3 text-center"><kbd className="bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-[10px]">F2</kbd></td>
+                                            </tr>
+                                            <tr>
+                                                <td className="py-3 text-slate-800">Abre nueva cotización</td>
+                                                <td className="py-3 text-center"><kbd className="bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-[10px]">Fn + F3</kbd></td>
+                                                <td className="py-3 text-center"><kbd className="bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-[10px]">F3</kbd></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="bg-slate-50 px-6 py-3 flex justify-end">
+                                    <button 
+                                        onClick={() => setIsShortcutsOpen(false)}
+                                        className="px-4 py-1.5 bg-slate-800 text-white rounded text-xs font-semibold hover:bg-slate-900 transition-colors"
+                                    >
+                                        Entendido
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL: CONTACTO SOPORTE */}
+                    {isSupportOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
+                                <div className="bg-beagle-primary text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 className="font-bold text-base">Contáctanos</h3>
+                                    <button onClick={() => setIsSupportOpen(false)} className="text-white hover:text-slate-200">
+                                        <i className="icon mdi mdi-close text-xl"></i>
+                                    </button>
+                                </div>
+                                <form onSubmit={handleSupportSubmit} className="p-6 space-y-4">
+                                    <p className="text-xs text-slate-500">Puedes contactarnos aquí para reportar problemas o mejoras en la plataforma.</p>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Asunto</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ej: Problema al cargar importaciones"
+                                            value={supportFormData.subject}
+                                            onChange={(e) => setSupportFormData({ ...supportFormData, subject: e.target.value })}
+                                            className="w-full border border-slate-200 rounded px-3 py-2 text-sm" 
+                                            required 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Mensaje</label>
+                                        <textarea 
+                                            placeholder="Describe detalladamente el problema o sugerencia..."
+                                            rows="4"
+                                            value={supportFormData.message}
+                                            onChange={(e) => setSupportFormData({ ...supportFormData, message: e.target.value })}
+                                            className="w-full border border-slate-200 rounded px-3 py-2 text-sm resize-none" 
+                                            required 
+                                        ></textarea>
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 bg-slate-50 p-2.5 rounded border border-slate-150">
+                                        Iniciando ticket como: <strong>andres@oohpublicidad.cl</strong>
+                                    </div>
+                                    <div className="pt-4 border-t border-slate-100 flex justify-end space-x-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsSupportOpen(false)}
+                                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            className="px-4 py-2 bg-beagle-primary text-white rounded text-xs font-semibold hover:bg-blue-600 transition-colors"
+                                        >
+                                            Enviar mensaje
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Renderizado del componente App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
