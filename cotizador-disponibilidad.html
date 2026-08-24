@@ -7,6 +7,7 @@
     
     <!-- CDNs: Bootstrap 4, Material Design Icons y Google Fonts -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.9.55/css/materialdesignicons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
@@ -159,6 +160,44 @@
         .table-responsive {
             border: none;
         }
+
+        /* Estilos Popover Periodos Vendidos */
+        .popover {
+            border-radius: 4px;
+            border: 1px solid #e3e3e3;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .popover-header {
+            background-color: transparent;
+            border-bottom: none;
+            color: #a0a0a0;
+            font-size: 11px;
+            text-transform: uppercase;
+            padding: 8px 12px 2px;
+        }
+        .popover-body {
+            padding: 8px 12px 12px;
+        }
+        .sold-period-item {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+        .sold-badge {
+            display: inline-block;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 0px 5px;
+            border-radius: 3px;
+            font-weight: 700;
+            font-size: 11px;
+            margin-right: 10px;
+            line-height: 16px;
+        }
+        .sold-dates {
+            color: #404040;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -240,8 +279,8 @@
                                             <span class="table-filter-title mb-1">Disponibilidad</span>
                                             <div class="filter-container d-flex align-items-center">
                                                 <div class="input-group input-group-sm mr-2" style="width: 220px;">
-                                                    <input class="form-control" placeholder="Desde" type="text">
-                                                    <input class="form-control" placeholder="Hasta" type="text">
+                                                    <input class="form-control f_date_from datepicker" placeholder="Desde" type="text" id="f_date_from_v1" readonly style="background-color: #fff; cursor: pointer;">
+                                                    <input class="form-control f_date_to datepicker" placeholder="Hasta" type="text" id="f_date_to_v1" readonly style="background-color: #fff; cursor: pointer;">
                                                 </div>
                                                 <div class="d-flex align-items-center">
                                                     <div class="custom-control custom-checkbox custom-control-inline mr-2">
@@ -361,17 +400,18 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            <!-- Fila T-033 -->
+                                            <tr data-item="T-033">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item1_v1">
                                                         <label class="custom-control-label" for="item1_v1"></label>
                                                     </div>
                                                 </td>
-                                                <td class="text-center align-middle" style="width: 100px;">
-                                                    <span class="badge border-info bg-light text-info">Disponible</span>
+                                                <td class="text-center align-middle avail-badge-cell" style="width: 100px;">
+                                                    <span class="badge badge-success">Disponible</span>
                                                 </td>
-                                                <td class="align-middle"></td>
+                                                <td class="align-middle avail-icon-cell"></td>
                                                 <td class="text-bold align-middle">T-033</td>
                                                 <td class="align-middle">Mobiliario Urbano Impreso</td>
                                                 <td class="text-truncate align-middle" style="max-width: 250px;">Soporte 033 - Providencia</td>
@@ -384,17 +424,20 @@
                                                     <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <!-- Fila T-034 -->
+                                            <tr data-item="T-034">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item2_v1">
                                                         <label class="custom-control-label" for="item2_v1"></label>
                                                     </div>
                                                 </td>
-                                                <td class="text-center align-middle">
-                                                    <span class="badge border-info bg-light text-info">Disponible</span>
+                                                <td class="text-center align-middle avail-badge-cell">
+                                                    <span class="badge badge-danger">No disponible</span>
                                                 </td>
-                                                <td class="align-middle"></td>
+                                                <td class="align-middle avail-icon-cell text-center">
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" data-toggle="tooltip" title="Disponible desde: 01-11-2026"></i>
+                                                </td>
                                                 <td class="text-bold align-middle">T-034</td>
                                                 <td class="align-middle">Supermercado - Otros</td>
                                                 <td class="align-middle">Soporte 034 - Cerrillos</td>
@@ -407,18 +450,19 @@
                                                     <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <!-- Fila T-037 -->
+                                            <tr data-item="T-037">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item3_v1">
                                                         <label class="custom-control-label" for="item3_v1"></label>
                                                     </div>
                                                 </td>
-                                                <td class="text-center align-middle">
-                                                    <span class="badge badge-warning">Parcial</span>
+                                                <td class="text-center align-middle avail-badge-cell">
+                                                    <span class="badge badge-danger">No disponible</span>
                                                 </td>
-                                                <td class="text-center align-middle">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" data-toggle="tooltip" title="Disponible desde: 01-09-2026"></i>
+                                                <td class="text-center align-middle avail-icon-cell">
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" data-toggle="tooltip" title="Disponible desde: 15-09-2026"></i>
                                                 </td>
                                                 <td class="text-bold align-middle">T-037</td>
                                                 <td class="align-middle">Centro Comercial</td>
@@ -516,8 +560,8 @@
                                             <span class="table-filter-title mb-1">Disponibilidad</span>
                                             <div class="filter-container d-flex align-items-center">
                                                 <div class="input-group input-group-sm mr-2" style="width: 220px;">
-                                                    <input class="form-control" placeholder="Desde" type="text">
-                                                    <input class="form-control" placeholder="Hasta" type="text">
+                                                    <input class="form-control f_date_from datepicker" placeholder="Desde" type="text" id="f_date_from_v2" readonly style="background-color: #fff; cursor: pointer;">
+                                                    <input class="form-control f_date_to datepicker" placeholder="Hasta" type="text" id="f_date_to_v2" readonly style="background-color: #fff; cursor: pointer;">
                                                 </div>
                                                 <div class="d-flex align-items-center">
                                                     <div class="custom-control custom-checkbox custom-control-inline mr-2">
@@ -624,16 +668,16 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- Fila 1: 100% Disponible -->
-                                            <tr>
+                                            <!-- Fila T-033 -->
+                                            <tr data-item="T-033">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item1_v2">
                                                         <label class="custom-control-label" for="item1_v2"></label>
                                                     </div>
                                                 </td>
-                                                <td colspan="2" class="align-middle text-nowrap">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-success mr-1"></i> Inmediata
+                                                <td colspan="2" class="align-middle text-nowrap avail-v2-cell">
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-success mr-1" data-toggle="tooltip" title="Disponible"></i> Inmediata
                                                 </td>
                                                 <td class="text-bold align-middle">T-033</td>
                                                 <td class="align-middle">Mobiliario Urbano Impreso</td>
@@ -647,16 +691,16 @@
                                                     <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
                                                 </td>
                                             </tr>
-                                            <!-- Fila 2: 100% Disponible con fecha -->
-                                            <tr>
+                                            <!-- Fila T-034 -->
+                                            <tr data-item="T-034">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item2_v2">
                                                         <label class="custom-control-label" for="item2_v2"></label>
                                                     </div>
                                                 </td>
-                                                <td colspan="2" class="align-middle text-nowrap">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-success mr-1"></i> 01-08-2026
+                                                <td colspan="2" class="align-middle text-nowrap avail-v2-cell">
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-danger mr-1" data-toggle="tooltip" title="No disponible"></i> 01-11-2026
                                                 </td>
                                                 <td class="text-bold align-middle">T-034</td>
                                                 <td class="align-middle">Supermercado - Otros</td>
@@ -670,16 +714,16 @@
                                                     <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
                                                 </td>
                                             </tr>
-                                            <!-- Fila 3: Parcial -->
-                                            <tr>
+                                            <!-- Fila T-037 -->
+                                            <tr data-item="T-037">
                                                 <td class="pl-3 align-middle">
                                                     <div class="custom-control custom-checkbox ml-1">
                                                         <input type="checkbox" class="custom-control-input" id="item3_v2">
                                                         <label class="custom-control-label" for="item3_v2"></label>
                                                     </div>
                                                 </td>
-                                                <td colspan="2" class="align-middle text-nowrap">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-warning mr-1"></i> 01-09-2026
+                                                <td colspan="2" class="align-middle text-nowrap avail-v2-cell">
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-danger mr-1" data-toggle="tooltip" title="No disponible"></i> 15-09-2026
                                                 </td>
                                                 <td class="text-bold align-middle">T-037</td>
                                                 <td class="align-middle">Centro Comercial</td>
@@ -693,29 +737,6 @@
                                                     <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
                                                 </td>
                                             </tr>
-                                            <!-- Fila 4: No disponible (Ejemplo extra para color rojo) -->
-                                            <tr>
-                                                <td class="pl-3 align-middle">
-                                                    <div class="custom-control custom-checkbox ml-1">
-                                                        <input type="checkbox" class="custom-control-input" id="item4_v2">
-                                                        <label class="custom-control-label" for="item4_v2"></label>
-                                                    </div>
-                                                </td>
-                                                <td colspan="2" class="align-middle text-nowrap">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-danger mr-1"></i> 01-12-2026
-                                                </td>
-                                                <td class="text-bold align-middle">T-038</td>
-                                                <td class="align-middle">Vía Pública</td>
-                                                <td class="align-middle">Soporte 038 - Vitacura</td>
-                                                <td class="align-middle">$ 2.100.000</td>
-                                                <td class="align-middle">$ 2.450.000</td>
-                                                <td class="align-middle">$ 5,12</td>
-                                                <td class="align-middle">Vitacura</td>
-                                                <td class="actions text-right pr-3 align-middle">
-                                                    <a href="#" class="mx-1"><i class="icon mdi mdi-info-outline mdi-hc-lg"></i></a>
-                                                    <a href="#" class="mx-1"><i class="icon mdi mdi-pencil-outline mdi-hc-lg"></i></a>
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -723,7 +744,7 @@
                                 <div class="row p-3 align-items-center">
                                     <div class="col-sm-5">
                                         <div class="d-flex align-items-center">
-                                            <div class="small text-secondary mr-2">Mostrando <b>4</b> soportes</div>
+                                            <div class="small text-secondary mr-2">Mostrando <b>3</b> soportes</div>
                                             <select class="custom-select custom-select-sm" style="width: 70px;">
                                                 <option selected>30</option>
                                                 <option>60</option>
@@ -754,9 +775,39 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
 
 <script>
     $(document).ready(function() {
+        // Inicialización de Datepicker
+        $('.datepicker').datepicker({
+            format: 'dd-mm-yyyy',
+            language: 'es',
+            autoclose: true,
+            todayHighlight: true,
+            orientation: "bottom auto"
+        });
+
+        // Inicialización de Tooltips y Popovers con delegación
+        $('body').tooltip({
+            selector: '[data-toggle="tooltip"]'
+        });
+
+        // Configuración de Popover Global
+        $('body').popover({
+            selector: '[data-toggle="popover"]',
+            trigger: 'focus',
+            html: true,
+            placement: 'bottom',
+            title: function() {
+                return $(this).data('header');
+            },
+            content: function() {
+                return $(this).data('content');
+            }
+        });
+
         // Manejo del texto del botón colapsable para ambas versiones
         $('#more-filters-v1, #more-filters-v2').on('show.bs.collapse', function () {
             $(this).closest('.card-table').find('.more-filters-btn span').text('Ver menos filtros');
@@ -766,9 +817,159 @@
             $(this).closest('.card-table').find('.more-filters-btn i').removeClass('mdi-chevron-up').addClass('mdi-chevron-down');
         });
 
-        // Inicialización de Tooltips
-        $('body').tooltip({
-            selector: '[data-toggle="tooltip"]'
+        // Sincronización de inputs de fecha
+        $('.datepicker').on('changeDate', function() {
+            const val = $(this).val();
+            if ($(this).hasClass('f_date_from')) {
+                $('.f_date_from').val(val);
+            } else if ($(this).hasClass('f_date_to')) {
+                $('.f_date_to').val(val);
+            }
+        });
+
+        // DATA DE OCUPACIÓN
+        const occupationData = {
+            'T-033': [],
+            'T-034': [{ s: '01-06-2026', e: '31-10-2026' }],
+            'T-037': [{ s: '01-07-2026', e: '14-09-2026' }]
+        };
+
+        // Helper para convertir dd-mm-yyyy a objeto Date
+        function parseDateStr(str) {
+            if (!str) return null;
+            const parts = str.split('-');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+
+        // Lógica de Evaluación de Disponibilidad
+        function evaluateAvailability(itemId, fromStr, toStr) {
+            const occupations = occupationData[itemId] || [];
+            if (occupations.length === 0) return 'AVAILABLE';
+
+            if (!fromStr && !toStr) return 'NOT_AVAILABLE'; // Estado por defecto para T-034/T-037
+
+            const fStart = parseDateStr(fromStr);
+            const fEnd = parseDateStr(toStr);
+
+            if (!fStart || !fEnd) return 'NOT_AVAILABLE';
+
+            let totalDays = (fEnd - fStart) / (1000 * 60 * 60 * 24) + 1;
+            let occupiedDays = 0;
+
+            occupations.forEach(occ => {
+                const oStart = parseDateStr(occ.s);
+                const oEnd = parseDateStr(occ.e);
+
+                // Calcular intersección
+                const intersectStart = new Date(Math.max(fStart, oStart));
+                const intersectEnd = new Date(Math.min(fEnd, oEnd));
+
+                if (intersectStart <= intersectEnd) {
+                    occupiedDays += (intersectEnd - intersectStart) / (1000 * 60 * 60 * 24) + 1;
+                }
+            });
+
+            if (occupiedDays === 0) return 'AVAILABLE';
+            if (occupiedDays >= totalDays) return 'NOT_AVAILABLE';
+            return 'PARTIAL';
+        }
+
+        // Generador de contenido para Popover
+        function getPopoverContent(itemId, nextDate) {
+            const occupations = occupationData[itemId] || [];
+            let html = '';
+            
+            if (nextDate && nextDate !== 'Inmediata') {
+                html += `<div class="mb-2 pb-2 border-bottom" style="font-size: 12px; color: #404040;">Disponible desde: <strong>${nextDate}</strong></div>`;
+            } else if (nextDate === 'Inmediata') {
+                html += `<div class="mb-2 pb-2 border-bottom" style="font-size: 12px; color: #28a745;"><strong>Disponible: inmediato</strong></div>`;
+            }
+
+            if (occupations.length === 0) {
+                html += '<div style="font-size: 12px; color: #717171;">Disponible</div>';
+                return html;
+            }
+            
+            html += '<div class="popover-header p-0 mb-1" style="font-size: 10px; color: #a0a0a0; text-transform: uppercase;">Periodos vendidos</div>';
+
+            occupations.forEach(occ => {
+                const s = occ.s.replace(/-/g, '/');
+                const e = occ.e.replace(/-/g, '/');
+                html += `<div class="sold-period-item"><span class="sold-badge">V</span><span class="sold-dates">${s} — ${e}</span></div>`;
+            });
+            return html;
+        }
+
+        // Helper para obtener fecha de disponibilidad próxima
+        function getNextAvailableDate(itemId) {
+            if (itemId === 'T-034') return '01-11-2026';
+            if (itemId === 'T-037') return '15-09-2026';
+            return 'Inmediata';
+        }
+
+        // Refrescar Tablas
+        function updateTables() {
+            const from = $('#f_date_from_v1').val();
+            const to = $('#f_date_to_v1').val();
+
+            // Versión 1
+            $('#v1 tbody tr').each(function() {
+                const itemId = $(this).data('item');
+                const state = evaluateAvailability(itemId, from, to);
+                const $badgeCell = $(this).find('.avail-badge-cell');
+                const $iconCell = $(this).find('.avail-icon-cell');
+                const nextDate = getNextAvailableDate(itemId);
+                const popContent = getPopoverContent(itemId, nextDate);
+
+                // Limpiar tooltips/popovers previos
+                $iconCell.find('[data-toggle]').popover('dispose');
+
+                if (state === 'AVAILABLE') {
+                    $badgeCell.html('<span class="badge badge-success">Disponible</span>');
+                    $iconCell.html('');
+                } else {
+                    const badgeClass = state === 'PARTIAL' ? 'badge-warning' : 'badge-danger';
+                    const badgeText = state === 'PARTIAL' ? 'Parcial' : 'No disponible';
+                    
+                    $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
+                    $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="" data-content='${popContent}'></i>`);
+                }
+            });
+
+            // Versión 2
+            $('#v2 tbody tr').each(function() {
+                const itemId = $(this).data('item');
+                const state = evaluateAvailability(itemId, from, to);
+                const $availCell = $(this).find('.avail-v2-cell');
+                const nextDate = getNextAvailableDate(itemId);
+                const popContent = getPopoverContent(itemId, nextDate);
+                
+                let iconClass = 'text-success';
+                let stateText = 'Disponible';
+                let dateDisplay = 'Inmediata';
+
+                if (state === 'PARTIAL') {
+                    iconClass = 'text-warning';
+                    stateText = 'Parcial';
+                    dateDisplay = nextDate;
+                } else if (state === 'NOT_AVAILABLE') {
+                    iconClass = 'text-danger';
+                    stateText = 'No disponible';
+                    dateDisplay = nextDate;
+                }
+
+                $availCell.find('[data-toggle]').popover('dispose');
+                $availCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg ${iconClass} mr-1 cursor-pointer" tabindex="0" data-toggle="popover" data-header="" data-content='${popContent}'></i> ${dateDisplay}`);
+            });
+        }
+
+        // Ejecutar actualización inicial
+        updateTables();
+
+        // Evento Filtrar
+        $('.btn-filter').on('click', function(e) {
+            e.preventDefault();
+            updateTables();
         });
     });
 </script>
