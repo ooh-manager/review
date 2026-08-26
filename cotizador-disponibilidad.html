@@ -223,6 +223,9 @@
             <li class="nav-item">
                 <a class="nav-link" id="v2-tab" data-toggle="tab" href="#v2" role="tab" aria-controls="v2" aria-selected="false">Versión 2</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="v3-tab" data-toggle="tab" href="#v3" role="tab" aria-controls="v3" aria-selected="false">Versión 3</a>
+            </li>
         </ul>
 
         <div class="tab-content" id="versionTabsContent">
@@ -767,6 +770,218 @@
                     </div>
                 </div>
             </div>
+
+            <!-- PESTAÑA 3: VERSIÓN 3 (HÍBRIDA DINÁMICA) -->
+            <div class="tab-pane fade" id="v3" role="tabpanel" aria-labelledby="v3-tab">
+                <div id="item-filter-container-v3">
+                    <div class="card card-table card-border-color card-border-color-primary">
+                        <form class="submit-on-enter" autocomplete="off">
+                            <div class="row table-filters-container pt-2">
+                                <div class="col-12">
+                                    <div class="form-row">
+                                        <div class="col-lg-2 col-md-6 table-filter-col">
+                                            <span class="table-filter-title mb-1">Código <i class="icon mdi mdi-help-outline mdi-hc-lg cursor-help" title="Puedes ingresar más de una fracción de código."></i></span>
+                                            <div class="filter-container">
+                                                <div class="input-group input-group-sm">
+                                                    <input class="form-control" placeholder="Ej: 220 LI 80" type="text">
+                                                    <div class="input-group-append">
+                                                        <button type="button" class="btn btn-secondary"><i class="icon mdi mdi-tune"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-md-6 table-filter-col">
+                                            <span class="table-filter-title mb-1">Buscar por término</span>
+                                            <div class="filter-container">
+                                                <input class="form-control form-control-sm" placeholder="Ej: nombre, ubicación, etc." type="text">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-md-6 table-filter-col">
+                                            <span class="table-filter-title mb-1">Cercano a...</span>
+                                            <div class="filter-container">
+                                                <div class="input-group input-group-sm">
+                                                    <input class="form-control" placeholder="Dirección" type="text">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-secondary" type="button"><i class="icon mdi mdi-close"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-md table-filter-col">
+                                            <span class="table-filter-title mb-1">Precio</span>
+                                            <div class="filter-container">
+                                                <div class="input-group input-group-sm">
+                                                    <input class="form-control" placeholder="Desde" type="text">
+                                                    <input class="form-control" placeholder="Hasta" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row mt-3">
+                                        <div class="col-lg-5 col-md-12 table-filter-col">
+                                            <span class="table-filter-title mb-1">Disponibilidad</span>
+                                            <div class="filter-container d-flex align-items-center">
+                                                <div class="input-group input-group-sm mr-2" style="width: 200px;">
+                                                    <input class="form-control f_date_from datepicker" placeholder="Desde" type="text" id="f_date_from_v3" readonly style="background-color: #fff; cursor: pointer;">
+                                                    <input class="form-control f_date_to datepicker" placeholder="Hasta" type="text" id="f_date_to_v3" readonly style="background-color: #fff; cursor: pointer;">
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="custom-control custom-checkbox custom-control-inline mr-2">
+                                                        <input class="custom-control-input" type="checkbox" id="f_within_dates_partial_v3">
+                                                        <label class="custom-control-label text-bold text-secondary cursor-pointer" for="f_within_dates_partial_v3" style="font-size: 12px; padding-top: 2px;">Parcial</label>
+                                                    </div>
+                                                    <div class="custom-control custom-checkbox custom-control-inline mr-2">
+                                                        <input class="custom-control-input" type="checkbox" id="f_within_dates_allow_reserved_v3">
+                                                        <label class="custom-control-label text-secondary cursor-pointer" for="f_within_dates_allow_reserved_v3" style="font-size: 11px; padding-top: 3px;">Reservados</label>
+                                                    </div>
+                                                    <div class="custom-control custom-checkbox custom-control-inline mr-0">
+                                                        <input class="custom-control-input" type="checkbox" id="toggle_dates_v3">
+                                                        <label class="custom-control-label text-bold text-primary cursor-pointer" for="toggle_dates_v3" style="font-size: 11px; padding-top: 3px;">fechas de disponibilidad</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 table-filter-col">
+                                            <span class="table-filter-title mb-1">Tipo de soporte</span>
+                                            <div class="filter-container">
+                                                <div class="selectize-input">
+                                                    <input type="text" placeholder="Todos los Soportes" style="width: 100%; border: none; outline: none; font-size: 13px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg col-md-6 table-filter-col">
+                                            <span class="table-filter-title mb-1">Comuna</span>
+                                            <div class="filter-container">
+                                                <div class="selectize-input">
+                                                    <input type="text" placeholder="Todo Chile" style="width: 100%; border: none; outline: none; font-size: 13px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-1 table-filter-col text-right">
+                                            <div class="btn-filter-container">
+                                                <button type="submit" class="btn btn-primary btn-sm btn-filter">
+                                                    <i class="icon mdi mdi-magnify mb-0"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="collapse" id="more-filters-v3">
+                                        <div class="form-row mt-3">
+                                            <div class="col-lg-3">
+                                                <span class="table-filter-title mb-1">Región</span>
+                                                <div class="selectize-input">
+                                                    <input type="text" placeholder="Todas las regiones" style="width: 100%; border: none;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row pb-2 mt-3 align-items-center">
+                                        <div class="col-12">
+                                            <a class="btn btn-link more-filters-btn px-0" data-toggle="collapse" data-target="#more-filters-v3" href="#">
+                                                <i class="icon mdi mdi-chevron-down mdi-hc-fw"></i><span>Ver más filtros</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="py-2 pl-3" style="width: 50px;">
+                                                <div class="custom-control custom-checkbox ml-1">
+                                                    <input type="checkbox" class="custom-control-input" id="checkAll_v3">
+                                                    <label class="custom-control-label" for="checkAll_v3"></label>
+                                                </div>
+                                            </th>
+                                            <th colspan="2" class="align-middle">Disponibilidad</th>
+                                            <th class="align-middle">Código</th>
+                                            <th class="align-middle">Tipo de soporte</th>
+                                            <th class="align-middle">Nombre</th>
+                                            <th class="align-middle">Precio mín.</th>
+                                            <th class="align-middle">Comuna</th>
+                                            <th class="text-right pr-3 align-middle">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="v3-tbody">
+                                        <!-- Fila T-033 -->
+                                        <tr data-item="T-033">
+                                            <td class="pl-3 align-middle">
+                                                <div class="custom-control custom-checkbox ml-1">
+                                                    <input type="checkbox" class="custom-control-input" id="item1_v3">
+                                                    <label class="custom-control-label" for="item1_v3"></label>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle avail-badge-cell" style="width: 120px;"></td>
+                                            <td class="align-middle avail-icon-cell"></td>
+                                            <td class="text-bold align-middle">T-033</td>
+                                            <td class="align-middle">Mobiliario Urbano</td>
+                                            <td class="align-middle">Soporte 033 - Providencia</td>
+                                            <td class="align-middle">$ 1.000.000</td>
+                                            <td class="align-middle">Providencia</td>
+                                            <td class="actions text-right pr-3 align-middle">
+                                                <a href="#"><i class="icon mdi mdi-info-outline mdi-hc-lg"></i></a>
+                                            </td>
+                                        </tr>
+                                        <!-- Fila T-034 -->
+                                        <tr data-item="T-034">
+                                            <td class="pl-3 align-middle">
+                                                <div class="custom-control custom-checkbox ml-1">
+                                                    <input type="checkbox" class="custom-control-input" id="item2_v3">
+                                                    <label class="custom-control-label" for="item2_v3"></label>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle avail-badge-cell"></td>
+                                            <td class="align-middle avail-icon-cell"></td>
+                                            <td class="text-bold align-middle">T-034</td>
+                                            <td class="align-middle">Supermercado</td>
+                                            <td class="align-middle">Soporte 034 - Cerrillos</td>
+                                            <td class="align-middle">$ 1.604.759</td>
+                                            <td class="align-middle">Cerrillos</td>
+                                            <td class="actions text-right pr-3 align-middle">
+                                                <a href="#"><i class="icon mdi mdi-info-outline mdi-hc-lg"></i></a>
+                                            </td>
+                                        </tr>
+                                        <!-- Fila T-037 -->
+                                        <tr data-item="T-037">
+                                            <td class="pl-3 align-middle">
+                                                <div class="custom-control custom-checkbox ml-1">
+                                                    <input type="checkbox" class="custom-control-input" id="item3_v3">
+                                                    <label class="custom-control-label" for="item3_v3"></label>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle avail-badge-cell"></td>
+                                            <td class="align-middle avail-icon-cell"></td>
+                                            <td class="text-bold align-middle">T-037</td>
+                                            <td class="align-middle">Centro Comercial</td>
+                                            <td class="align-middle">Soporte 037 - Maipú</td>
+                                            <td class="align-middle">$ 1.549.200</td>
+                                            <td class="align-middle">Maipú</td>
+                                            <td class="actions text-right pr-3 align-middle">
+                                                <a href="#"><i class="icon mdi mdi-info-outline mdi-hc-lg"></i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row p-3 align-items-center">
+                                <div class="col-sm-5 small text-secondary">Mostrando <b>3</b> soportes</div>
+                                <div class="col-sm-7 text-right">
+                                    <ul class="pagination pagination-sm mb-0 d-inline-flex">
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -809,7 +1024,7 @@
         });
 
         // Manejo del texto del botón colapsable para ambas versiones
-        $('#more-filters-v1, #more-filters-v2').on('show.bs.collapse', function () {
+        $('#more-filters-v1, #more-filters-v2, #more-filters-v3').on('show.bs.collapse', function () {
             $(this).closest('.card-table').find('.more-filters-btn span').text('Ver menos filtros');
             $(this).closest('.card-table').find('.more-filters-btn i').removeClass('mdi-chevron-down').addClass('mdi-chevron-up');
         }).on('hide.bs.collapse', function () {
@@ -825,6 +1040,11 @@
             } else if ($(this).hasClass('f_date_to')) {
                 $('.f_date_to').val(val);
             }
+        });
+
+        // Evento toggle Versión 3
+        $('#toggle_dates_v3').on('change', function() {
+            updateTables();
         });
 
         // DATA DE OCUPACIÓN
@@ -921,7 +1141,6 @@
                 const nextDate = getNextAvailableDate(itemId);
                 const popContent = getPopoverContent(itemId, nextDate);
 
-                // Limpiar tooltips/popovers previos
                 $iconCell.find('[data-toggle]').popover('dispose');
 
                 if (state === 'AVAILABLE') {
@@ -930,9 +1149,8 @@
                 } else {
                     const badgeClass = state === 'PARTIAL' ? 'badge-warning' : 'badge-danger';
                     const badgeText = state === 'PARTIAL' ? 'Parcial' : 'No disponible';
-                    
                     $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
-                    $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="" data-content='${popContent}'></i>`);
+                    $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="Periodos vendidos" data-content='${popContent}'></i>`);
                 }
             });
 
@@ -959,7 +1177,36 @@
                 }
 
                 $availCell.find('[data-toggle]').popover('dispose');
-                $availCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg ${iconClass} mr-1 cursor-pointer" tabindex="0" data-toggle="popover" data-header="" data-content='${popContent}'></i> ${dateDisplay}`);
+                $availCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg ${iconClass} mr-1 cursor-pointer" tabindex="0" data-toggle="popover" data-header="Periodos vendidos" data-content='${popContent}'></i> ${dateDisplay}`);
+            });
+
+            // Versión 3 (Híbrida Dinámica)
+            $('#v3 tbody tr').each(function() {
+                const itemId = $(this).data('item');
+                const state = evaluateAvailability(itemId, from, to);
+                const $badgeCell = $(this).find('.avail-badge-cell');
+                const $iconCell = $(this).find('.avail-icon-cell');
+                const nextDate = getNextAvailableDate(itemId);
+                const popContent = getPopoverContent(itemId, nextDate);
+                const showDates = $('#toggle_dates_v3').is(':checked');
+
+                $(this).find('[data-toggle]').popover('dispose');
+
+                const badgeClass = state === 'AVAILABLE' ? 'badge-success' : (state === 'PARTIAL' ? 'badge-warning' : 'badge-danger');
+                const badgeText = state === 'AVAILABLE' ? 'Disponible' : (state === 'PARTIAL' ? 'Parcial' : 'No disponible');
+                
+                if (state === 'AVAILABLE') {
+                    $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
+                    if (showDates) {
+                        $iconCell.html(`<span class="small ml-2 text-success font-weight-bold">Inmediata</span>`);
+                    } else {
+                        $iconCell.html('');
+                    }
+                } else {
+                    $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
+                    let dateHtml = showDates ? `<span class="small ml-2 text-muted" style="font-weight: 500;">${nextDate}</span>` : '';
+                    $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="Periodos vendidos" data-content='${popContent}'></i>${dateHtml}`);
+                }
             });
         }
 
