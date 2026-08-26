@@ -680,7 +680,7 @@
                                                     </div>
                                                 </td>
                                                 <td colspan="2" class="align-middle text-nowrap avail-v2-cell">
-                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-success mr-1" data-toggle="tooltip" title="Disponible"></i> Inmediata
+                                                    <i class="icon mdi mdi-calendar mdi-hc-lg text-success mr-1" data-toggle="tooltip" title="Disponible"></i>
                                                 </td>
                                                 <td class="text-bold align-middle">T-033</td>
                                                 <td class="align-middle">Mobiliario Urbano Impreso</td>
@@ -1099,9 +1099,9 @@
             const occupations = occupationData[itemId] || [];
             let html = '';
             
-            if (nextDate && nextDate !== 'Inmediata') {
+            if (nextDate && nextDate !== '') {
                 html += `<div class="mb-2 pb-2 border-bottom" style="font-size: 12px; color: #404040;">Disponible desde: <strong>${nextDate}</strong></div>`;
-            } else if (nextDate === 'Inmediata') {
+            } else if (nextDate === '') {
                 html += `<div class="mb-2 pb-2 border-bottom" style="font-size: 12px; color: #28a745;"><strong>Disponible: inmediato</strong></div>`;
             }
 
@@ -1124,7 +1124,7 @@
         function getNextAvailableDate(itemId) {
             if (itemId === 'T-034') return '01-11-2026';
             if (itemId === 'T-037') return '15-09-2026';
-            return 'Inmediata';
+            return '';
         }
 
         // Refrescar Tablas
@@ -1164,7 +1164,7 @@
                 
                 let iconClass = 'text-success';
                 let stateText = 'Disponible';
-                let dateDisplay = 'Inmediata';
+                let dateDisplay = '';
 
                 if (state === 'PARTIAL') {
                     iconClass = 'text-warning';
@@ -1197,14 +1197,10 @@
                 
                 if (state === 'AVAILABLE') {
                     $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
-                    if (showDates) {
-                        $iconCell.html(`<span class="small ml-2 text-success font-weight-bold">Inmediata</span>`);
-                    } else {
-                        $iconCell.html('');
-                    }
+                    $iconCell.html('');
                 } else {
                     $badgeCell.html(`<span class="badge ${badgeClass}">${badgeText}</span>`);
-                    let dateHtml = showDates ? `<span class="small ml-2 text-muted" style="font-weight: 500;">${nextDate}</span>` : '';
+                    let dateHtml = showDates ? `<span class="ml-2">${nextDate}</span>` : '';
                     $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="Periodos vendidos" data-content='${popContent}'></i>${dateHtml}`);
                 }
             });
