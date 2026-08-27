@@ -265,20 +265,26 @@
                                             <div class="border rounded px-3 py-2" style="border-color: #e3e3e3 !important; background-color: transparent;">
                                                 <span class="table-filter-title mb-2 d-block text-primary text-bold" style="font-size: 11px; letter-spacing: 0.5px;">DISPONIBILIDAD</span>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="input-group input-group-sm mr-4" style="width: 200px;">
-                                                        <input class="form-control f_date_from datepicker" placeholder="Desde" type="text" id="f_date_from" readonly style="background-color: #fff; cursor: pointer;">
-                                                        <input class="form-control f_date_to datepicker" placeholder="Hasta" type="text" id="f_date_to" readonly style="background-color: #fff; cursor: pointer;">
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <span class="text-secondary text-bold mr-3" style="font-size: 11px;">MOSTRAR:</span>
+                                                    <div class="d-flex align-items-center mr-3">
                                                         <div class="custom-control custom-checkbox custom-control-inline mr-2">
                                                             <input class="custom-control-input" type="checkbox" id="cb_estados">
                                                             <label class="custom-control-label cursor-pointer" for="cb_estados" style="font-size: 11px; padding-top: 3px;">Estados</label>
                                                         </div>
-                                                        <div class="custom-control custom-checkbox custom-control-inline mr-3">
+                                                        <div class="custom-control custom-checkbox custom-control-inline mr-0">
                                                             <input class="custom-control-input" type="checkbox" id="cb_disp_desde" disabled>
                                                             <label class="custom-control-label cursor-pointer" for="cb_disp_desde" style="font-size: 11px; padding-top: 3px;">Disponible desde</label>
                                                         </div>
+                                                    </div>
+                                                    
+                                                    <div class="border-left mx-1 mr-3" style="height: 20px; border-color: #e3e3e3;"></div>
+                                                    
+                                                    <div class="input-group input-group-sm mr-4" style="width: 200px;">
+                                                        <input class="form-control f_date_from datepicker" placeholder="Desde" type="text" id="f_date_from" readonly style="background-color: #fff; cursor: pointer;">
+                                                        <input class="form-control f_date_to datepicker" placeholder="Hasta" type="text" id="f_date_to" readonly style="background-color: #fff; cursor: pointer;">
+                                                    </div>
+                                                    
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="text-secondary text-bold mr-3" style="font-size: 11px;">MOSTRAR:</span>
                                                         <div class="custom-control custom-checkbox custom-control-inline mr-2">
                                                             <input class="custom-control-input" type="checkbox" id="cb_parcial" disabled>
                                                             <label class="custom-control-label cursor-pointer" for="cb_parcial" style="font-size: 11px; padding-top: 3px;">Parcial</label>
@@ -356,7 +362,8 @@
                                                     <label class="custom-control-label" for="checkAll_v3"></label>
                                                 </div>
                                             </th>
-                                            <th colspan="2" class="align-middle" id="avail-header" style="display: none;">Disponibilidad</th>
+                                            <th class="align-middle" id="avail-header" style="display: none; width: 140px;">Disponibilidad</th>
+                                            <th class="align-middle" id="avail-date-header" style="display: none;">Disponible desde</th>
                                             <th class="align-middle">Código</th>
                                             <th class="align-middle">Tipo de soporte</th>
                                             <th class="align-middle">Nombre</th>
@@ -374,8 +381,8 @@
                                                     <label class="custom-control-label" for="item1_v3"></label>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle avail-badge-cell" style="width: 120px; display: none;"></td>
-                                            <td class="align-middle avail-icon-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-badge-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-date-cell" style="display: none;"></td>
                                             <td class="text-bold align-middle">T-033</td>
                                             <td class="align-middle">Mobiliario Urbano</td>
                                             <td class="align-middle">Soporte 033 - Providencia</td>
@@ -393,8 +400,8 @@
                                                     <label class="custom-control-label" for="item2_v3"></label>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle avail-badge-cell" style="display: none;"></td>
-                                            <td class="align-middle avail-icon-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-badge-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-date-cell" style="display: none;"></td>
                                             <td class="text-bold align-middle">T-034</td>
                                             <td class="align-middle">Supermercado</td>
                                             <td class="align-middle">Soporte 034 - Cerrillos</td>
@@ -412,8 +419,8 @@
                                                     <label class="custom-control-label" for="item3_v3"></label>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle avail-badge-cell" style="display: none;"></td>
-                                            <td class="align-middle avail-icon-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-badge-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-date-cell" style="display: none;"></td>
                                             <td class="text-bold align-middle">T-037</td>
                                             <td class="align-middle">Centro Comercial</td>
                                             <td class="align-middle">Soporte 037 - Maipú</td>
@@ -431,8 +438,8 @@
                                                     <label class="custom-control-label" for="item4_v3"></label>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle avail-badge-cell" style="display: none;"></td>
-                                            <td class="align-middle avail-icon-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-badge-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-date-cell" style="display: none;"></td>
                                             <td class="text-bold align-middle">T-038</td>
                                             <td class="align-middle">Pantalla Digital</td>
                                             <td class="align-middle">Soporte 038 - Las Condes</td>
@@ -450,8 +457,8 @@
                                                     <label class="custom-control-label" for="item5_v3"></label>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle avail-badge-cell" style="display: none;"></td>
-                                            <td class="align-middle avail-icon-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-badge-cell" style="display: none;"></td>
+                                            <td class="align-middle avail-date-cell" style="display: none;"></td>
                                             <td class="text-bold align-middle">T-039</td>
                                             <td class="align-middle">Paleta Publicitaria</td>
                                             <td class="align-middle">Soporte 039 - Santiago</td>
@@ -527,10 +534,14 @@
             $(this).closest('.card-table').find('.more-filters-btn i').removeClass('mdi-chevron-up').addClass('mdi-chevron-down');
         });
 
-        // Eventos UI Controles Mostrar (no trigger updateTables yet)
+        // Eventos UI Controles Mostrar (Sin recálculo automático)
         $('#cb_estados').on('change', function() {
             $('#cb_disp_desde').prop('disabled', !this.checked);
             if (!this.checked) $('#cb_disp_desde').prop('checked', false);
+        });
+        
+        $('#cb_disp_desde').on('change', function() {
+            // Solo guarda estado en DOM
         });
 
         // Sincronización de inputs de fecha (solo guarda valor, sin lógica automática)
@@ -679,13 +690,22 @@
             const showReservados = $('#cb_reservados').is(':checked');
             const showBloqueados = $('#cb_bloqueados').is(':checked');
             
-            const anyCheckboxActive = showEstados || hasDateFilter; // "Muestra los <th> y <td> de Disponibilidad ÚNICAMENTE cuando el usuario marque [ ] Estados o cuando presione el botón de Filtrar con un rango de fechas ingresado."
+            const showAvailCol = showEstados || hasDateFilter;
             
-            if (anyCheckboxActive) {
+            // Header visibility
+            if (showAvailCol) {
                 $('#avail-header').show();
             } else {
                 $('#avail-header').hide();
             }
+            if (showDates) {
+                $('#avail-date-header').show();
+            } else {
+                $('#avail-date-header').hide();
+            }
+
+            const today = new Date();
+            const todayStr = ('0' + today.getDate()).slice(-2) + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + today.getFullYear();
 
             $('#v3-tbody tr').each(function() {
                 const itemId = $(this).data('item');
@@ -694,7 +714,9 @@
                 const overlaps = evalResult.overlapTypes;
                 
                 const $badgeCell = $(this).find('.avail-badge-cell');
-                const $iconCell = $(this).find('.avail-icon-cell');
+                const $dateCell = $(this).find('.avail-date-cell'); // changed from avail-icon-cell to avail-date-cell? Wait, I need BOTH.
+                
+                // Let's re-verify the cells. The new structure has avail-badge-cell and avail-date-cell. The calendar icon should go into avail-badge-cell next to the badge.
                 const nextDate = getNextAvailableDate(itemId);
                 const popContent = getPopoverContent(itemId, nextDate);
 
@@ -726,12 +748,11 @@
                     return; 
                 }
                 
-                if (!anyCheckboxActive) {
+                // Column 1 (Badge & Icon)
+                if (!showAvailCol) {
                     $badgeCell.hide();
-                    $iconCell.hide();
                 } else {
                     $badgeCell.show();
-                    $iconCell.show();
                     
                     let badgeClass = '';
                     let badgeText = '';
@@ -748,7 +769,7 @@
                     } else if (state === 'PARTIAL') {
                         badgeClass = 'badge-warning';
                         badgeText = 'Parcial';
-                    } else { // NOT_AVAILABLE
+                    } else {
                         badgeClass = 'badge-danger';
                         badgeText = 'No disponible';
                     }
@@ -758,14 +779,27 @@
                         styleStr = ' style="background-color: #8b0000;"';
                     }
 
-                    $badgeCell.html(`<span class="badge ${badgeClass}"${styleStr}>${badgeText}</span>`);
-
-                    if (state === 'AVAILABLE') {
-                        $iconCell.html('');
-                    } else {
-                        let dateHtml = showDates ? `<span class="ml-2">${nextDate}</span>` : '';
-                        $iconCell.html(`<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="Detalle" data-content='${popContent}'></i>${dateHtml}`);
+                    let badgeHtml = `<span class="badge ${badgeClass}"${styleStr}>${badgeText}</span>`;
+                    let iconHtml = '';
+                    if (state !== 'AVAILABLE') {
+                        iconHtml = `<i class="icon mdi mdi-calendar mdi-hc-lg text-secondary cursor-pointer" tabindex="0" data-toggle="popover" data-header="Detalle" data-content='${popContent}'></i>`;
                     }
+                    
+                    $badgeCell.html(`<div class="d-flex align-items-center justify-content-between" style="width: 130px;">${badgeHtml}${iconHtml}</div>`);
+                }
+                
+                // Column 2 (Date)
+                if (!showDates) {
+                    $dateCell.hide();
+                } else {
+                    $dateCell.show();
+                    let dateHtml = '';
+                    if (state === 'AVAILABLE') {
+                        dateHtml = `<span style="font-size: 13px;">${todayStr}</span>`;
+                    } else {
+                        dateHtml = `<span style="font-size: 13px;">${nextDate}</span>`;
+                    }
+                    $dateCell.html(dateHtml);
                 }
             });
         }
