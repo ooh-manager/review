@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma OOH - Operaciones</title>
+    
+    <!-- Google Fonts: Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    
+    <!-- Material Design Icons (Versión Moderna) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --border-color: #e3e3e3;
+            --text-dark: #404040;
+            --text-muted: #737373;
+            --sidebar-width: 260px;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #efefef;
+            color: var(--text-dark);
+            font-size: 13px;
+            overflow-x: hidden;
+        }
+
+        /* --- LAYOUT PLATAFORMA --- */
+        .be-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .be-top-header { 
+            background: #fff; 
+            height: var(--header-height); 
+            border-bottom: 1px solid var(--border-color); 
+            z-index: 1030; 
+            padding: 0 20px;
+        }
+        .be-navbar-header { display: flex; align-items: center; width: var(--sidebar-width); }
+        .be-toggle-left-sidebar { font-size: 24px; color: var(--text-dark); margin-right: 15px; }
+        
+        .be-left-sidebar { 
+            position: fixed; 
+            top: var(--header-height); 
+            left: 0; 
+            width: var(--sidebar-width); 
+            height: calc(100vh - var(--header-height)); 
+            background: #fff; 
+            border-right: 1px solid var(--border-color); 
+            z-index: 1020; 
+            overflow-y: auto; 
+        }
+        
+        .be-content { 
+            margin-left: var(--sidebar-width); 
+            margin-top: var(--header-height); 
+            min-height: calc(100vh - var(--header-height)); 
+            background-color: #efefef;
+        }
+
+        /* --- MENÚ LATERAL --- */
+        .sidebar-elements { list-style: none; padding: 0; margin: 0; }
+        .sidebar-elements .divider { padding: 12px 20px; font-weight: 700; color: #999; text-transform: uppercase; font-size: 11px; background: #f9f9f9; }
+        .sidebar-elements > li > a { display: flex; align-items: center; padding: 12px 20px; color: var(--text-dark); text-decoration: none; border-left: 3px solid transparent; font-size: 13px; }
+        .sidebar-elements > li > a i { font-size: 18px; margin-right: 10px; color: var(--text-muted); width: 20px; text-align: center; }
+        .sidebar-elements > li:hover > a { background: #f5f5f5; }
+        .sidebar-elements > li.active > a { background: #f0f4ff; color: var(--primary-color); border-left-color: var(--primary-color); font-weight: 500; }
+        .sidebar-elements > li.active > a i { color: var(--primary-color); }
+        
+        .sidebar-elements .sub-menu { list-style: none; padding: 0; margin: 0; display: none; background: #fafafa; }
+        .sidebar-elements .sub-menu a { padding: 10px 20px 10px 50px; display: block; color: var(--text-muted); text-decoration: none; font-size: 13px; }
+        .sidebar-elements .sub-menu a:hover { color: var(--primary-color); }
+        .sidebar-elements .sub-menu li.active > a { color: var(--primary-color); font-weight: 500; }
+
+        /* --- Estilos Generales Dashboard --- */
+        .page-head { padding: 15px 25px; background: #fff; border-bottom: 1px solid var(--border-color); }
+        .page-head-nav { margin-bottom: 0; padding: 0; background: transparent; font-size: 14px; }
+        .breadcrumb-item + .breadcrumb-item::before { content: "\F0142"; font-family: "Material Design Icons"; vertical-align: middle; }
+
+        .card { border-radius: 3px; border: 1px solid var(--border-color); box-shadow: 0 1px 1px rgba(0,0,0,0.05); margin-bottom: 25px; background: #fff; }
+        .card-header { background: transparent; border-bottom: 1px solid var(--border-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 16px; font-weight: 400; margin: 0; }
+        .card-border-color-primary { border-top: 3px solid var(--primary-color); }
+        .card-header-divider { border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+
+        /* Filtros y Tablas */
+        .table-filters-container { padding: 15px 25px; }
+        .table-filter-title { font-weight: 700; font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .form-control-sm { height: 34px; font-size: 13px; border-radius: 3px; border: 1px solid #ccc; }
+        .btn-filter { height: 34px; font-size: 13px; padding: 0 15px; line-height: 1.5; }
+        .spacer-label { color: transparent; user-select: none; }
+        
+        .table-responsive { overflow-x: auto; margin-bottom: 0; }
+        .table thead th { background-color: #fff; font-weight: 700; font-size: 11px; color: #404040; border-bottom: 2px solid var(--border-color); border-top: 0; padding: 10px 5px; vertical-align: middle; }
+        .table tbody td { vertical-align: middle; border-color: var(--border-color); padding: 8px 5px; }
+        
+        /* Específico Calendario Semanal */
+        .item-week { width: 25px; min-width: 25px; text-align: center; padding: 4px 0 !important; border-left: 1px solid #f0f0f0; }
+        .item-week small { font-size: 11px; color: #555; }
+        .table-active { background-color: #ffffff !important; }
+        .table-sold { background-color: #e34b46 !important; } .table-sold small { color: #ffffff !important; }
+        .table-partial { background-color: #ffb822 !important; } .table-partial small { color: #ffffff !important; }
+        .table-reserved { background-color: #808080 !important; } .table-reserved small { color: #ffffff !important; }
+        .table-blocked { background-color: #8e3d36 !important; } .table-blocked small { color: #ffffff !important; }
+        
+        .slot-row { display: none; background-color: #fafafa; }
+        .slot-row td { padding: 4px; font-size: 12px; border-top: 1px dashed var(--border-color); }
+        .be-spinner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 10; }
+        .be-spinner svg { animation: spin 2s linear infinite; stroke: var(--primary-color); }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Badges y utilidades */
+        .legend-list .list-inline-item { margin-right: 10px; }
+        .badge { font-weight: 500; padding: 5px 8px; font-size: 11px; border-radius: 3px; }
+        .badge-danger { background-color: #e34b46; color: #fff; }
+        .badge-warning { background-color: #ffb822; color: #fff; }
+        .badge-secondary { background-color: #808080; color: #fff; }
+        .badge-info { background-color: #5d9cec; color: #fff; }
+        .badge-success { background-color: #28a745; color: #fff; }
+        .cursor-not-allowed { cursor: not-allowed; }
+        .cursor-pointer { cursor: pointer; }
+        
+        .text-bold { font-weight: 700; }
+        .h4-font-size { font-size: 1.5rem; font-weight: 500; color: var(--text-dark); }
+        
+        /* Nav Tabs Estilo OOH Alineadas y centradas */
+        .nav-tabs-custom { border-bottom: 2px solid var(--border-color); padding-left: 0 !important; }
+        .nav-tabs-custom .nav-link { 
+            border: 0; 
+            color: var(--text-muted); 
+            font-weight: 500; 
+            padding: 10px 25px; 
+            font-size: 14px; 
+            text-align: center;
+        }
+        .nav-tabs-custom .nav-link.active { 
+            color: var(--primary-color); 
+            border-bottom: 3px solid var(--primary-color); 
+            background: transparent; 
+        }
+
+        .no-caret::after { display: none !important; }
+
+        /* Estilos Latinad */
+        .latinad-btn-group .btn { border: 1px solid #ced4da; background: #fff; color: #495057; font-size: 12px; }
+        .latinad-btn-group .btn.active { background: #6c757d; color: #fff; border-color: #6c757d; }
+        .btn-add-ad { background-color: #3eb88f; border-color: #3eb88f; color: #fff; font-size: 13px; font-weight: 500; }
+        .btn-add-ad:hover { background-color: #35a77f; border-color: #35a77f; color: #fff; }
+        
+        .latinad-screen-card-compact { 
+            border: 1px solid #e0e0e0; 
+            border-radius: 4px; 
+            padding: 10px 12px; 
+            margin-bottom: 10px; 
+            background: #fff; 
+        }
+
+        /* Overlay de carga simulada dentro del modal */
+        .modal-loading-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1060;
+            border-radius: 4px;
+        }
+        .modal-loading-overlay .spinner-border { width: 3rem; height: 3rem; color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<div class="be-wrapper be-fixed-sidebar be-collapsible-sidebar">
+    
+    <!-- TOP NAVBAR -->
+    <nav class="navbar navbar-expand fixed-top be-top-header" id="main-navbar">
+        <div class="container-fluid px-0">
+            <div class="be-navbar-header">
+                <a class="be-toggle-left-sidebar" href="#"><i class="icon mdi mdi-menu"></i></a>
+                <a class="navbar-brand w-100 text-dark font-weight-bold d-flex align-items-center" href="#">
+                    <i class="icon mdi mdi-view-dashboard mdi-24px mr-2"></i> OOH Manager
+                </a>
+            </div>
+            <div class="be-right-navbar w-100 d-flex justify-content-between align-items-center pr-3">
+                <div class="page-title text-truncate ml-4"><span>Módulo de Operaciones</span></div>
+                <ul class="nav navbar-nav float-right be-user-nav">
+                    <li class="nav-item dropdown">
+                        <a aria-expanded="false" class="nav-link dropdown-toggle text-dark d-flex align-items-center" data-toggle="dropdown" href="#" role="button">
+                            <i class="icon mdi mdi-account-circle mdi-hc-2x align-middle mr-2"></i>
+                            <span class="user-name">Alejandro</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" role="menu">
+                            <div class="user-info p-3 bg-primary text-white">
+                                <div class="user-tenant font-weight-light">Módulo de Operaciones</div>
+                                <div class="user-name font-weight-bold">Alejandro</div>
+                                <div class="user-role text-white-50">Administrador/a de empresa</div>
+                            </div>
+                            <a class="dropdown-item py-2" href="#"><i class="icon mdi mdi-face mdi-hc-fw mr-2"></i><span>Mi cuenta</span></a>
+                            <a class="dropdown-item py-2" href="#"><i class="icon mdi mdi-power mdi-hc-fw mr-2"></i><span>Cerrar sesión</span></a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="be-left-sidebar">
+        <div class="left-sidebar-wrapper">
+            <div class="left-sidebar-scroll">
+                <div class="left-sidebar-content">
+                    <ul class="sidebar-elements">
+                        <li class="divider">Menú</li>
+                        <li class="nav-item active" id="nav-inicio">
+                            <a href="#" onclick="switchView('view-inicio', this)"><i class="icon mdi mdi-home"></i><span>Inicio</span></a>
+                        </li>
+                        <li class="parent">
+                            <a href="#"><i class="icon mdi mdi-widgets"></i><span>Soportes</span><i class="icon mdi mdi-chevron-down ml-auto"></i></a>
+                            <ul class="sub-menu">
+                                <li><a href="#"><span>Catálogo</span></a></li>
+                                <li class="nav-item" id="nav-disponibilidad">
+                                    <a href="#" onclick="switchView('view-disponibilidad', this)"><span>Disponibilidad</span></a>
+                                </li>
+                                <li><a href="#"><span>Mapa</span></a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item" id="nav-campanas">
+                            <a href="#" onclick="switchView('view-campanas', this)"><i class="icon mdi mdi-clipboard-check"></i><span>Campañas</span></a>
+                        </li>
+                        <li class="parent">
+                            <a href="#"><i class="icon mdi mdi-briefcase"></i><span>Órdenes de trabajo</span></a>
+                            <ul class="sub-menu">
+                                <li><a href="#"><span>Ver listado ODT</span></a></li>
+                                <li><a href="#"><span>Crear ODT</span></a></li>
+                                <li><a href="#"><span>Validar ODT</span></a></li>
+                            </ul>
+                        </li>
+                        <li class="parent">
+                            <a href="#"><i class="icon mdi mdi-wrench"></i><span>Tareas</span></a>
+                            <ul class="sub-menu">
+                                <li><a href="#"><span>Ver tareas</span></a></li>
+                                <li><a href="#"><span>Configurar tareas</span></a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#"><i class="icon mdi mdi-chart-bar"></i><span>Reportes</span></a></li>
+                        <li class="divider">Admin</li>
+                        <li class="parent">
+                            <a href="#"><i class="icon mdi mdi-account-multiple"></i><span>Usuarios</span></a>
+                        </li>
+                        <li><a href="#"><i class="icon mdi mdi-cog"></i><span>Empresa</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="be-content">
+        
+        <!-- VISTA: INICIO -->
+        <div id="view-inicio" class="view-section pt-4">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card card-table">
+                            <div class="card-header">
+                                <h2 class="card-title">Tareas atrasadas <i class="icon mdi mdi-help-outline text-muted" data-toggle="tooltip" title="Tareas atrasadas en comparación a su fecha límite."></i></h2>
+                                <a href="#" class="text-secondary" data-toggle="tooltip" title="Ver todas"><i class="icon mdi mdi-open-in-new"></i></a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr><th>Código</th><th>Anunciante</th><th>Tipo de tarea</th><th>Responsable</th><th>Fecha límite</th><th></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-nowrap">T-6544</td><td>Amazon</td><td>03.Fabricación Gráfica</td><td>Vicente Rivera</td><td class="text-nowrap">17/03/2025</td><td class="text-right"><a href="#"><i class="icon mdi mdi-open-in-new"></i></a></td></tr>
+                                        <tr><td class="text-nowrap">T-6761</td><td>Jumbo</td><td>03.Fabricación Gráfica</td><td>Vicente Rivera</td><td class="text-nowrap">14/04/2025</td><td class="text-right"><a href="#"><i class="icon mdi mdi-open-in-new"></i></a></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card card-table">
+                            <div class="card-header">
+                                <h2 class="card-title">Tareas con problemas</h2>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <tbody><tr><td colspan="6" class="text-center text-muted p-4">No hay información para mostrar.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: DISPONIBILIDAD -->
+        <div id="view-disponibilidad" class="view-section" style="display: none;">
+            <div class="page-head pb-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb page-head-nav">
+                        <li class="breadcrumb-item"><a href="#" onclick="switchView('view-inicio', document.getElementById('nav-inicio'))"><i class="icon mdi mdi-home text-primary"></i></a></li>
+                        <li class="breadcrumb-item"><a href="#" class="text-primary">Catálogo</a></li>
+                        <li class="breadcrumb-item text-secondary active">Disponibilidad semanal</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="container-fluid pt-3">
+                <div class="card card-table card-border-color card-border-color-primary">
+                    <div class="row table-filters-container">
+                        <div class="col-12">
+                            <div class="form-row mb-3">
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Código</span>
+                                    <input class="form-control form-control-sm" placeholder="Ej: IT-0001 IT-0002" type="text">
+                                </div>
+                                <div class="col-sm-4">
+                                    <span class="table-filter-title">Buscar por término</span>
+                                    <input class="form-control form-control-sm" placeholder="ej: nombre, ubicación, código, etc." type="text">
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Tipo de soporte</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Todos los Soportes</option>
+                                        <option>Valla</option>
+                                        <option>Caminero</option>
+                                        <option>Pantalla Digital</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="table-filter-title">Fecha inicial</span>
+                                    <input class="form-control form-control-sm" type="date">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Comuna</span>
+                                    <select class="form-control form-control-sm"><option>Todo Chile</option></select>
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Región</span>
+                                    <select class="form-control form-control-sm"><option>Todo Chile</option></select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="table-filter-title">Ruta</span>
+                                    <select class="form-control form-control-sm"><option>Todas las rutas</option></select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="table-filter-title">Ordenar por</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Código</option>
+                                        <option>Comuna (a-z)</option>
+                                        <option>Tipo de soporte (a-z)</option>
+                                        <option>Precio (menor a mayor)</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="table-filter-title spacer-label">Filtrar</span>
+                                    <button type="button" class="btn btn-primary w-100 btn-filter" onclick="simulateFilter()">
+                                        <i class="icon mdi mdi-magnify mr-1"></i> Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-table be-loading" id="resultsCard">
+                    <div class="be-spinner" id="spinner">
+                        <svg width="40px" height="40px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                            <circle fill="none" stroke-width="4" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th><th colspan="2">Tipo</th><th>Nombre</th><th>Comuna</th><th>CMS Latinad</th>
+                                        <th class="text-center" colspan="4">SEPTIEMBRE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: CAMPAÑAS (Lista) -->
+        <div id="view-campanas" class="view-section" style="display: none;">
+            <div class="page-head pb-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb page-head-nav">
+                        <li class="breadcrumb-item"><a href="#" onclick="switchView('view-inicio', document.getElementById('nav-inicio'))"><i class="icon mdi mdi-home text-primary"></i></a></li>
+                        <li class="breadcrumb-item text-secondary active">Campañas</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="container-fluid pt-3">
+                <div class="card card-table card-border-color card-border-color-primary">
+                    <div class="row table-filters-container">
+                        <div class="col-12">
+                            <div class="form-row mb-3">
+                                <div class="col-sm-2">
+                                    <span class="table-filter-title">Código</span>
+                                    <input class="form-control form-control-sm" type="text" placeholder="Ej: CA-6654">
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Título</span>
+                                    <input class="form-control form-control-sm" type="text" placeholder="Buscar por título">
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Anunciante</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Todos los anunciantes</option>
+                                        <option>Feria del Disco</option>
+                                        <option>LATAM</option>
+                                        <option>Entel</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span class="table-filter-title">Ejecutivo/a</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Sin distinción</option>
+                                        <option>Francesca Salgado</option>
+                                        <option>Diego Soria</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Estado</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Todos los estados</option>
+                                        <option>Pendiente</option>
+                                        <option>En proceso</option>
+                                        <option>Atrasada</option>
+                                        <option>Finalizada</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="table-filter-title">Ordenar por</span>
+                                    <select class="form-control form-control-sm">
+                                        <option>Última actualización</option>
+                                        <option>Código (a-z)</option>
+                                        <option>Estado</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4"></div>
+                                <div class="col-sm-2 text-right">
+                                    <span class="table-filter-title spacer-label">Filtrar</span>
+                                    <button type="button" class="btn btn-primary w-100 btn-filter" onclick="simulateFilter()">
+                                        <i class="icon mdi mdi-magnify mr-1"></i> Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-table be-loading">
+                    <div class="be-spinner">
+                        <svg width="40px" height="40px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                            <circle fill="none" stroke-width="4" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th><th>Título</th><th>Anunciante</th><th>Ejecutivo/a</th><th>Próxima fecha límite</th><th>Estado</th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-nowrap text-bold">CA-6654</td>
+                                        <td>Campaña 1</td>
+                                        <td>Feria del Disco</td>
+                                        <td>Francesca Salgado</td>
+                                        <td>—</td>
+                                        <td><span class="badge badge-secondary">Pendiente</span></td>
+                                        <td class="text-right">
+                                            <a href="#" onclick="switchView('view-detalle-campana', document.getElementById('nav-campanas'))" class="text-secondary"><i class="icon mdi mdi-open-in-new"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-nowrap text-bold">CA-6605</td>
+                                        <td>Campaña 2</td>
+                                        <td>LATAM</td>
+                                        <td>Diego Soria</td>
+                                        <td>12/07/2026</td>
+                                        <td><span class="badge badge-danger">Atrasada</span></td>
+                                        <td class="text-right">
+                                            <a href="#" onclick="switchView('view-detalle-campana', document.getElementById('nav-campanas'))" class="text-secondary"><i class="icon mdi mdi-open-in-new"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-nowrap text-bold">CA-6619</td>
+                                        <td>Campaña 3</td>
+                                        <td>Entel</td>
+                                        <td>Francesca Salgado</td>
+                                        <td>12/03/2026</td>
+                                        <td><span class="badge badge-danger">Atrasada</span></td>
+                                        <td class="text-right">
+                                            <a href="#" onclick="switchView('view-detalle-campana', document.getElementById('nav-campanas'))" class="text-secondary"><i class="icon mdi mdi-open-in-new"></i></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VISTA: DETALLE DE CAMPAÑA -->
+        <div id="view-detalle-campana" class="view-section" style="display: none;">
+            <div class="page-head pb-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb page-head-nav">
+                        <li class="breadcrumb-item"><a href="#" onclick="switchView('view-inicio', document.getElementById('nav-inicio'))"><i class="icon mdi mdi-home text-primary"></i></a></li>
+                        <li class="breadcrumb-item"><a href="#" onclick="switchView('view-campanas', document.getElementById('nav-campanas'))" class="text-primary">Campañas</a></li>
+                        <li class="breadcrumb-item text-secondary active">CA-6619</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="main-content container-fluid pt-3">
+                <div class="card card-border-color card-border-color-primary mb-4">
+                    <div class="card-header card-header-divider">
+                        <h2 class="card-title">Información de campaña</h2>
+                        <div class="tools">
+                            <div class="dropdown">
+                                <a class="dropdown-toggle text-secondary no-caret" data-toggle="dropdown" href="#"><i class="icon mdi mdi-dots-vertical mdi-24px"></i></a>
+                                <div class="dropdown-menu dropdown-menu-right" role="menu">
+                                    <a class="dropdown-item" href="#"><i class="icon mdi mdi-open-in-new mr-2"></i><span>Ver campaña <small>(Módulo comercial)</small></span></a>
+                                    <a class="dropdown-item text-dark cursor-pointer" href="#"><i class="icon mdi mdi-refresh mdi-hc-fw mr-2"></i><span>Actualizar fechas límite</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row text-center mb-4">
+                            <div class="col-4">
+                                <h4 class="text-muted font-weight-normal mb-1">Avance</h4>
+                                <span class="h4-font-size text-nowrap">0%</span>
+                            </div>
+                            <div class="col-4 border-left">
+                                <h4 class="text-muted font-weight-normal mb-1">Estado</h4>
+                                <span class="h4-font-size text-nowrap text-secondary">Pendiente</span>
+                            </div>
+                            <div class="col-4 border-left">
+                                <h4 class="text-muted font-weight-normal mb-1">Próxima fecha límite</h4>
+                                <span class="h4-font-size text-nowrap">12/03/2026</span>
+                            </div>
+                        </div>
+                        <hr class="mt-4 mb-4">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <table class="table table-borderless table-sm">
+                                    <tbody>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Campaña:</th><td class="text-dark">CA-6619</td></tr>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Nombre campaña:</th><td class="text-dark">Campaña 1</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-lg-4">
+                                <table class="table table-borderless table-sm">
+                                    <tbody>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Anunciante:</th><td class="text-dark">Entel</td></tr>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Ejecutivo/a:</th><td class="text-dark">Francesca Salgado</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-lg-4">
+                                <table class="table table-borderless table-sm">
+                                    <tbody>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Agencia:</th><td class="text-dark">Sin agencia</td></tr>
+                                        <tr><th class="text-muted text-right w-50 align-top pr-3">Periodo campaña:</th><td class="text-dark"><span class="text-nowrap">01/04/2026 — 31/10/2026</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENEDOR DE PESTAÑAS (Centradas) -->
+                <ul class="nav nav-tabs nav-tabs-custom bg-white pt-2" id="campanaTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active text-center" id="tab-soportes-btn" data-toggle="tab" href="#content-soportes" role="tab">Soportes contratados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-center" id="tab-cms-btn" data-toggle="tab" href="#content-cms" role="tab">Programación CMS</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content bg-white border-bottom border-left border-right mb-4">
+                    <!-- CONTENIDO PESTAÑA 1: SOPORTES CONTRATADOS -->
+                    <div class="tab-pane fade show active" id="content-soportes" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Soporte</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Órdenes de trabajo</th>
+                                        <th>Periodos contratados</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-bold text-nowrap"><i class="icon mdi mdi-info-outline text-muted mr-1"></i> T-192</td>
+                                        <td>Soporte 192 Pantallas Digitales - Concón</td>
+                                        <td>Pantallas Digitales</td>
+                                        <td class="text-nowrap">ODT-1207</td>
+                                        <td class="text-nowrap">01/04/2026 — 31/10/2026</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-bold text-nowrap"><i class="icon mdi mdi-info-outline text-muted mr-1"></i> T-031</td>
+                                        <td>Soporte 031 Bus - Luneta - Santiago</td>
+                                        <td>Bus - Luneta</td>
+                                        <td class="text-nowrap">ODT-1208</td>
+                                        <td class="text-nowrap">01/04/2026 — 31/08/2026</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-bold text-nowrap"><i class="icon mdi mdi-info-outline text-muted mr-1"></i> T-030</td>
+                                        <td>Soporte 030 Caminero - Ancud</td>
+                                        <td>Caminero</td>
+                                        <td class="text-nowrap">ODT-1209</td>
+                                        <td class="text-nowrap">01/06/2026 — 31/08/2026</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CONTENIDO PESTAÑA 2: PROGRAMACIÓN CMS -->
+                    <div class="tab-pane fade" id="content-cms" role="tabpanel">
+                        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted font-weight-bold">Integración Latinad CMS</span>
+                                <small class="text-muted d-block">Crea el anuncio y vincula los soportes de la campaña en Latinad.</small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-primary btn-sm" id="btn-crear-anuncio" onclick="$('#modal-crear-anuncio-unificado').modal('show')">
+                                    <i class="icon mdi mdi-plus"></i> Crear Anuncio
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Soporte</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Periodos contratados</th>
+                                        <th>ID Pantalla Latinad</th>
+                                        <th>Estado Anuncio</th>
+                                        <th class="text-center" style="width: 80px;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-bold text-nowrap"><i class="icon mdi mdi-info-outline text-muted mr-1"></i> T-192</td>
+                                        <td>Soporte 192 Pantallas Digitales - Concón</td>
+                                        <td>Pantallas Digitales</td>
+                                        <td class="text-nowrap">01/04/2026 — 31/10/2026</td>
+                                        <td id="cell-latinad-id" class="text-nowrap font-weight-bold text-secondary">--</td>
+                                        <td id="cell-latinad-status"><span class="badge badge-secondary">Sin Anuncio</span></td>
+                                        <td class="text-center">
+                                            <!-- Ícono de engranaje (Limpio de tooltip directo para evitar bucle/parpadeo) -->
+                                            <button type="button" class="btn btn-link btn-sm text-secondary p-0" id="btn-gear-config" disabled onclick="abrirModalConfiguracion()">
+                                                <i class="icon mdi mdi-cog mdi-20px"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- =========================================================
+     MODAL UNIFICADO: CREAR ANUNCIO
+     ========================================================= -->
+<div class="modal fade" id="modal-crear-anuncio-unificado" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content style-relative">
+            
+            <!-- OVERLAY DE CARGA SIMULADA (4 SEGUNDOS DE DURACIÓN) -->
+            <div class="modal-loading-overlay" id="modal-loading-overlay">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <h6 class="font-weight-bold text-dark mb-1">Creando anuncio y vinculando soportes en Latinad...</h6>
+                <small class="text-muted">Por favor espera un momento mientras procesamos la información.</small>
+            </div>
+
+            <div class="modal-header border-bottom px-4 py-3">
+                <h5 class="modal-title font-weight-bold text-dark">Crear Anuncio</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body p-4" style="max-height: 78vh; overflow-y: auto;">
+                <form id="form-unificado">
+                    <!-- SECCIÓN SUPERIOR: CREACIÓN DE ANUNCIO -->
+                    <div class="form-group row align-items-center">
+                        <label class="col-sm-3 col-form-label text-sm-right font-weight-bold">Tipo</label>
+                        <div class="col-sm-9 col-form-label font-weight-normal text-dark">
+                            Lista inteligente
+                        </div>
+                    </div>
+
+                    <div class="form-group row align-items-center">
+                        <label class="col-sm-3 col-form-label text-sm-right font-weight-bold">Nombre</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control form-control-sm" value="CA-6619 - Campaña 1 (Entel)">
+                        </div>
+                    </div>
+
+                    <div class="form-group row align-items-center">
+                        <label class="col-sm-3 col-form-label text-sm-right font-weight-bold">Categoría</label>
+                        <div class="col-sm-9 d-flex">
+                            <select class="form-control form-control-sm mr-2"><option>Ninguna</option></select>
+                            <button type="button" class="btn btn-sm btn-light border"><i class="icon mdi mdi-dots-horizontal"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group row align-items-center">
+                        <label class="col-sm-3 col-form-label text-sm-right font-weight-bold">Modo de reproducción</label>
+                        <div class="col-sm-9">
+                            <div class="btn-group latinad-btn-group w-100">
+                                <button type="button" class="btn active">Uno por ciclo</button>
+                                <button type="button" class="btn">Lista Contínua</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row align-items-center">
+                        <label class="col-sm-3 col-form-label text-sm-right font-weight-bold">Tipo de lista</label>
+                        <div class="col-sm-9 col-form-label font-weight-normal text-dark">
+                            Multiresolución
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-3 mb-2">
+                        <button type="button" class="btn btn-add-ad btn-block py-2">
+                            <i class="icon mdi mdi-plus"></i> Agregar anuncio
+                        </button>
+                    </div>
+
+                    <div class="alert alert-danger p-2 small d-flex align-items-center mb-0" style="background-color: #fce8e6; border-color: #f8c3c0; color: #d93025;" role="alert">
+                        <i class="icon mdi mdi-alert-circle mr-2 mdi-18px"></i> Agregá al menos un elemento a la lista inteligente.
+                    </div>
+
+                    <!-- LÍNEA DIVISORIA -->
+                    <hr class="my-4">
+
+                    <!-- SECCIÓN INFERIOR: PANTALLAS (Orden: Desde, Hasta, Hora Inicio, Hora Fin, Repetición) -->
+                    <h6 class="font-weight-bold text-dark mb-3">Soportes digitales a vincular</h6>
+
+                    <div class="latinad-screen-card-compact">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center pr-0">
+                                <div class="bg-dark text-white p-2 rounded d-flex justify-content-center align-items-center" style="height: 65px;">
+                                    <i class="icon mdi mdi-monitor mdi-36px text-info"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="font-weight-bold text-dark m-0">T-192: Pantalla Concón (SCR-8821)</h6>
+                                    <span class="badge badge-light border">01/04/2026 — 31/10/2026</span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="col-md-3 px-1">
+                                        <label class="small text-muted m-0">Desde</label>
+                                        <input type="date" class="form-control form-control-sm" value="2026-04-01">
+                                    </div>
+                                    <div class="col-md-3 px-1">
+                                        <label class="small text-muted m-0">Hasta</label>
+                                        <input type="date" class="form-control form-control-sm" value="2026-10-31">
+                                    </div>
+                                    <div class="col-md-2 px-1">
+                                        <label class="small text-muted m-0">Hora Inicio</label>
+                                        <input type="time" class="form-control form-control-sm" value="00:00">
+                                    </div>
+                                    <div class="col-md-2 px-1">
+                                        <label class="small text-muted m-0">Hora Fin</label>
+                                        <input type="time" class="form-control form-control-sm" value="23:59">
+                                    </div>
+                                    <div class="col-md-2 px-1">
+                                        <label class="small text-muted m-0">Repetición</label>
+                                        <select class="form-control form-control-sm"><option>x1</option><option>x2</option></select>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-right">
+                                    <div class="custom-control custom-switch d-inline-block">
+                                        <input type="checkbox" class="custom-control-input" id="switchAmpliarUnificado" checked>
+                                        <label class="custom-control-label small" for="switchAmpliarUnificado">Ampliar anuncio para llenar pantalla</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer border-top p-3">
+                <button type="button" class="btn btn-light border btn-sm" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm px-4" onclick="procesarCreacionUnificada()">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     MODAL ÉXITO CREACIÓN (Pop-up Verde con Texto Ajustado)
+     ========================================================= -->
+<div class="modal fade" id="modal-exito" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title font-weight-bold m-0 d-flex align-items-center">
+                    <i class="icon mdi mdi-check-circle mr-2 mdi-24px"></i> ¡Anuncio Creado Con Éxito!
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-0 text-dark" style="font-size: 14px; line-height: 1.5;">
+                    El anuncio se ha creado y los soportes han sido vinculados correctamente.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center border-top-0 pt-0 pb-4">
+                <button type="button" class="btn btn-success px-4 btn-sm font-weight-bold" data-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     MODAL CONFIGURACIÓN DE PANTALLA (ENGRANAJE)
+     ========================================================= -->
+<div class="modal fade" id="modal-config-pantalla" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom px-4 py-3">
+                <h5 class="modal-title font-weight-bold text-dark">Configuración de Pantalla Latinad</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="latinad-screen-card-compact">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="bg-dark text-white p-3 rounded d-flex justify-content-center align-items-center" style="height: 85px;">
+                                <i class="icon mdi mdi-monitor mdi-48px text-info"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h6 class="font-weight-bold text-dark mb-2">Pantalla Concón - ID: SCR-8821</h6>
+                            <div class="form-row mb-2">
+                                <div class="col-6">
+                                    <label class="small text-muted m-0">Desde</label>
+                                    <input type="date" class="form-control form-control-sm" value="2026-04-01">
+                                </div>
+                                <div class="col-6">
+                                    <label class="small text-muted m-0">Hasta</label>
+                                    <input type="date" class="form-control form-control-sm" value="2026-10-31">
+                                </div>
+                            </div>
+                            <div class="form-row mb-2">
+                                <div class="col-6">
+                                    <label class="small text-muted m-0">Hora Inicio</label>
+                                    <input type="time" class="form-control form-control-sm" value="00:00">
+                                </div>
+                                <div class="col-6">
+                                    <label class="small text-muted m-0">Hora Fin</label>
+                                    <input type="time" class="form-control form-control-sm" value="23:59">
+                                </div>
+                            </div>
+                            <div class="form-row align-items-center mt-3">
+                                <div class="col-6">
+                                    <label class="small text-muted m-0">Repetición</label>
+                                    <select class="form-control form-control-sm"><option>x1</option><option>x2</option></select>
+                                </div>
+                                <div class="col-6 pt-3">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="switchConfigAmpliar" checked>
+                                        <label class="custom-control-label small" for="switchConfigAmpliar">Ampliar anuncio</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top p-3">
+                <button type="button" class="btn btn-light border btn-sm" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm px-4" onclick="$('#modal-config-pantalla').modal('hide')">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function switchView(viewId, element) {
+        document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+        document.getElementById(viewId).style.display = 'block';
+
+        if(element) {
+            document.querySelectorAll('.sidebar-elements .nav-item').forEach(el => el.classList.remove('active'));
+            element.closest('.nav-item').classList.add('active');
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    // Lógica para procesar la creación unificada con simulación de carga de 4 segundos
+    function procesarCreacionUnificada() {
+        $('#modal-loading-overlay').css('display', 'flex');
+        
+        // Simular tiempo de comunicación con la API (4.0 segundos)
+        setTimeout(() => {
+            $('#modal-loading-overlay').hide();
+            $('#modal-crear-anuncio-unificado').modal('hide');
+            
+            // Deshabilitar botón de crear anuncio
+            $('#btn-crear-anuncio').attr('disabled', true).addClass('disabled');
+            
+            // Habilitar ícono de engranaje en la tabla
+            $('#btn-gear-config').prop('disabled', false).removeClass('text-secondary').addClass('text-primary');
+            
+            // Actualizar fila con los datos retornados
+            $('#cell-latinad-id').text('SCR-8821');
+            $('#cell-latinad-status').html('<span class="badge badge-success">Vinculado / Programado</span>');
+            
+            // Mostrar modal verde de éxito
+            $('#modal-exito').modal('show');
+        }, 4000);
+    }
+
+    // Apertura limpia del modal de configuración desde el engranaje
+    function abrirModalConfiguracion() {
+        if(!$('#btn-gear-config').is(':disabled')) {
+            $('#modal-config-pantalla').modal('show');
+        }
+    }
+
+    // Calendario Semanal Base
+    const weeksList = ["07", "14", "21", "28", "05", "12", "19", "26", "02", "09", "16", "23", "30", "07", "14", "21", "28", "04", "11", "18", "25", "01", "08", "15", "22"];
+
+    const supportData = [
+        { code: 'T-001', type: 'Mobiliario Urbano Impreso', name: 'Soporte 001 Valla - Concepción', comuna: 'Vitacura', units: 2, state: 'active' },
+        { code: 'T-002', type: 'Valla', name: 'Soporte 002 Valla - Renca', comuna: 'Renca', units: 0, state: 'sold' },
+        { code: 'T-003', type: 'Caminero', name: 'Soporte 003 Caminero - Tiltil', comuna: 'Tiltil', units: 0, state: 'reserved' }
+    ];
+
+    function initTable() {
+        const body = document.getElementById('tableBody');
+        let html = '';
+
+        supportData.forEach((item) => {
+            const hasUnits = item.units > 0;
+            const rowStateClass = `table-${item.state}`;
+            const randomLatinad = Math.floor(Math.random() * 101) + '%';
+            
+            html += `<tr class="item-row">
+                <td class="text-bold text-nowrap">${item.code}</td>
+                <td class="truncated-fit" ${!hasUnits ? 'colspan="2"' : ''}><span>${item.type}</span></td>
+                ${hasUnits ? `<td class="text-center p-0"><a class="toggle-slots text-secondary" href="javascript:void(0)" onclick="toggleUnits('${item.code}')"><i class="icon mdi mdi-tv-list mdi-hc-lg"></i></a></td>` : ''}
+                <td><span>${item.name}</span></td>
+                <td>${item.comuna}</td>
+                <td class="text-center font-weight-bold text-secondary">${randomLatinad}</td>`;
+                
+            weeksList.forEach(day => {
+                html += `<td class="item-week ${hasUnits ? 'table-active' : rowStateClass}"><small>${day}</small></td>`;
+            });
+            html += `</tr>`;
+        });
+
+        body.innerHTML = html;
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    function toggleUnits(code) { $(`.slot-${code}`).toggle(); }
+
+    function simulateFilter() {
+        const activeSpinner = $('.view-section:visible .be-spinner');
+        if(activeSpinner.length > 0) {
+            activeSpinner.css('display', 'flex');
+            setTimeout(() => { activeSpinner.hide(); }, 600);
+        }
+    }
+
+    $(document).ready(() => {
+        initTable();
+        
+        // Manejo fluido del menú lateral desplegable
+        $('.sidebar-elements .parent > a').off('click').on('click', function(e) {
+            e.preventDefault();
+            const parentLi = $(this).parent();
+            parentLi.toggleClass('open');
+            parentLi.children('.sub-menu').stop(true, true).slideToggle(200);
+        });
+    });
+</script>
+
+</body>
+</html>
