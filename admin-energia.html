@@ -435,7 +435,7 @@
         };
 
         // --- RELAY PANEL ---
-        const RelayPanel = ({ relays, toggleRelay }) => {
+        const RelayPanel = ({ relays, toggleRelay, updateRelaySchedules }) => {
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {relays.map((relay, index) => {
@@ -463,15 +463,54 @@
                                         <div className="text-sm font-semibold text-gray-800">Cara {String.fromCharCode(65 + index % 26)}</div>
                                         <div className="text-sm text-gray-400 mt-0.5">-</div>
                                     </div>
-                                    <div className="p-3.5">
-                                        <div className="text-xs text-gray-500 mb-3 font-medium">Horarios</div>
-                                        <div className="space-y-2.5">
-                                            <div className="flex items-start">
-                                                <span className="text-sm text-gray-600">1. Horario Inactivo</span>
+                                    <div className="p-3.5 space-y-3">
+                                        <div className="text-xs text-gray-500 font-medium">Horarios</div>
+                                        {/* Horario 1 */}
+                                        <div className="space-y-1.5 bg-gray-50 p-2 rounded border border-gray-100">
+                                            <div className="text-[11px] font-bold text-gray-700">1. Horario Encendido</div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="block text-[10px] text-gray-400">Inicio</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={relay.schedules?.[0]?.start || '17:00'} 
+                                                        onChange={(e) => updateRelaySchedules && updateRelaySchedules(relay.id, 0, 'start', e.target.value)}
+                                                        className="w-full px-1.5 py-1 text-xs border rounded bg-white" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] text-gray-400">Fin</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={relay.schedules?.[0]?.end || '06:00'} 
+                                                        onChange={(e) => updateRelaySchedules && updateRelaySchedules(relay.id, 0, 'end', e.target.value)}
+                                                        className="w-full px-1.5 py-1 text-xs border rounded bg-white" 
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="border-t border-gray-50"></div>
-                                            <div className="flex items-start">
-                                                <span className="text-sm text-gray-600">2. Horario Inactivo</span>
+                                        </div>
+                                        {/* Horario 2 */}
+                                        <div className="space-y-1.5 bg-gray-50 p-2 rounded border border-gray-100">
+                                            <div className="text-[11px] font-bold text-gray-700">2. Horario Encendido</div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="block text-[10px] text-gray-400">Inicio</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={relay.schedules?.[1]?.start || ''} 
+                                                        onChange={(e) => updateRelaySchedules && updateRelaySchedules(relay.id, 1, 'start', e.target.value)}
+                                                        className="w-full px-1.5 py-1 text-xs border rounded bg-white" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] text-gray-400">Fin</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={relay.schedules?.[1]?.end || ''} 
+                                                        onChange={(e) => updateRelaySchedules && updateRelaySchedules(relay.id, 1, 'end', e.target.value)}
+                                                        className="w-full px-1.5 py-1 text-xs border rounded bg-white" 
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -487,7 +526,13 @@
         const CampaignDetailView = ({ campaign, isOutdoorLinkEnabled, isAutoSyncEnabled, onNavigate }) => {
             const [isDropdownOpen, setIsDropdownOpen] = useState(false);
             const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
+            const [isPostScheduleOpen, setIsPostScheduleOpen] = useState(false);
             const [isManuallyScheduled, setIsManuallyScheduled] = useState(false);
+            
+            // Estado para el modal de programación (Post-Campaña)
+            const [postScheduleMode, setPostScheduleMode] = useState('solar');
+            
             const dropdownRef = useRef(null);
 
             const isProgrammed = isAutoSyncEnabled || isManuallyScheduled;
@@ -542,7 +587,7 @@
                                         <button 
                                             onClick={() => { 
                                                 if(!isAutoSyncEnabled) {
-                                                    setIsManuallyScheduled(true); 
+                                                    setIsProgramModalOpen(true); 
                                                     setIsDropdownOpen(false); 
                                                 }
                                             }} 
@@ -773,7 +818,7 @@
                         </div>
                     </div>
                     
-                    {/* Modal */}
+                    {/* Modal Actualizar Fechas Limite */}
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
@@ -821,6 +866,205 @@
                             </div>
                         </div>
                     )}
+
+                    {/* Modal Programar en Outdoor Link */}
+                    {isProgramModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsProgramModalOpen(false)}></div>
+                            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200 animate-fade-in max-h-[90vh] flex flex-col">
+                                <div className="px-6 py-4 bg-blue-600 flex justify-between items-center text-white shrink-0">
+                                    <h3 className="text-xl font-bold">Programar en Outdoor Link</h3>
+                                    <button onClick={() => setIsProgramModalOpen(false)} className="p-1 rounded-full hover:bg-white/20 transition-colors">
+                                        <CloseIcon />
+                                    </button>
+                                </div>
+                                <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                                    {/* Section 1: Campaign Summary */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-gray-800 border-b pb-2 mb-3">1. Resumen de la campaña</h4>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div><span className="text-gray-500 block text-xs">Nombre de campaña</span><span className="font-medium">{campaign?.title || 'TEST'}</span></div>
+                                            <div><span className="text-gray-500 block text-xs">Anunciante</span><span className="font-medium">{campaign?.client || 'Customer 1'}</span></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 2: Supports & Editable Schedules */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-gray-800 border-b pb-2 mb-3">2. Soportes a Programar</h4>
+                                        <div className="space-y-4">
+                                            {/* T-004 */}
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm">
+                                                <div className="flex justify-between font-bold text-gray-800 mb-1">
+                                                    <span>T-004 - Soporte 004 Valla - Renca</span>
+                                                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Relé: 999999</span>
+                                                </div>
+                                                <div className="text-gray-500 text-xs mb-3">Período: 01/05/2026 — 31/05/2026</div>
+                                                <div className="grid grid-cols-2 gap-4 bg-white p-3 rounded border border-gray-100">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Encendido</label>
+                                                        <input type="time" defaultValue="17:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Apagado</label>
+                                                        <input type="time" defaultValue="06:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* T-005 */}
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm">
+                                                <div className="flex justify-between font-bold text-gray-800 mb-1">
+                                                    <span>T-005 - Soporte 005 Mobiliario Urbano Impreso - Arica</span>
+                                                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Relé: 888888</span>
+                                                </div>
+                                                <div className="text-gray-500 text-xs mb-3">Período: 01/10/2026 — 31/10/2026</div>
+                                                <div className="grid grid-cols-2 gap-4 bg-white p-3 rounded border border-gray-100">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Encendido</label>
+                                                        <input type="time" defaultValue="17:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Apagado</label>
+                                                        <input type="time" defaultValue="06:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* T-006 */}
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm">
+                                                <div className="flex justify-between font-bold text-gray-800 mb-1">
+                                                    <span>T-006 - Soporte 006 Caminero - Lampa</span>
+                                                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Relé: 777777</span>
+                                                </div>
+                                                <div className="text-gray-500 text-xs mb-3">Período: 01/12/2026 — 31/12/2026</div>
+                                                <div className="grid grid-cols-2 gap-4 bg-white p-3 rounded border border-gray-100">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Encendido</label>
+                                                        <input type="time" defaultValue="17:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Hora de Apagado</label>
+                                                        <input type="time" defaultValue="06:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 3: Post-Campaign Schedules (Accordion) */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-gray-800 border-b pb-2 mb-3">3. Configuración adicional (post-campaña)</h4>
+                                        <div className="border border-gray-200 rounded-md overflow-hidden">
+                                            <button 
+                                                className="w-full bg-gray-50 px-4 py-3 flex justify-between items-center text-sm font-bold text-gray-700 hover:bg-gray-100 transition-colors"
+                                                onClick={() => setIsPostScheduleOpen(!isPostScheduleOpen)}
+                                            >
+                                                <span>Configuración adicional (post-campaña)</span>
+                                                <ChevronDownIcon className={`w-5 h-5 transition-transform duration-200 ${isPostScheduleOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            {isPostScheduleOpen && (
+                                                <div className="p-4 bg-white border-t border-gray-200 space-y-4">
+                                                    
+                                                    {/* Selector de modo */}
+                                                    <div className="flex space-x-2 p-1 bg-gray-100 rounded-lg">
+                                                        <button 
+                                                            onClick={() => setPostScheduleMode('fixed')}
+                                                            className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${postScheduleMode === 'fixed' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
+                                                        >
+                                                            Horario Fijo
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setPostScheduleMode('solar')}
+                                                            className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${postScheduleMode === 'solar' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
+                                                        >
+                                                            Amanecer / Anochecer
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setPostScheduleMode('always_on')}
+                                                            className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${postScheduleMode === 'always_on' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
+                                                        >
+                                                            Siempre Encendida
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Contenido Dinámico */}
+                                                    <div className="pt-2">
+                                                        {postScheduleMode === 'fixed' && (
+                                                            <div className="space-y-4">
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+                                                                        <div className="text-xs font-bold text-gray-700 mb-2">Horario 1</div>
+                                                                        <div className="space-y-2">
+                                                                            <div>
+                                                                                <label className="block text-[11px] font-semibold text-gray-500 uppercase">Hora Inicio</label>
+                                                                                <input type="time" defaultValue="17:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="block text-[11px] font-semibold text-gray-500 uppercase">Hora Fin</label>
+                                                                                <input type="time" defaultValue="06:00" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+                                                                        <div className="text-xs font-bold text-gray-700 mb-2">Horario 2</div>
+                                                                        <div className="space-y-2">
+                                                                            <div>
+                                                                                <label className="block text-[11px] font-semibold text-gray-500 uppercase">Hora Inicio</label>
+                                                                                <input type="time" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="block text-[11px] font-semibold text-gray-500 uppercase">Hora Fin</label>
+                                                                                <input type="time" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {postScheduleMode === 'solar' && (
+                                                            <div className="space-y-4">
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+                                                                        <label className="block text-xs font-bold text-gray-700 mb-2">Encendido al Atardecer (Sunset)</label>
+                                                                        <div>
+                                                                            <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Ajuste (Minutos)</label>
+                                                                            <input type="number" defaultValue="0" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" placeholder="Ej: -10 para anticipar" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+                                                                        <label className="block text-xs font-bold text-gray-700 mb-2">Apagado al Amanecer (Sunrise)</label>
+                                                                        <div>
+                                                                            <label className="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Ajuste (Minutos)</label>
+                                                                            <input type="number" defaultValue="0" className="w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white" placeholder="Ej: 15 para retrasar" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {postScheduleMode === 'always_on' && (
+                                                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md flex items-start">
+                                                                <InfoOutlineIcon className="w-5 h-5 text-blue-600 mr-2 shrink-0 mt-0.5" />
+                                                                <p className="text-sm text-blue-800">El relé permanecerá encendido las 24 horas de forma ininterrumpida al finalizar la campaña.</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+                                    <button onClick={() => setIsProgramModalOpen(false)} className="px-6 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={() => { setIsManuallyScheduled(true); setIsProgramModalOpen(false); }} className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#05a069] hover:bg-green-700 shadow-md shadow-green-200 flex items-center transition-all active:scale-95">
+                                        <CheckIcon className="w-4 h-4 mr-2" />
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -847,24 +1091,47 @@
                                  runtime: 'Runtime pending',
                                  fixtures: '1 fixtures',
                                  extra: '',
-                                 isSelected: false
+                                 isSelected: false,
+                                 schedules: [
+                                     { id: 1, start: '17:00', end: '06:00' },
+                                     { id: 2, start: '', end: '' }
+                                 ]
                              };
                          });
                      }
                 }
-                return support?.siteRelays || [];
-            });
-
-            const [horarios, setHorarios] = useState(() => {
-                const initial = support?.energySchedules || [];
-                if (initial.length === 2) return initial;
-                return [
-                    { id: 1, start: '', end: '', isDefault: false },
-                    { id: 2, start: '', end: '', isDefault: false }
+                return support?.siteRelays || [
+                    {
+                        id: 1,
+                        name: 'Circuito 1',
+                        power: '100W',
+                        status: 'ON',
+                        runtime: 'Runtime pending',
+                        fixtures: '1 fixtures',
+                        extra: '',
+                        isSelected: true,
+                        schedules: [
+                            { id: 1, start: '17:00', end: '06:00' },
+                            { id: 2, start: '', end: '' }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: 'Circuito 2',
+                        power: '100W',
+                        status: 'ON',
+                        runtime: 'Runtime pending',
+                        fixtures: '1 fixtures',
+                        extra: '',
+                        isSelected: true,
+                        schedules: [
+                            { id: 1, start: '17:00', end: '06:00' },
+                            { id: 2, start: '', end: '' }
+                        ]
+                    }
                 ];
             });
-            const [scheduleErrors, setScheduleErrors] = useState([]);
-            
+
             const [showSuccessChip, setShowSuccessChip] = useState(false);
             const [isConfigMode, setIsConfigMode] = useState(!support?.linkedSiteId);
             const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -880,7 +1147,6 @@
                 const syncedSites = outdoorLinkProvider?.syncHistory?.items || [];
                 const site = syncedSites.find(s => s.idExterno === siteId);
                 if (site) {
-                    // Start all as checked
                     const newRelays = Array.from({ length: site.relays }, (_, i) => ({
                         id: i + 1,
                         name: `Circuito ${i + 1}`,
@@ -889,7 +1155,11 @@
                         runtime: 'Runtime pending',
                         fixtures: '1 fixtures',
                         extra: '',
-                        isSelected: false
+                        isSelected: false,
+                        schedules: [
+                            { id: 1, start: '17:00', end: '06:00' },
+                            { id: 2, start: '', end: '' }
+                        ]
                     }));
                     setLocalSiteRelays(newRelays);
                 } else {
@@ -904,15 +1174,25 @@
             const toggleRelayStatus = (id) => {
                 setLocalSiteRelays(localSiteRelays.map(r => r.id === id ? { ...r, status: r.status === 'ON' ? 'OFF' : 'ON' } : r));
             };
+
+            const updateRelaySchedules = (relayId, scheduleIdx, field, value) => {
+                setLocalSiteRelays(localSiteRelays.map(r => {
+                    if (r.id === relayId) {
+                        const newSchedules = [...(r.schedules || [
+                            { id: 1, start: '', end: '' },
+                            { id: 2, start: '', end: '' }
+                        ])];
+                        newSchedules[scheduleIdx] = {
+                            ...newSchedules[scheduleIdx],
+                            [field]: value
+                        };
+                        return { ...r, schedules: newSchedules };
+                    }
+                    return r;
+                }));
+            };
             
             const handleSave = () => {
-                const overlaps = findOverlaps(horarios);
-                if (overlaps.length > 0) {
-                    setScheduleErrors(overlaps);
-                    return;
-                }
-                setScheduleErrors([]);
-                
                 setIsConfigMode(false);
                 const activeRelays = localSiteRelays.filter(r => r.isSelected);
                 
@@ -920,65 +1200,12 @@
                     setSupports(prev => prev.map(s => s.id === support.id ? {
                         ...s,
                         linkedSiteId: localLinkedSiteId,
-                        siteRelays: activeRelays,
-                        energySchedules: horarios
+                        siteRelays: activeRelays
                     } : s));
                 }
                 
                 setShowSuccessChip(true);
                 setTimeout(() => setShowSuccessChip(false), 3000);
-            };
-
-            const findOverlaps = (schedules) => {
-                const overlaps = [];
-                // Only validate if both schedules have start and end times
-                const validSchedules = schedules.filter(s => s.start && s.end);
-                
-                for (let i = 0; i < validSchedules.length; i++) {
-                    for (let j = i + 1; j < validSchedules.length; j++) {
-                        const s1 = validSchedules[i];
-                        const s2 = validSchedules[j];
-                        
-                        const start1 = timeToMinutes(s1.start);
-                        const end1 = timeToMinutes(s1.end);
-                        const start2 = timeToMinutes(s2.start);
-                        const end2 = timeToMinutes(s2.end);
-
-                        if (start1 < end2 && start2 < end1) {
-                            if (!overlaps.includes(s1.id)) overlaps.push(s1.id);
-                            if (!overlaps.includes(s2.id)) overlaps.push(s2.id);
-                        }
-                    }
-                }
-                return overlaps;
-            };
-
-            const timeToMinutes = (timeStr) => {
-                const [h, m] = timeStr.split(':').map(Number);
-                return h * 60 + m;
-            };
-
-            const addSchedule = () => {
-                if (horarios.length < 4) {
-                    setHorarios([...horarios, { id: Date.now(), start: '00:00', end: '23:59', isDefault: false }]);
-                }
-            };
-
-            const removeSchedule = (id) => {
-                const newHorarios = horarios.filter(h => h.id !== id);
-                setHorarios(newHorarios);
-                setScheduleErrors(findOverlaps(newHorarios));
-            };
-
-            const updateSchedule = (id, field, value) => {
-                const newHorarios = horarios.map(h => {
-                    if (h.id === id) {
-                        return { ...h, [field]: value };
-                    }
-                    return h;
-                });
-                setHorarios(newHorarios);
-                setScheduleErrors(findOverlaps(newHorarios));
             };
             
             const Card = ({ id, title, action, children }) => (
@@ -1024,7 +1251,6 @@
 
             const navItems = [
                 { id: 'section-info', label: 'Información general' },
-                { id: 'section-schedules', label: 'Horarios funcionamiento energía' },
                 ...(isOutdoorLinkEnabled ? [{ id: 'section-outdoor-link', label: 'Outdoor Link' }] : [])
             ];
 
@@ -1044,62 +1270,6 @@
                     </aside>
                     <div className="flex-1 space-y-6">
                         <InfoSection />
-                        
-                        <Card id="section-schedules" title="Horarios funcionamiento energía">
-                            <div className="space-y-4">
-                                {scheduleErrors.length > 0 && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
-                                        <InfoOutlineIcon className="text-red-500 w-5 h-5 shrink-0 mt-0.5" />
-                                        <p className="ml-2 text-sm text-red-700 font-medium">Existen horarios que se traslapan. Por favor verifique los rangos de tiempo resaltados.</p>
-                                    </div>
-                                )}
-                                <div className="grid grid-cols-1 gap-3">
-                                    {horarios.map((h, idx) => (
-                                        <div key={h.id} className={`p-4 rounded-lg border transition-all duration-200 ${scheduleErrors.includes(h.id) ? 'bg-red-50 border-red-300 shadow-sm' : 'bg-white border-gray-100 hover:border-indigo-100 shadow-sm'}`}>
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                                                <div className="flex items-center shrink-0 min-w-[110px]">
-                                                    <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] mr-2 font-bold border border-indigo-100">{idx + 1}</span>
-                                                    <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Horario {idx + 1}</span>
-                                                </div>
-                                                
-                                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase w-8">Inicio</span>
-                                                        <input 
-                                                            type="time" 
-                                                            value={h.start}
-                                                            onChange={(e) => updateSchedule(h.id, 'start', e.target.value)}
-                                                            className={`block w-full px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white ${scheduleErrors.includes(h.id) ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-indigo-500'}`}
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase w-4">Fin</span>
-                                                        <input 
-                                                            type="time" 
-                                                            value={h.end}
-                                                            onChange={(e) => updateSchedule(h.id, 'end', e.target.value)}
-                                                            className={`block w-full px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white ${scheduleErrors.includes(h.id) ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-indigo-500'}`}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center pt-4 sm:pt-0 shrink-0 border-t sm:border-t-0 border-gray-100 sm:pl-6 sm:border-l">
-                                                    <label className="flex items-center cursor-pointer select-none group" title="Horario por defecto para uso en integraciones">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer transition-colors"
-                                                            checked={h.isDefault}
-                                                            onChange={(e) => updateSchedule(h.id, 'isDefault', e.target.checked)}
-                                                        />
-                                                        <InfoOutlineIcon className="w-3.5 h-3.5 ml-2 text-gray-400 opacity-60" />
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </Card>
 
                         {isOutdoorLinkEnabled && (
                             <Card id="section-outdoor-link" title="Outdoor Link" action={
@@ -1165,7 +1335,7 @@
                                         <hr className="my-6 border-gray-200" />
                                         <div>
                                             <h3 className="text-[15px] font-semibold text-gray-800 mb-4">Control Relés</h3>
-                                            <RelayPanel relays={localSiteRelays.filter(r => r.isSelected)} toggleRelay={toggleRelayStatus} />
+                                            <RelayPanel relays={localSiteRelays.filter(r => r.isSelected)} toggleRelay={toggleRelayStatus} updateRelaySchedules={updateRelaySchedules} />
                                         </div>
                                     </>
                                 )}
