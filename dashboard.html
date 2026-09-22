@@ -30,7 +30,7 @@
       
       /* Colores Complementarios / Alertas */
       --chart-red: #e30202; 
-      --chart-yellow: #ffca28; /* Amarillo para reservas activas */
+      --chart-yellow: #ffca28;
       
       --border-color: #e0e0e0;
       --bg-dark-alt: #444444;
@@ -40,8 +40,21 @@
 
     body {
       font-family: 'Source Sans Pro', Arial, sans-serif;
-      background-color: #f5f5f5;
+      background-color: #f8f9fa; /* Color de fondo gris claro actualizado */
       color: #444;
+    }
+
+    /* TOP HEADER CUSTOM */
+    .top-header {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      height: 56px;
+    }
+
+    /* CONTENEDOR MÁXIMO (1600px) */
+    .max-w-1600 {
+      max-width: 1600px;
+      margin: 0 auto;
     }
 
     .page-title {
@@ -160,7 +173,7 @@
     .custom-chart-card {
       background: #ffffff;
       border-radius: 12px;
-      padding: 24px 24px 34px 24px; /* Mayor padding inferior */
+      padding: 24px 24px 34px 24px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       border: 1px solid #e2e6e9;
       height: 100%;
@@ -219,7 +232,7 @@
       border-left: 1px solid #ddd;
       position: relative;
       margin-left: 45px;
-      margin-bottom: 10px; /* Margen para etiquetas de X */
+      margin-bottom: 10px;
     }
     
     .bar-wrapper {
@@ -262,15 +275,30 @@
     /* Líneas SVG superpuestas (tendencias y metas) */
     .target-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
     
-    /* Ajustes específicos de contenedores */
     .cotizaciones-card { height: 100%; min-height: 280px; }
     .cotizaciones-bars-wrap { height: 140px; display: flex; align-items: flex-end; justify-content: center;}
   </style>
 </head>
 <body>
 
+<!-- TOP HEADER (Nuevo diseño implementado) -->
+<header class="top-header">
+  <div class="max-w-1600 px-4 h-100 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+      <img src="https://oohmanager-staging.s3.amazonaws.com/uploads/demo/tenant/thumb_logo_e21a7d4f6cf292b2.png" alt="OOH Logo" style="height: 32px;">
+      <span class="text-muted ml-4 pl-4 border-left" style="font-size: 0.875rem;">Inicio</span>
+    </div>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #e2e8f0; border: none;">
+        <i class="icon mdi mdi-account-outline text-secondary"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
 <div id="sales-dashboards" class="index">
-  <div class="main-content container-fluid pt-3">
+  <!-- Envolvemos todo el contenido en el contenedor central de max 1600px -->
+  <div class="main-content max-w-1600 px-3 px-md-4 pt-3">
     
     <!-- Menú Mobile -->
     <div class="tab-container d-sm-none mb-3">
@@ -389,9 +417,9 @@
           <div class="row mt-5 mb-3"><div class="col-xl-6"><h3 class="page-title">Próximos meses <i class="icon mdi mdi-help-circle text-muted"></i></h3></div></div>
           
           <!-- Gráficos General -->
-          <div class="row">
+          <div class="row mb-4">
             <!-- Gráfico 1: Campañas exhibidas -->
-            <div class="col-12 col-xl-6 mb-4">
+            <div class="col-12 col-xl-6 mb-4 mb-xl-0">
               <div class="custom-chart-card mb-0 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                   <h4 class="chart-card-title m-0">Campañas exhibidas <i class="icon mdi mdi-help-outline text-muted"></i></h4>
@@ -424,7 +452,7 @@
             </div>
 
             <!-- Gráfico 2: Reservas activas -->
-            <div class="col-12 col-xl-6 mb-4">
+            <div class="col-12 col-xl-6">
               <div class="custom-chart-card mb-0 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                   <h4 class="chart-card-title m-0">Reservas activas <i class="icon mdi mdi-help-outline text-muted"></i></h4>
@@ -440,6 +468,85 @@
                   <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 51%; background: var(--chart-yellow);"></div></div><span class="bar-label">dic 2026</span></div>
                   <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 51%; background: var(--chart-yellow);"></div></div><span class="bar-label">ene 2027</span></div>
                   <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 0%; background: var(--chart-yellow);"></div></div><span class="bar-label">feb 2027</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nuevas Tablas Integradas (Migradas de Tailwind a Bootstrap) -->
+          <div class="row mb-5 pb-4">
+            <div class="col-12 col-lg-6 mb-4 mb-lg-0">
+              <div class="card shadow-sm border-0 h-100" style="border-radius: 8px;">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center p-3">
+                  <h5 class="m-0 font-weight-bold" style="font-size: 1rem; color: #555;">Campañas por comenzar</h5>
+                  <i class="icon mdi mdi-help-circle text-muted"></i>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0 text-left" style="font-size: 0.85rem;">
+                    <thead class="bg-light text-muted">
+                      <tr>
+                        <th class="font-weight-bold border-0">Campaña</th>
+                        <th class="font-weight-bold border-0">Anunciante</th>
+                        <th class="font-weight-bold border-0">Fecha inicio</th>
+                        <th class="font-weight-bold border-0">Estado implementación</th>
+                        <th class="font-weight-bold border-0 text-center">Ver</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-secondary">
+                      <tr>
+                        <td>CA-6328</td>
+                        <td>Anunciante de prueba</td>
+                        <td>01 de nov</td>
+                        <td>Pendiente</td>
+                        <td class="text-center"><a href="#" class="text-muted"><i class="icon mdi mdi-open-in-new"></i></a></td>
+                      </tr>
+                      <tr>
+                        <td>CA-6329</td>
+                        <td>Anunciante de prueba</td>
+                        <td>01 de nov</td>
+                        <td>Pendiente</td>
+                        <td class="text-center"><a href="#" class="text-muted"><i class="icon mdi mdi-open-in-new"></i></a></td>
+                      </tr>
+                      <tr>
+                        <td>CA-6350</td>
+                        <td>Capel</td>
+                        <td>01 de nov</td>
+                        <td>Pendiente</td>
+                        <td class="text-center"><a href="#" class="text-muted"><i class="icon mdi mdi-open-in-new"></i></a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-lg-6">
+              <div class="card shadow-sm border-0 h-100" style="border-radius: 8px;">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center p-3">
+                  <h5 class="m-0 font-weight-bold" style="font-size: 1rem; color: #555;">Cotizaciones con reservas</h5>
+                  <i class="icon mdi mdi-help-circle text-muted"></i>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0 text-left" style="font-size: 0.85rem;">
+                    <thead class="bg-light text-muted">
+                      <tr>
+                        <th class="font-weight-bold border-0">Cotización</th>
+                        <th class="font-weight-bold border-0">Anunciante</th>
+                        <th class="font-weight-bold border-0">Vencimiento reserva</th>
+                        <th class="font-weight-bold border-0">Inicio de campaña</th>
+                        <th class="font-weight-bold border-0 text-center">Ver</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-secondary">
+                      <tr>
+                        <td>CA-6187</td>
+                        <td>Banco BCI</td>
+                        <td>24 de oct 16:30</td>
+                        <td>01 de nov</td>
+                        <td class="text-center"><a href="#" class="text-muted"><i class="icon mdi mdi-open-in-new"></i></a></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -927,7 +1034,6 @@
                   <div class="legend-item"><span class="legend-color" style="background: var(--chart-blue);"></span> Producción</div>
                   <div class="legend-item"><span class="legend-color" style="background: var(--chart-red);"></span> Meta</div>
                 </div>
-                <!-- Apilado invertido (Slate abajo, Blue arriba) con flex-direction column-reverse que procesa primero al primer hijo en HTML -->
                 <div class="stacked-bar-container" style="height: 220px;">
                   <div class="y-axis-labels" style="width: 35px; left: -40px;">
                     <span>1.000</span><span>800</span><span>600</span><span>400</span><span>200</span><span>0</span>
@@ -1024,7 +1130,7 @@
             </div>
           </div>
 
-          <!-- Gráficos de Dona Reemplazados por SVG Vectorial para Centrado Perfecto -->
+          <!-- Gráficos de Dona SVG Vectorial -->
           <div class="row align-items-stretch">
             <div class="col-12 col-xl-6 mb-3 mb-xl-0 d-flex">
               <div class="custom-chart-card w-100 mb-0">
@@ -1038,12 +1144,9 @@
                     <!-- Dona 10% (Teal) -->
                     <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-teal)" stroke-width="8" stroke-dasharray="10 90" stroke-dashoffset="-65" />
                     
-                    <!-- Textos Centrados Matemáticamente con coordenadas de radio -->
-                    <!-- 60% (Punto medio en 108° desde el top) -->
+                    <!-- Textos Centrados -->
                     <text x="36.1" y="25.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">60%</text>
-                    <!-- 30% (Punto medio en 270° desde el top / lateral izquierdo) -->
                     <text x="5.1" y="21" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">30%</text>
-                    <!-- 10% (Punto medio en 342° desde el top) -->
                     <text x="16.1" y="5.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">10%</text>
                   </svg>
                 </div>
@@ -1062,7 +1165,7 @@
                     <!-- Dona 10% (Purple) -->
                     <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-purple)" stroke-width="8" stroke-dasharray="10 90" stroke-dashoffset="-65" />
                     
-                    <!-- Textos Centrados Matemáticamente con coordenadas de radio -->
+                    <!-- Textos Centrados -->
                     <text x="36.1" y="25.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">60%</text>
                     <text x="5.1" y="21" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">30%</text>
                     <text x="16.1" y="5.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">10%</text>
