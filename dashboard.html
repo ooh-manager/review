@@ -40,7 +40,7 @@
 
     body {
       font-family: 'Source Sans Pro', Arial, sans-serif;
-      background-color: #f8f9fa; /* Color de fondo gris claro actualizado */
+      background-color: #f8f9fa;
       color: #444;
     }
 
@@ -247,7 +247,6 @@
       width: 100%; color: #ffffff; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; font-weight: 600;
     }
     
-    /* Ubicación fija de etiquetas del eje X por debajo del gráfico */
     .bar-label { 
       position: absolute; 
       bottom: -25px; 
@@ -281,7 +280,7 @@
 </head>
 <body>
 
-<!-- TOP HEADER (Nuevo diseño implementado) -->
+<!-- TOP HEADER -->
 <header class="top-header">
   <div class="max-w-1600 px-4 h-100 d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center">
@@ -297,7 +296,6 @@
 </header>
 
 <div id="sales-dashboards" class="index">
-  <!-- Envolvemos todo el contenido en el contenedor central de max 1600px -->
   <div class="main-content max-w-1600 px-3 px-md-4 pt-3">
     
     <!-- Menú Mobile -->
@@ -324,22 +322,6 @@
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_sales" role="tab">Ventas</a></li>
       </ul>
 
-      <!-- Filtros Dinámicos -->
-      <div id="filters-soportes" class="filters d-none justify-content-md-end mb-3">
-        <input type="text" class="form-control form-control-sm w-auto mr-2" value="01/01/2025 - 31/01/2025" readonly>
-        <select class="form-control form-control-sm w-auto mr-2"><option>Tipo de soporte (Todos)</option></select>
-        <select class="form-control form-control-sm w-auto mr-2"><option>Región (Todas)</option></select>
-        <select class="form-control form-control-sm w-auto"><option>Comuna (Todas)</option></select>
-      </div>
-      <div id="filters-ejecutivos" class="filters d-none justify-content-md-end mb-3">
-        <select class="form-control form-control-sm w-auto mr-2"><option>01/03 - 31/03</option></select>
-        <select class="form-control form-control-sm w-auto"><option>Ejecutivo (Todos)</option></select>
-      </div>
-      <div id="filters-ventas" class="filters d-none justify-content-md-end mb-3">
-        <select class="form-control form-control-sm w-auto mr-2"><option>Ejecutivo (Todos)</option></select>
-        <select class="form-control form-control-sm w-auto"><option>01/01 - 31/03</option></select>
-      </div>
-
       <!-- CONTENEDOR DE PANELES -->
       <div class="tab-content pt-1 pt-md-2">
         
@@ -347,25 +329,23 @@
              PESTAÑA 1: GENERAL
         =========================================== -->
         <div class="tab-pane fade show active" id="classic_index" role="tabpanel">
-          <div class="row dashboard-cards-row mt-3 wrapper-dashboard-delay-xl">
-            <div class="col-12 col-xl-3 order-1 order-xl-3 mb-5 mb-xl-3">
-              <form id="form-filter-user">
-                <select class="form-control input-sm">
-                  <option value="">Ejecutivo (Todos)</option>
-                </select>
-              </form>
+          
+          <!-- Cabecera Ajustada de la Pestaña General -->
+          <div class="row align-items-center mb-4 mt-2">
+            <div class="col-12 col-xl-8 mb-3 mb-xl-0 d-flex flex-wrap align-items-center">
+              <h3 class="page-title mr-4" id="current-day-title">Cargando... <small><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
+              <h3 class="page-title dynamic-range-title">Cargando... <small><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
             </div>
-            <div class="col-12 col-xl-3 order-2 order-xl-1 mb-2">
-              <h3 class="page-title">16 septiembre 2026 <small><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
+            <div class="col-12 col-xl-4 d-flex justify-content-xl-end">
+              <select class="custom-select custom-select-sm w-auto">
+                <option value="">Ejecutivo (Todos)</option>
+              </select>
             </div>
-            <div class="col-12 order-4 order-xl-2 mb-2 col-xl-6">
-              <h3 class="page-title">Enero a septiembre 2026 <small class="text-center"><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
-            </div>
-            
-            <div class="w-100 d-none d-xl-block"></div>
-            
-            <!-- KPIs -->
-            <div class="col-12 col-xl-3 order-3 order-xl-4 mb-3">
+          </div>
+          
+          <!-- KPIs -->
+          <div class="row dashboard-cards-row">
+            <div class="col-12 col-xl-3 mb-3">
               <div class="card dashboard-card bg-kpi-primary p-4 p-xl-3 mb-0 justify-content-center text-white" style="border-radius: 12px; height: 100%;">
                 <div class="font-weight-bold mb-2">Oportunidades activas <i class="icon mdi mdi-info text-white"></i>
                   <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
@@ -377,7 +357,7 @@
               </div>
             </div>
             
-            <div class="col-12 col-xl-3 order-5 order-xl-5 mb-3">
+            <div class="col-12 col-xl-3 mb-3">
               <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
                 <div class="font-weight-bold mb-2">Campañas exhibidas <i class="icon mdi mdi-info text-white"></i>
                   <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
@@ -389,7 +369,7 @@
               </div>
             </div>
 
-            <div class="col-12 col-xl-3 order-6 order-xl-6 mb-3">
+            <div class="col-12 col-xl-3 mb-3">
               <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
                 <div class="font-weight-bold mb-2">Campañas notificadas <i class="icon mdi mdi-info text-white"></i>
                   <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
@@ -401,7 +381,7 @@
               </div>
             </div>
 
-            <div class="col-12 col-xl-3 order-7 order-xl-7 mb-3">
+            <div class="col-12 col-xl-3 mb-3">
               <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
                 <div class="font-weight-bold mb-2">Ocupación <i class="icon mdi mdi-info text-white"></i>
                   <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
@@ -414,7 +394,7 @@
             </div>
           </div>
           
-          <div class="row mt-5 mb-3"><div class="col-xl-6"><h3 class="page-title">Próximos meses <i class="icon mdi mdi-help-circle text-muted"></i></h3></div></div>
+          <div class="row mt-4 mb-3"><div class="col-xl-6"><h3 class="page-title">Próximos meses <i class="icon mdi mdi-help-circle text-muted"></i></h3></div></div>
           
           <!-- Gráficos General -->
           <div class="row mb-4">
@@ -473,7 +453,7 @@
             </div>
           </div>
 
-          <!-- Nuevas Tablas Integradas (Migradas de Tailwind a Bootstrap) -->
+          <!-- Tablas Integradas -->
           <div class="row mb-5 pb-4">
             <div class="col-12 col-lg-6 mb-4 mb-lg-0">
               <div class="card shadow-sm border-0 h-100" style="border-radius: 8px;">
@@ -557,9 +537,20 @@
              PESTAÑA 2: SOPORTES
         =========================================== -->
         <div class="tab-pane fade" id="classic_items" role="tabpanel">
+          
           <div class="row align-items-center mb-4">
-            <div class="col-md-6">
-              <h3 class="page-title m-0">Indicadores de soportes</h3>
+            <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+              <h3 class="page-title m-0 dynamic-simple-range-title">Cargando...</h3>
+            </div>
+            <div class="col-12 col-xl-8 d-flex flex-wrap justify-content-xl-end">
+              <select class="custom-select custom-select-sm w-auto mr-2 mb-2 mb-xl-0"><option>Región (Todas)</option></select>
+              <select class="custom-select custom-select-sm w-auto mr-2 mb-2 mb-xl-0"><option>Comuna (Todas)</option></select>
+              <div class="input-group input-group-sm w-auto mb-2 mb-xl-0" style="width: 220px !important;">
+                <input type="text" class="form-control text-center bg-white dynamic-date-range text-dark" value="" readonly style="color: #333 !important;">
+                <div class="input-group-append">
+                  <span class="input-group-text bg-light"><i class="icon mdi mdi-calendar"></i></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -707,9 +698,18 @@
              PESTAÑA 3: EJECUTIVOS
         =========================================== -->
         <div class="tab-pane fade" id="classic_sales_agents" role="tabpanel">
+          
           <div class="row align-items-center mb-4">
-            <div class="col-md-6">
-              <h3 class="page-title m-0">Enero a septiembre 2026</h3>
+            <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+              <h3 class="page-title m-0 dynamic-simple-range-title">Cargando...</h3>
+            </div>
+            <div class="col-12 col-xl-6 d-flex justify-content-xl-end">
+              <div class="input-group input-group-sm w-auto mb-2 mb-xl-0" style="width: 220px !important;">
+                <input type="text" class="form-control text-center bg-white dynamic-date-range text-dark" value="" readonly style="color: #333 !important;">
+                <div class="input-group-append">
+                  <span class="input-group-text bg-light"><i class="icon mdi mdi-calendar"></i></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -913,9 +913,19 @@
              PESTAÑA 4: VENTAS
         =========================================== -->
         <div class="tab-pane fade" id="classic_sales" role="tabpanel">
+          
           <div class="row align-items-center mb-4">
-            <div class="col-md-6">
-              <h3 class="page-title m-0">Enero a septiembre 2026</h3>
+            <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+              <h3 class="page-title m-0 dynamic-simple-range-title">Cargando...</h3>
+            </div>
+            <div class="col-12 col-xl-6 d-flex flex-wrap justify-content-xl-end">
+              <select class="custom-select custom-select-sm w-auto mr-2 mb-2 mb-xl-0"><option>Ejecutivo (Todos)</option></select>
+              <div class="input-group input-group-sm w-auto mb-2 mb-xl-0" style="width: 220px !important;">
+                <input type="text" class="form-control text-center bg-white dynamic-date-range text-dark" value="" readonly style="color: #333 !important;">
+                <div class="input-group-append">
+                  <span class="input-group-text bg-light"><i class="icon mdi mdi-calendar"></i></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1187,26 +1197,50 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+<!-- Script para Automatización de Fechas y Títulos Dinámicos -->
 <script>
-  // Script para manejar los filtros ocultos en el Header
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    const targetId = $(e.target).attr("href").substring(1);
+  function updateDynamicDashboardDates() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const monthNames = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio", 
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ];
+    const currentMonthName = monthNames[now.getMonth()];
+    const day = now.getDate();
+
+    // 1. Título del día actual (ej: "22 septiembre 2026")
+    const dayTitleElem = document.getElementById('current-day-title');
+    if (dayTitleElem) {
+      dayTitleElem.innerHTML = `${day} ${currentMonthName} ${year} <small><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small>`;
+    }
+
+    // 2. Títulos de Rango de Período (ej: "Enero a septiembre 2026")
+    const rangeTitleElems = document.querySelectorAll('.dynamic-range-title');
+    rangeTitleElems.forEach(elem => {
+      elem.innerHTML = `Enero a ${currentMonthName} ${year} <small class="text-center"><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small>`;
+    });
+
+    const simpleRangeElems = document.querySelectorAll('.dynamic-simple-range-title');
+    simpleRangeElems.forEach(elem => {
+      elem.innerText = `Enero a ${currentMonthName} ${year}`;
+    });
+
+    // 3. Cálculo dinámico del rango para los inputs (01/01/[año] - [ultimo_dia]/[mes]/[año])
+    const lastDayObj = new Date(year, now.getMonth() + 1, 0);
+    const lastDayStr = String(lastDayObj.getDate()).padStart(2, '0');
+    const monthNumStr = String(now.getMonth() + 1).padStart(2, '0');
     
-    // Ocultar todos los filtros
-    document.querySelectorAll('.filters').forEach(group => group.style.display = 'none');
-    document.querySelectorAll('.filters').forEach(group => group.classList.remove('d-flex', 'd-md-flex'));
-    
-    // Mostrar el correspondiente
-    if(targetId === 'classic_items') {
-      document.getElementById('filters-soportes').style.display = 'flex';
-    }
-    if(targetId === 'classic_sales_agents') {
-      document.getElementById('filters-ejecutivos').style.display = 'flex';
-    }
-    if(targetId === 'classic_sales') {
-      document.getElementById('filters-ventas').style.display = 'flex';
-    }
-  });
+    const formattedRange = `01/01/${year} - ${lastDayStr}/${monthNumStr}/${year}`;
+
+    document.querySelectorAll('.dynamic-date-range').forEach(input => {
+      input.value = formattedRange;
+    });
+  }
+
+  // Ejecutar al cargar la página
+  document.addEventListener('DOMContentLoaded', updateDynamicDashboardDates);
 </script>
+
 </body>
 </html>
