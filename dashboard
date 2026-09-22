@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Comercial - OOH</title>
+  
+  <!-- Dependencias de la plantilla (Bootstrap 4, MDI, Font) -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       VARIABLES Y ESTILOS GLOBALES
+    ========================================================= */
+    :root {
+      /* Colores KPI Principales */
+      --kpi-primary: #254752;
+      --kpi-secondary: #269982;
+      
+      /* Nueva Paleta de Gráficos */
+      --chart-blue: #0288D1;
+      --chart-olive: #a8af14;
+      --chart-indigo: #373587;
+      --chart-purple: #7852c1;
+      --chart-teal: #388295;
+      --chart-turquoise: #00ac8f;
+      --chart-slate: #333f48;
+      
+      /* Colores Complementarios / Alertas */
+      --chart-red: #e30202; 
+      --chart-yellow: #ffca28; /* Amarillo para reservas activas */
+      
+      --border-color: #e0e0e0;
+      --bg-dark-alt: #444444;
+      --danger-red: #d32f2f;
+      --success-green: #388e3c;
+    }
+
+    body {
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #444;
+    }
+
+    .page-title {
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 0;
+      color: #333;
+    }
+
+    /* Modificadores de tarjetas KPI */
+    .bg-kpi-primary { background-color: var(--kpi-primary) !important; color: #fff; }
+    .bg-kpi-secondary { background-color: var(--kpi-secondary) !important; color: #fff; }
+    .glove-green-sm {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    /* Separador vertical KPI */
+    .custom-divider-v {
+      width: 1px;
+      background-color: rgba(255, 255, 255, 0.3);
+      height: 50px;
+      margin: 0 20px;
+    }
+
+    /* Navegación Tabs */
+    .nav-tabs-classic {
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+    .nav-tabs-classic .nav-link {
+      border: none;
+      color: #666;
+      font-weight: 600;
+      padding: 10px 20px;
+    }
+    .nav-tabs-classic .nav-link.active {
+      color: var(--chart-blue);
+      border-bottom: 3px solid var(--chart-blue);
+      background: transparent;
+    }
+
+    /* =========================================================
+       TABLAS CUSTOM
+    ========================================================= */
+    .custom-table-wrapper {
+      max-height: 350px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .custom-table th {
+      background-color: var(--bg-dark-alt) !important;
+      color: #fff !important;
+      font-weight: 400;
+      font-size: 0.9rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      vertical-align: middle !important;
+      text-align: center;
+      border: 1px solid #555;
+      white-space: nowrap;
+    }
+    .custom-table td {
+      vertical-align: middle !important;
+      font-size: 0.9rem;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+    
+    .badge-diff {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .icon-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .icon-badge.negative { background-color: var(--danger-red); }
+    .icon-badge.positive { background-color: var(--success-green); }
+    
+    .occupancy-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .progress-bar-bg {
+      width: 60px;
+      height: 12px;
+      background-color: #e0e0e0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background-color: var(--chart-blue);
+    }
+
+    /* =========================================================
+       GRÁFICOS CUSTOM CSS/SVG
+    ========================================================= */
+    .custom-chart-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 24px 34px 24px; /* Mayor padding inferior */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #e2e6e9;
+      height: 100%;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #333;
+    }
+    .chart-card-subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+    /* Eje Y Distribuido Uniformemente */
+    .y-axis-labels {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #999;
+      text-align: right;
+    }
+    .y-axis-labels span {
+      line-height: 1;
+      transform: translateY(50%);
+    }
+    .y-axis-labels span:first-child { transform: translateY(-5px); }
+    .y-axis-labels span:last-child { transform: translateY(0); }
+
+    /* Contenedor de barras */
+    .stacked-bar-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      border-bottom: 1px solid #ddd;
+      border-left: 1px solid #ddd;
+      position: relative;
+      margin-left: 45px;
+      margin-bottom: 10px; /* Margen para etiquetas de X */
+    }
+    
+    .bar-wrapper {
+      display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; width: 100%; position: relative; z-index: 5;
+    }
+    .stacked-bar {
+      width: 40px; display: flex; flex-direction: column-reverse; height: 100%; overflow: hidden; justify-content: flex-start;
+    }
+    .stacked-bar.wide { width: 100%; max-width: 120px; margin: 0 auto;}
+    
+    .bar-seg {
+      width: 100%; color: #ffffff; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; font-weight: 600;
+    }
+    
+    /* Ubicación fija de etiquetas del eje X por debajo del gráfico */
+    .bar-label { 
+      position: absolute; 
+      bottom: -25px; 
+      font-size: 0.8rem; 
+      color: #666; 
+      text-align: center; 
+      width: 100%; 
+      white-space: nowrap;
+    }
+
+    /* Barras Dobles Paralelas */
+    .bar-group-double { display: flex; gap: 4px; align-items: flex-end; height: 100%; width: 100%; justify-content: center; }
+    .single-bar { width: 18px; height: 100%; display: flex; align-items: flex-end; }
+    .single-bar-wide { width: 45px; height: 100%; display: flex; align-items: flex-end; }
+
+    /* Gráficos de Dona SVG */
+    .donut-chart-container { 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 220px; 
+      flex-grow: 1; 
+    }
+    
+    /* Líneas SVG superpuestas (tendencias y metas) */
+    .target-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+    
+    /* Ajustes específicos de contenedores */
+    .cotizaciones-card { height: 100%; min-height: 280px; }
+    .cotizaciones-bars-wrap { height: 140px; display: flex; align-items: flex-end; justify-content: center;}
+  </style>
+</head>
+<body>
+
+<div id="sales-dashboards" class="index">
+  <div class="main-content container-fluid pt-3">
+    
+    <!-- Menú Mobile -->
+    <div class="tab-container d-sm-none mb-3">
+      <a id="button-collapse-dashboard-menu" class="btn btn-secondary w-100 d-flex justify-content-between align-items-center" role="button" data-toggle="collapse" href="#collapse-dashboard-menu">
+        <span class="text-dark"><i class="icon mdi mdi-menu mdi-hc-fw"></i><span>Menú</span></span> <i class="icon mdi mdi-chevron-down"></i>
+      </a>
+      <div class="collapse" id="collapse-dashboard-menu">
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#classic_index">General</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_items">Soportes</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_sales_agents">Ejecutivos</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_sales">Ventas</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Menú Desktop y Pestañas -->
+    <div class="tab-container sales-dashboard">
+      <ul class="nav nav-tabs nav-tabs-classic d-none d-sm-flex" id="mainTab" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#classic_index" role="tab">General</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_items" role="tab">Soportes</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_sales_agents" role="tab">Ejecutivos</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#classic_sales" role="tab">Ventas</a></li>
+      </ul>
+
+      <!-- Filtros Dinámicos -->
+      <div id="filters-soportes" class="filters d-none justify-content-md-end mb-3">
+        <input type="text" class="form-control form-control-sm w-auto mr-2" value="01/01/2025 - 31/01/2025" readonly>
+        <select class="form-control form-control-sm w-auto mr-2"><option>Tipo de soporte (Todos)</option></select>
+        <select class="form-control form-control-sm w-auto mr-2"><option>Región (Todas)</option></select>
+        <select class="form-control form-control-sm w-auto"><option>Comuna (Todas)</option></select>
+      </div>
+      <div id="filters-ejecutivos" class="filters d-none justify-content-md-end mb-3">
+        <select class="form-control form-control-sm w-auto mr-2"><option>01/03 - 31/03</option></select>
+        <select class="form-control form-control-sm w-auto"><option>Ejecutivo (Todos)</option></select>
+      </div>
+      <div id="filters-ventas" class="filters d-none justify-content-md-end mb-3">
+        <select class="form-control form-control-sm w-auto mr-2"><option>Ejecutivo (Todos)</option></select>
+        <select class="form-control form-control-sm w-auto"><option>01/01 - 31/03</option></select>
+      </div>
+
+      <!-- CONTENEDOR DE PANELES -->
+      <div class="tab-content pt-1 pt-md-2">
+        
+        <!-- ==========================================
+             PESTAÑA 1: GENERAL
+        =========================================== -->
+        <div class="tab-pane fade show active" id="classic_index" role="tabpanel">
+          <div class="row dashboard-cards-row mt-3 wrapper-dashboard-delay-xl">
+            <div class="col-12 col-xl-3 order-1 order-xl-3 mb-5 mb-xl-3">
+              <form id="form-filter-user">
+                <select class="form-control input-sm">
+                  <option value="">Ejecutivo (Todos)</option>
+                </select>
+              </form>
+            </div>
+            <div class="col-12 col-xl-3 order-2 order-xl-1 mb-2">
+              <h3 class="page-title">16 septiembre 2026 <small><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
+            </div>
+            <div class="col-12 order-4 order-xl-2 mb-2 col-xl-6">
+              <h3 class="page-title">Enero a septiembre 2026 <small class="text-center"><i class="icon mdi mdi-alert-circle text-muted" title="Valores sin IVA."></i></small></h3>
+            </div>
+            
+            <div class="w-100 d-none d-xl-block"></div>
+            
+            <!-- KPIs -->
+            <div class="col-12 col-xl-3 order-3 order-xl-4 mb-3">
+              <div class="card dashboard-card bg-kpi-primary p-4 p-xl-3 mb-0 justify-content-center text-white" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-2">Oportunidades activas <i class="icon mdi mdi-info text-white"></i>
+                  <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
+                </div>
+                <div class="row">
+                  <div class="col-4"><p class="text-sm mb-0 opacity-75">Cantidad</p><p class="h4 font-weight-bold mb-0">1</p></div>
+                  <div class="col-8"><p class="text-sm mb-0 opacity-75">Monto</p><p class="h4 font-weight-bold mb-0">$ 5.000.000</p></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-xl-3 order-5 order-xl-5 mb-3">
+              <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-2">Campañas exhibidas <i class="icon mdi mdi-info text-white"></i>
+                  <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
+                </div>
+                <div class="row align-items-end">
+                  <div class="col-8"><p class="h4 font-weight-bold mb-1">$ 319.034.339</p><p class="text-sm mb-0 opacity-75">2025: $ 88.053.276</p></div>
+                  <div class="col-4 text-right"><span class="glove-green-sm">+262,3%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-3 order-6 order-xl-6 mb-3">
+              <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-2">Campañas notificadas <i class="icon mdi mdi-info text-white"></i>
+                  <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
+                </div>
+                <div class="row align-items-end">
+                  <div class="col-8"><p class="h4 font-weight-bold mb-1">$ 321.744.632</p><p class="text-sm mb-0 opacity-75">2025: $ 114.480.834</p></div>
+                  <div class="col-4 text-right"><span class="glove-green-sm">+181,0%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-3 order-7 order-xl-7 mb-3">
+              <div class="card dashboard-card bg-kpi-secondary text-white p-4 p-xl-3 mb-0 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-2">Ocupación <i class="icon mdi mdi-info text-white"></i>
+                  <div class="float-right"><i class="icon mdi mdi-clock-outline"></i></div>
+                </div>
+                <div class="row align-items-end">
+                  <div class="col-8"><p class="h4 font-weight-bold mb-1">3,4%</p><p class="text-sm mb-0 opacity-75">2025: 0,8%</p></div>
+                  <div class="col-4 text-right"><span class="glove-green-sm">+331,8%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-5 mb-3"><div class="col-xl-6"><h3 class="page-title">Próximos meses <i class="icon mdi mdi-help-circle text-muted"></i></h3></div></div>
+          
+          <!-- Gráficos General -->
+          <div class="row">
+            <!-- Gráfico 1: Campañas exhibidas -->
+            <div class="col-12 col-xl-6 mb-4">
+              <div class="custom-chart-card mb-0 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h4 class="chart-card-title m-0">Campañas exhibidas <i class="icon mdi mdi-help-outline text-muted"></i></h4>
+                  <div>
+                    <input type="checkbox" checked id="prod_check"> <label for="prod_check" style="font-size:14px; margin:0;">Monto producción</label>
+                    <i class="icon mdi mdi-clock-outline text-muted ml-2"></i>
+                  </div>
+                </div>
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 45px; left: -50px;">
+                    <span>$ 60M</span><span>$ 40M</span><span>$ 20M</span><span>$ 0</span>
+                  </div>
+                  <svg class="target-line-svg" viewBox="0 0 600 220" preserveAspectRatio="none">
+                    <polyline fill="none" stroke="var(--chart-red)" stroke-width="2" points="50,130 150,110 250,90 350,80 450,60 550,210" />
+                    <circle cx="50" cy="130" r="4" fill="var(--chart-red)" />
+                    <circle cx="150" cy="110" r="4" fill="var(--chart-red)" />
+                    <circle cx="250" cy="90" r="4" fill="var(--chart-red)" />
+                    <circle cx="350" cy="80" r="4" fill="var(--chart-red)" />
+                    <circle cx="450" cy="60" r="4" fill="var(--chart-red)" />
+                    <circle cx="550" cy="210" r="4" fill="var(--chart-red)" />
+                  </svg>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 8%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 52%; background: var(--chart-blue);"></div></div><span class="bar-label">ago 2026</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 2%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 40%; background: var(--chart-blue);"></div></div><span class="bar-label">sep 2026</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 4%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 28%; background: var(--chart-blue);"></div></div><span class="bar-label">oct 2026</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 1%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 18%; background: var(--chart-blue);"></div></div><span class="bar-label">nov 2026</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 0%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 10%; background: var(--chart-blue);"></div></div><span class="bar-label">dic 2026</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 0%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 4%; background: var(--chart-blue);"></div></div><span class="bar-label">ene 2027</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráfico 2: Reservas activas -->
+            <div class="col-12 col-xl-6 mb-4">
+              <div class="custom-chart-card mb-0 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h4 class="chart-card-title m-0">Reservas activas <i class="icon mdi mdi-help-outline text-muted"></i></h4>
+                  <i class="icon mdi mdi-clock-outline text-muted ml-2"></i>
+                </div>
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 45px; left: -50px;">
+                    <span>$ 10M</span><span>$ 7.5M</span><span>$ 5M</span><span>$ 2.5M</span><span>$ 0</span>
+                  </div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 50%; background: var(--chart-yellow);"></div></div><span class="bar-label">sep 2026</span></div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 100%; background: var(--chart-yellow);"></div></div><span class="bar-label">oct 2026</span></div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 98%; background: var(--chart-yellow);"></div></div><span class="bar-label">nov 2026</span></div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 51%; background: var(--chart-yellow);"></div></div><span class="bar-label">dic 2026</span></div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 51%; background: var(--chart-yellow);"></div></div><span class="bar-label">ene 2027</span></div>
+                  <div class="bar-wrapper"><div class="single-bar single-bar-wide"><div style="width: 100%; height: 0%; background: var(--chart-yellow);"></div></div><span class="bar-label">feb 2027</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PESTAÑA 2: SOPORTES
+        =========================================== -->
+        <div class="tab-pane fade" id="classic_items" role="tabpanel">
+          <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+              <h3 class="page-title m-0">Indicadores de soportes</h3>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="row mb-4">
+            <div class="col-12 col-md-6 col-xl-3 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-1">Inventario</div>
+                <div class="h3 font-weight-bold mb-3">500</div>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 0 0 8px 0;">
+                <div style="font-size: 0.95rem;">Estáticos: <strong>300</strong></div>
+                <div style="font-size: 0.95rem;">Digitales: <strong>200</strong></div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-1">Ocupación</div>
+                <div class="h3 font-weight-bold mb-3">36.9%</div>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 0 0 8px 0;">
+                <div style="font-size: 0.95rem;">Estáticos: <strong>35%</strong></div>
+                <div style="font-size: 0.95rem;">Digitales: <strong>65%</strong></div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-1">Inventario Exhibido</div>
+                <div class="h3 font-weight-bold mb-3">185</div>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 0 0 8px 0;">
+                <div style="font-size: 0.95rem;">Estáticos: <strong>65</strong></div>
+                <div style="font-size: 0.95rem;">Digitales: <strong>120</strong></div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center" style="border-radius: 12px; height: 100%;">
+                <div class="font-weight-bold mb-1">Monto Exhibido</div>
+                <div class="h3 font-weight-bold mb-3">$ 185 M</div>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 0 0 8px 0;">
+                <div style="font-size: 0.95rem;">Estáticos: <strong>$65M | 35%</strong></div>
+                <div style="font-size: 0.95rem;">Digitales: <strong>$120M | 65%</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla Soportes -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="m-0 font-weight-bold">Detalle por tipo de soporte campañas exhibidas</h4>
+                <select class="form-control form-control-sm w-auto"><option>Ejecutivo (Todos)</option></select>
+              </div>
+              <div class="custom-table-wrapper">
+                <table class="table custom-table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Tipo de soporte ▼</th>
+                      <th class="text-left">Formato ▼</th>
+                      <th>Cantidad exhibida ▼</th>
+                      <th>$ Arriendo prom. campaña ▼</th>
+                      <th>$ Arriendo prom. catálogo ▼</th>
+                      <th>Dif % Precio ▼</th>
+                      <th>$ Campañas Exhibidas ▼</th>
+                      <th>% Participación ▼</th>
+                      <th>% Ocupación ▼</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-left">Tipo soporte 1</td>
+                      <td class="text-left">Estático</td>
+                      <td>20/100</td>
+                      <td>$2.333.333</td>
+                      <td>$2.400.000</td>
+                      <td>
+                        <span class="badge-diff">
+                          -5% <span class="icon-badge negative">▼</span>
+                        </span>
+                      </td>
+                      <td>14.564.555</td>
+                      <td>67%</td>
+                      <td>
+                        <div class="occupancy-cell">
+                          <span>20%</span>
+                          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 20%;"></div></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Tipo soporte 2</td>
+                      <td class="text-left">Digital</td>
+                      <td>10/10</td>
+                      <td>$1.353.398</td>
+                      <td>$980.000</td>
+                      <td>
+                        <span class="badge-diff">
+                          15% <span class="icon-badge positive">▲</span>
+                        </span>
+                      </td>
+                      <td>2.564.555</td>
+                      <td>67%</td>
+                      <td>
+                        <div class="occupancy-cell">
+                          <span>10%</span>
+                          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 10%;"></div></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico Ocupación vs Disponibilidad -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="custom-chart-card mb-0">
+                <h4 class="chart-card-title">Ocupación vs disponibilidad</h4>
+                <div class="chart-legend mt-2">
+                  <div class="legend-item"><span class="legend-color" style="background-color: var(--chart-slate);"></span> Ocupado</div>
+                  <div class="legend-item"><span class="legend-color" style="background-color: var(--chart-teal);"></span> Disponible</div>
+                </div>
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 30px; left: -35px;">
+                    <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+                  </div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 38%; background-color: var(--chart-slate);">38%</div><div class="bar-seg" style="height: 62%; background-color: var(--chart-teal);">62%</div></div><span class="bar-label">Ene</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 40%; background-color: var(--chart-slate);">40%</div><div class="bar-seg" style="height: 60%; background-color: var(--chart-teal);">60%</div></div><span class="bar-label">Feb</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 50%; background-color: var(--chart-slate);">50%</div><div class="bar-seg" style="height: 50%; background-color: var(--chart-teal);">50%</div></div><span class="bar-label">Mar</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 78%; background-color: var(--chart-slate);">78%</div><div class="bar-seg" style="height: 22%; background-color: var(--chart-teal);">22%</div></div><span class="bar-label">Abr</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 56%; background-color: var(--chart-slate);">56%</div><div class="bar-seg" style="height: 44%; background-color: var(--chart-teal);">44%</div></div><span class="bar-label">May</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 38%; background-color: var(--chart-slate);">38%</div><div class="bar-seg" style="height: 62%; background-color: var(--chart-teal);">62%</div></div><span class="bar-label">Jun</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 44%; background-color: var(--chart-slate);">44%</div><div class="bar-seg" style="height: 56%; background-color: var(--chart-teal);">56%</div></div><span class="bar-label">Jul</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 75%; background-color: var(--chart-slate);">75%</div><div class="bar-seg" style="height: 25%; background-color: var(--chart-teal);">25%</div></div><span class="bar-label">Ago</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 75%; background-color: var(--chart-slate);">75%</div><div class="bar-seg" style="height: 25%; background-color: var(--chart-teal);">25%</div></div><span class="bar-label">Sep</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 20%; background-color: var(--chart-slate);">20%</div><div class="bar-seg" style="height: 80%; background-color: var(--chart-teal);">80%</div></div><span class="bar-label">Oct</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 10%; background-color: var(--chart-slate);">10%</div><div class="bar-seg" style="height: 90%; background-color: var(--chart-teal);">90%</div></div><span class="bar-label">Nov</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 0%; background-color: var(--chart-slate);"></div><div class="bar-seg" style="height: 100%; background-color: var(--chart-teal);">100%</div></div><span class="bar-label">Dic</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PESTAÑA 3: EJECUTIVOS
+        =========================================== -->
+        <div class="tab-pane fade" id="classic_sales_agents" role="tabpanel">
+          <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+              <h3 class="page-title m-0">Enero a septiembre 2026</h3>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="row mb-4">
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Campañas exhibidas</div>
+                  <div class="h3 font-weight-bold mb-1">25</div>
+                  <div class="text-sm opacity-75">2025: 20 | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">+25%</span></div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">$ 100 M</div>
+                  <div class="text-sm opacity-75">2025: $ 103M | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">-2.9%</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Cotizaciones creadas</div>
+                  <div class="h3 font-weight-bold mb-1">650</div>
+                  <div class="text-sm opacity-75">2025: 720 | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">-9.7%</span></div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">$ 620 M</div>
+                  <div class="text-sm opacity-75">2025: $ 560M | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">+10.7%</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Conversión <i class="mdi mdi-information-outline"></i></div>
+                  <div class="h3 font-weight-bold mb-1">158 / 36</div>
+                  <div class="text-sm opacity-75">2025: 256 | 48</div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">23.1%</div>
+                  <div class="text-sm opacity-75">2025: 18.6%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cotizaciones & Distribución Ingresos Lado a Lado -->
+          <div class="row mb-4 align-items-stretch">
+            <div class="col-12 col-xl-6 mb-3 mb-xl-0 d-flex">
+              <div class="custom-chart-card cotizaciones-card w-100 mb-0">
+                <h4 class="chart-card-title mb-4">Cotizaciones</h4>
+                <div class="row h-100 align-items-end">
+                  <div class="col-6 text-center d-flex flex-column h-100 justify-content-between">
+                    <h6 class="font-weight-bold mb-2">En montos</h6>
+                    <div class="chart-legend mb-2" style="font-size: 10px; gap:8px;">
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> Sin venta</div>
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-blue);"></span> Activas</div>
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-turquoise);"></span> Venta</div>
+                    </div>
+                    <div class="cotizaciones-bars-wrap">
+                      <div class="stacked-bar wide" style="border-left:none; padding:0; justify-content:flex-end;">
+                        <div class="bar-seg" style="height: 33%; background: var(--chart-slate);">3M</div>
+                        <div class="bar-seg" style="height: 55%; background: var(--chart-blue);">5M</div>
+                        <div class="bar-seg" style="height: 12%; background: var(--chart-turquoise);">1M</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 text-center d-flex flex-column h-100 justify-content-between">
+                    <h6 class="font-weight-bold mb-2">En cantidad</h6>
+                    <div class="chart-legend mb-2" style="font-size: 10px; gap:8px;">
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-turquoise);"></span> Ventas</div>
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-blue);"></span> Activas</div>
+                      <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> Sin venta</div>
+                    </div>
+                    <div class="cotizaciones-bars-wrap">
+                      <div class="stacked-bar wide" style="border-left:none; padding:0; justify-content:flex-end;">
+                        <div class="bar-seg" style="height: 35%; background: var(--chart-turquoise);">50</div>
+                        <div class="bar-seg" style="height: 50%; background: var(--chart-blue);">70</div>
+                        <div class="bar-seg" style="height: 15%; background: var(--chart-slate);">20</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-6 d-flex">
+              <div class="custom-chart-card w-100 mb-0">
+                <h4 class="chart-card-title">Distribución de ingresos</h4>
+                <p class="chart-card-subtitle">Por ejecutivo</p>
+                <div class="chart-legend">
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-indigo);"></span> Ejecutivo 1</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-blue);"></span> Ejecutivo 2</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-turquoise);"></span> Ejecutivo 3</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-teal);"></span> Ejecutivo 4</div>
+                </div>
+                <div class="stacked-bar-container" style="height: 150px;">
+                  <div class="y-axis-labels" style="width: 30px; left: -35px;">
+                    <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+                  </div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 25%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-teal);"></div></div><span class="bar-label">Mar</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 50%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 15%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 15%; background: var(--chart-teal);"></div></div><span class="bar-label">Abr</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 30%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-teal);"></div></div><span class="bar-label">May</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 15%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 30%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 28%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 27%; background: var(--chart-teal);"></div></div><span class="bar-label">Jun</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 20%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 27%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 28%; background: var(--chart-teal);"></div></div><span class="bar-label">Jul</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 50%; background: var(--chart-indigo);"></div><div class="bar-seg" style="height: 17%; background: var(--chart-blue);"></div><div class="bar-seg" style="height: 17%; background: var(--chart-turquoise);"></div><div class="bar-seg" style="height: 16%; background: var(--chart-teal);"></div></div><span class="bar-label">Ago</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tablas Inferiores -->
+          <div class="row">
+            <div class="col-12 mb-4">
+              <h4 class="font-weight-bold mb-3">Campañas Notificadas</h4>
+              <div class="custom-table-wrapper">
+                <table class="table custom-table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Ejecutivo</th>
+                      <th>N° Cot. creadas</th>
+                      <th>N° Cot. activas</th>
+                      <th>$ Cot. activas</th>
+                      <th>N° Cot. fin. sin ventas</th>
+                      <th>N° Campañas notif.</th>
+                      <th>$ Campañas notif.</th>
+                      <th>Conversión</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-left">Ejecutivo 1</td>
+                      <td>7</td>
+                      <td>34</td>
+                      <td class="text-right">$ 25.877.697</td>
+                      <td>38</td>
+                      <td>4</td>
+                      <td class="text-right">$ 5.987.000</td>
+                      <td>57% (48/91)</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Ejecutivo 2</td>
+                      <td>7</td>
+                      <td>34</td>
+                      <td class="text-right">$ 25.877.697</td>
+                      <td>17</td>
+                      <td>23</td>
+                      <td class="text-right">$ 7.987.000</td>
+                      <td>57% (48/91)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <h4 class="font-weight-bold mb-3">Campañas Exhibidas</h4>
+              <div class="custom-table-wrapper">
+                <table class="table custom-table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Ejecutivo</th>
+                      <th>N° Campañas exhibidas</th>
+                      <th>$ Campañas exhibidas</th>
+                      <th>Meta</th>
+                      <th>% Cumplimiento</th>
+                      <th>% Part. en exhibición</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-left">Ejecutivo 1</td>
+                      <td>4</td>
+                      <td class="text-right">$ 25.877.697</td>
+                      <td class="text-right">$ 38.000.000</td>
+                      <td>57% (48/91)</td>
+                      <td>57%</td>
+                    </tr>
+                    <tr>
+                      <td class="text-left">Ejecutivo 2</td>
+                      <td>4</td>
+                      <td class="text-right">$ 25.877.697</td>
+                      <td class="text-right">$ 38.000.000</td>
+                      <td>57% (48/91)</td>
+                      <td>57%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PESTAÑA 4: VENTAS
+        =========================================== -->
+        <div class="tab-pane fade" id="classic_sales" role="tabpanel">
+          <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+              <h3 class="page-title m-0">Enero a septiembre 2026</h3>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="row mb-4">
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Ventas Exhibidas</div>
+                  <div class="h3 font-weight-bold mb-1">25</div>
+                  <div class="text-sm opacity-75">2025: 20 | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">+25%</span></div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">$ 100 M</div>
+                  <div class="text-sm opacity-75">2025: $ 103M | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">-2.9%</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Ventas Notificadas</div>
+                  <div class="h3 font-weight-bold mb-1">18</div>
+                  <div class="text-sm opacity-75">2025: 26 | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">+30.8%</span></div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">$ 500 M</div>
+                  <div class="text-sm opacity-75">2025: $ 700M | <span style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">-28.5%</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-4 mb-3">
+              <div class="card bg-kpi-secondary text-white p-4 justify-content-center d-flex flex-row align-items-center" style="border-radius: 12px; height: 100%;">
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">Meta</div>
+                  <div class="h3 font-weight-bold mb-1">37%</div>
+                  <div class="text-sm opacity-75">2025: 25%</div>
+                </div>
+                <div class="custom-divider-v"></div>
+                <div style="flex: 1;">
+                  <div class="font-weight-bold mb-2">&nbsp;</div>
+                  <div class="h4 font-weight-bold mb-1">$ 37 M</div>
+                  <div class="text-sm opacity-75">2025: $ 25.7M</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Ventas -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="custom-chart-card mb-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h4 class="chart-card-title m-0">Performance Ventas</h4>
+                  <select class="form-control form-control-sm w-auto"><option>Septiembre 2025</option></select>
+                </div>
+                <div class="chart-legend">
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> Campañas Notificadas</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-olive);"></span> Campañas Exhibidas</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-purple);"></span> Cotizaciones Creadas</div>
+                </div>
+                
+                <div class="stacked-bar-container" style="height: 220px; border-left: 1px solid #ddd; margin-left: 10px;">
+                  <svg width="100%" height="100%" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                    <line x1="0" y1="30" x2="1000" y2="30" stroke="#eee" stroke-width="1" />
+                    <line x1="0" y1="70" x2="1000" y2="70" stroke="#eee" stroke-width="1" />
+                    <line x1="0" y1="110" x2="1000" y2="110" stroke="#eee" stroke-width="1" />
+                    <line x1="0" y1="150" x2="1000" y2="150" stroke="#eee" stroke-width="1" />
+
+                    <!-- Línea Slate -->
+                    <path fill="none" stroke="var(--chart-slate)" stroke-width="2.5" d="M 0,110 C 60,80 120,70 180,100 C 240,110 300,20 360,40 C 420,160 480,110 540,100 C 600,100 660,150 720,180 C 780,180 840,120 900,100 C 950,80 1000,60 1000,60" />
+                    <circle cx="0" cy="110" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+                    <circle cx="180" cy="100" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+                    <circle cx="360" cy="40" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+                    <circle cx="540" cy="100" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+                    <circle cx="720" cy="180" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+                    <circle cx="900" cy="100" r="4" fill="#fff" stroke="var(--chart-slate)" stroke-width="2"/>
+
+                    <!-- Línea Purple -->
+                    <path fill="none" stroke="var(--chart-purple)" stroke-width="2.5" d="M 0,50 C 60,130 120,90 180,120 C 240,110 300,70 360,120 C 420,130 480,80 540,110 C 600,120 660,130 720,145 C 780,140 840,130 900,120 C 950,110 1000,100 1000,100" />
+                    <circle cx="0" cy="50" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+                    <circle cx="180" cy="120" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+                    <circle cx="360" cy="120" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+                    <circle cx="540" cy="110" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+                    <circle cx="720" cy="145" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+                    <circle cx="900" cy="120" r="4" fill="#fff" stroke="var(--chart-purple)" stroke-width="2"/>
+
+                    <!-- Línea Olive -->
+                    <path fill="none" stroke="var(--chart-olive)" stroke-width="2.5" d="M 0,170 C 60,150 120,130 180,140 C 240,185 300,180 360,180 C 420,175 480,150 540,190 C 600,185 660,175 720,170 C 780,165 840,160 900,160 C 950,175 1000,190 1000,190" />
+                    <circle cx="0" cy="170" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                    <circle cx="180" cy="140" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                    <circle cx="360" cy="180" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                    <circle cx="540" cy="190" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                    <circle cx="720" cy="170" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                    <circle cx="900" cy="160" r="4" fill="#fff" stroke="var(--chart-olive)" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-muted" style="font-size: 12px; padding-left: 10px;">
+                  <span>03 Lun</span><span>05 Mie</span><span>07 Vie</span><span>09 Dom</span><span>11 Mar</span><span>13 Jue</span><span>15 Sab</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campañas Exhibidas vs Metas 2026 -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="custom-chart-card mb-0">
+                <h4 class="chart-card-title">Campañas Exhibidas vs Metas 2026</h4>
+                <div class="chart-legend mt-2">
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> Arriendo</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-blue);"></span> Producción</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-red);"></span> Meta</div>
+                </div>
+                <!-- Apilado invertido (Slate abajo, Blue arriba) con flex-direction column-reverse que procesa primero al primer hijo en HTML -->
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 35px; left: -40px;">
+                    <span>1.000</span><span>800</span><span>600</span><span>400</span><span>200</span><span>0</span>
+                  </div>
+                  <svg class="target-line-svg" viewBox="0 0 1200 220" preserveAspectRatio="none">
+                    <polyline fill="none" stroke="var(--chart-red)" stroke-width="2" points="50,190 150,170 250,150 350,140 450,120 550,100 650,80 750,70 850,60 950,50 1050,45 1150,40" />
+                    <circle cx="50" cy="190" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="150" cy="170" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="250" cy="150" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="350" cy="140" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="450" cy="120" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="550" cy="100" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="650" cy="80" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="750" cy="70" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="850" cy="60" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="950" cy="50" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="1050" cy="45" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                    <circle cx="1150" cy="40" r="4" fill="#fff" stroke="var(--chart-red)" stroke-width="2" />
+                  </svg>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 20%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 30%; background: var(--chart-blue);"></div></div><span class="bar-label">Ene</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 40%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Feb</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 30%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 30%; background: var(--chart-blue);"></div></div><span class="bar-label">Mar</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 30%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Abr</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 35%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 25%; background: var(--chart-blue);"></div></div><span class="bar-label">May</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 50%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 30%; background: var(--chart-blue);"></div></div><span class="bar-label">Jun</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 60%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 35%; background: var(--chart-blue);"></div></div><span class="bar-label">Jul</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 70%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 40%; background: var(--chart-blue);"></div></div><span class="bar-label">Ago</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 60%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Sep</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 60%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Oct</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 60%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Nov</span></div>
+                  <div class="bar-wrapper"><div class="stacked-bar"><div class="bar-seg" style="height: 60%; background: var(--chart-slate);"></div><div class="bar-seg" style="height: 20%; background: var(--chart-blue);"></div></div><span class="bar-label">Dic</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campañas Exhibidas 2025 vs 2026 -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="custom-chart-card mb-0">
+                <h4 class="chart-card-title">Campañas Exhibidas 2025 vs 2026</h4>
+                <div class="chart-legend mt-2">
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> 2025</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-turquoise);"></span> 2026</div>
+                </div>
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 30px; left: -35px;">
+                    <span>300</span><span>200</span><span>100</span><span>0</span>
+                  </div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 50%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Ene</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 40%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Feb</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 60%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Mar</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 45%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Abr</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 55%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">May</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 65%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Jun</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 65%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 75%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Jul</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 85%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 90%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Ago</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 80%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 70%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Sep</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 75%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 80%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Oct</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 70%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 85%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Nov</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 80%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 95%; background: var(--chart-turquoise);"></div></div></div><span class="bar-label">Dic</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campañas Notificadas 2025 vs 2026 -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="custom-chart-card mb-0">
+                <h4 class="chart-card-title">Campañas Notificadas 2025 vs 2026</h4>
+                <div class="chart-legend mt-2">
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-slate);"></span> 2025</div>
+                  <div class="legend-item"><span class="legend-color" style="background: var(--chart-olive);"></span> 2026</div>
+                </div>
+                <div class="stacked-bar-container" style="height: 220px;">
+                  <div class="y-axis-labels" style="width: 30px; left: -35px;">
+                    <span>300</span><span>200</span><span>100</span><span>0</span>
+                  </div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Ene</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Feb</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Mar</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Abr</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">May</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 20%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Jun</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 65%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 22%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Jul</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 95%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 50%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Ago</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 80%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 35%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Sep</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 95%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 50%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Oct</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 95%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 50%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Nov</span></div>
+                  <div class="bar-wrapper"><div class="bar-group-double"><div class="single-bar"><div style="width: 100%; height: 95%; background: var(--chart-slate);"></div></div><div class="single-bar"><div style="width: 100%; height: 50%; background: var(--chart-olive);"></div></div></div><span class="bar-label">Dic</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráficos de Dona Reemplazados por SVG Vectorial para Centrado Perfecto -->
+          <div class="row align-items-stretch">
+            <div class="col-12 col-xl-6 mb-3 mb-xl-0 d-flex">
+              <div class="custom-chart-card w-100 mb-0">
+                <h4 class="chart-card-title text-center mb-4">Distribución ventas por tipo de soporte</h4>
+                <div class="donut-chart-container">
+                  <svg viewBox="0 0 42 42" width="100%" height="100%" style="max-width: 220px;">
+                    <!-- Dona 60% (Slate) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-slate)" stroke-width="8" stroke-dasharray="60 40" stroke-dashoffset="25" />
+                    <!-- Dona 30% (Turquoise) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-turquoise)" stroke-width="8" stroke-dasharray="30 70" stroke-dashoffset="-35" />
+                    <!-- Dona 10% (Teal) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-teal)" stroke-width="8" stroke-dasharray="10 90" stroke-dashoffset="-65" />
+                    
+                    <!-- Textos Centrados Matemáticamente con coordenadas de radio -->
+                    <!-- 60% (Punto medio en 108° desde el top) -->
+                    <text x="36.1" y="25.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">60%</text>
+                    <!-- 30% (Punto medio en 270° desde el top / lateral izquierdo) -->
+                    <text x="5.1" y="21" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">30%</text>
+                    <!-- 10% (Punto medio en 342° desde el top) -->
+                    <text x="16.1" y="5.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">10%</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-6 d-flex">
+              <div class="custom-chart-card w-100 mb-0">
+                <h4 class="chart-card-title text-center mb-4">Distribución ventas por categoría de anunciante</h4>
+                <div class="donut-chart-container">
+                  <svg viewBox="0 0 42 42" width="100%" height="100%" style="max-width: 220px;">
+                    <!-- Dona 60% (Indigo) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-indigo)" stroke-width="8" stroke-dasharray="60 40" stroke-dashoffset="25" />
+                    <!-- Dona 30% (Blue) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-blue)" stroke-width="8" stroke-dasharray="30 70" stroke-dashoffset="-35" />
+                    <!-- Dona 10% (Purple) -->
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="var(--chart-purple)" stroke-width="8" stroke-dasharray="10 90" stroke-dashoffset="-65" />
+                    
+                    <!-- Textos Centrados Matemáticamente con coordenadas de radio -->
+                    <text x="36.1" y="25.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">60%</text>
+                    <text x="5.1" y="21" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">30%</text>
+                    <text x="16.1" y="5.9" fill="#ffffff" font-size="3.5px" font-weight="bold" text-anchor="middle" dominant-baseline="central">10%</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts de Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+  // Script para manejar los filtros ocultos en el Header
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    const targetId = $(e.target).attr("href").substring(1);
+    
+    // Ocultar todos los filtros
+    document.querySelectorAll('.filters').forEach(group => group.style.display = 'none');
+    document.querySelectorAll('.filters').forEach(group => group.classList.remove('d-flex', 'd-md-flex'));
+    
+    // Mostrar el correspondiente
+    if(targetId === 'classic_items') {
+      document.getElementById('filters-soportes').style.display = 'flex';
+    }
+    if(targetId === 'classic_sales_agents') {
+      document.getElementById('filters-ejecutivos').style.display = 'flex';
+    }
+    if(targetId === 'classic_sales') {
+      document.getElementById('filters-ventas').style.display = 'flex';
+    }
+  });
+</script>
+</body>
+</html>
