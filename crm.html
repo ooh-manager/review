@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOH Manager · CRM (prototipo)</title>
+  <!-- Versión con CDN: autocontenida, no usa la carpeta assets. Bootstrap 4.4.1, jQuery 3.5.1, Chart.js 2.9.4 e íconos Material Design Iconic Font 2.2.0. -->
+<!-- ▶ [CRM-00] TEMA · Bootstrap 4 por CDN y estilos tipo Beagle (reemplaza la carpeta assets) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234285f4'/%3E%3Ctext x='16' y='22.5' font-size='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EO%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+  <style>
+    /* ---------- Base ---------- */
+    html { font-size: 15px; }
+    body { font-family: 'Roboto', -apple-system, 'Segoe UI', Arial, sans-serif; background: #f4f6fa; color: #3c4858; -webkit-font-smoothing: antialiased; }
+    a { color: #2f6fe0; } a:hover { color: #1f56c0; }
+    h1, h2, h3, h4, h5, h6 { color: #1f2d3d; }
+    .text-bold { font-weight: 600; }
+    .text-primary { color: #4285f4 !important; } .bg-primary { background: #4285f4 !important; }
+    .text-success { color: #2e9a4d !important; } .text-warning { color: #c98a00 !important; } .text-danger { color: #d93025 !important; }
+    code { color: #c2185b; background: #fdf0f5; padding: .1rem .3rem; border-radius: 4px; }
+    .icon { display: inline-block; vertical-align: middle; font-size: 1.2em; line-height: 1; }
+    .btn .icon { margin-right: 2px; margin-top: -2px; }
+    .dropdown-item .icon { margin-right: 8px; color: #7b8798; }
+
+    /* ---------- Botones ---------- */
+    .btn { border-radius: 6px; font-weight: 500; }
+    .btn-primary { background: #4285f4; border-color: #4285f4; } .btn-primary:hover, .btn-primary:focus { background: #2f6fe0; border-color: #2f6fe0; }
+    .btn-success { background: #34a853; border-color: #34a853; } .btn-success:hover { background: #2a8c45; border-color: #2a8c45; }
+    .btn-danger { background: #ea4335; border-color: #ea4335; } .btn-danger:hover { background: #cf3326; border-color: #cf3326; }
+    .btn-warning { background: #f5b301; border-color: #f5b301; color: #3a2c00; }
+    .btn-secondary { background: #eef1f5; border-color: #dde2e8; color: #3c4858; }
+    .btn-secondary:hover, .btn-secondary:focus, .btn-secondary.active, .show > .btn-secondary.dropdown-toggle { background: #dfe5ec; border-color: #cdd5de; color: #1f2d3d; }
+    .btn-secondary.disabled, .btn-secondary:disabled { background: #f3f5f8; color: #9aa5b3; }
+    .btn-xl { padding: .75rem 1rem; font-size: 1rem; }
+    .btn-outline-secondary { border-color: #cdd5de; color: #5f6b7a; }
+
+    /* ---------- Insignias y progreso ---------- */
+    .badge { font-weight: 500; padding: .35em .6em; border-radius: 5px; }
+    .badge-primary { background: #4285f4; } .badge-success { background: #34a853; } .badge-danger { background: #ea4335; }
+    .badge-warning { background: #fbbc05; color: #3a2c00; } .badge-info { background: #25a5c4; } .badge-secondary { background: #8d99a8; } .badge-dark { background: #3c4858; } .badge-light { background: #e3e8ef; color: #3c4858; }
+    .progress { background: #e8ecf1; border-radius: 6px; }
+    .progress-bar { background: #4285f4; }
+    .progress-bar.bg-success { background: #34a853 !important; }
+
+    /* ---------- Marco general ---------- */
+    .be-wrapper { min-height: 100vh; }
+    .be-top-header { background: #fff; height: 60px; padding: 0; box-shadow: 0 1px 3px rgba(20, 30, 60, .08); z-index: 1030; }
+    .be-top-header > .container-fluid { height: 60px; display: flex; align-items: center; padding: 0 12px 0 0; }
+    .be-navbar-header { width: 240px; height: 60px; display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; }
+    .navbar-brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 1.1rem; color: #1f2d3d; padding: 0; margin: 0; }
+    .navbar-brand:hover { color: #1f2d3d; text-decoration: none; }
+    .brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #4285f4, #6fa3ff); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: .95rem; }
+    .brand-lockup { display: inline-flex; align-items: center; gap: 9px; font-size: 1.35rem; font-weight: 700; color: #1f2d3d; }
+    .menu-toggle { border: 0; background: transparent; font-size: 1.6rem; color: #5f6b7a; padding: 0 12px 0 0; line-height: 1; cursor: pointer; }
+    .page-title { flex: 1; min-width: 0; margin-left: 8px; font-size: 1.15rem; font-weight: 500; color: #1f2d3d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .be-right-navbar { margin-left: auto; display: flex; align-items: center; }
+    .be-right-navbar .nav { flex-direction: row; align-items: center; margin: 0; padding: 0; list-style: none; }
+    .be-user-nav .nav-link { display: flex; align-items: center; color: #3c4858; padding: .25rem .5rem; }
+    .be-user-nav .user-name { font-weight: 500; font-size: .9rem; }
+    .be-icons-nav .nav-link { color: #5f6b7a; font-size: 1.45rem; padding: .3rem .7rem; line-height: 1; }
+    .be-icons-nav .nav-link:hover { color: #4285f4; }
+    .be-icons-nav .dropdown-toggle::after, .be-user-nav .dropdown-toggle::after { display: none; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #e8f0fe; color: #2f6fe0; display: inline-grid; place-items: center; font-size: .8rem; font-weight: 600; margin-right: 9px; }
+    .dropdown-menu { border: 1px solid #e8ecf1; border-radius: 8px; box-shadow: 0 8px 24px rgba(20, 30, 60, .12); font-size: .9rem; }
+    .dropdown-item { padding: .45rem 1.1rem; } .dropdown-item.active, .dropdown-item:active { background: #eaf1ff; color: #2f6fe0; }
+    .dropdown-header { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #98a2b3; }
+    .user-info { padding: .5rem 1.1rem .7rem; border-bottom: 1px solid #eef0f4; margin-bottom: .3rem; }
+    .user-info .user-name { font-weight: 600; color: #1f2d3d; }
+    .user-position { font-size: .8rem; color: #6c757d; }
+    .user-position.online::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34a853; margin-right: 6px; }
+
+    /* ---------- Menú lateral ---------- */
+    .be-left-sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 240px; background: #fff; border-right: 1px solid #e8ecf1; overflow-y: auto; z-index: 1020; transition: transform .2s ease; }
+    .left-sidebar-content { padding: 8px 0 40px; }
+    .sidebar-elements, .sidebar-elements ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-elements .divider { padding: 14px 20px 6px; font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: #98a2b3; font-weight: 500; }
+    .sidebar-elements li > a { display: flex; align-items: center; gap: 12px; padding: 9px 18px 9px 17px; color: #3c4858; text-decoration: none; font-size: .92rem; border-left: 3px solid transparent; }
+    .sidebar-elements li > a .icon { font-size: 1.3rem; color: #7b8798; width: 22px; text-align: center; }
+    .sidebar-elements li > a:hover { background: #f4f7fc; color: #1f2d3d; }
+    .sidebar-elements li.active > a { color: #2f6fe0; font-weight: 500; }
+    .sidebar-elements li.active > a .icon { color: #4285f4; }
+    .sidebar-elements li:not(.parent).active > a { background: #eaf1ff; border-left-color: #4285f4; }
+    .sidebar-elements li.parent > a::after { content: ''; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid #a3adbb; border-bottom: 2px solid #a3adbb; transform: rotate(45deg); transition: transform .15s; }
+    .sidebar-elements li.parent.open > a::after { transform: rotate(-135deg); }
+    .sidebar-elements .sub-menu { display: none; background: #fafbfd; }
+    .sidebar-elements li.open > .sub-menu { display: block; }
+    .sidebar-elements .sub-menu li > a { padding-left: 54px; font-size: .88rem; }
+    .sidebar-elements .sub-menu .sub-menu li > a { padding-left: 72px; }
+
+    /* ---------- Contenido ---------- */
+    .be-content { margin-left: 240px; padding-top: 60px; min-height: 100vh; }
+    .main-content { padding: 24px; }
+    @media (max-width: 991.98px) {
+      .be-left-sidebar { transform: translateX(-100%); }
+      body.menu-open .be-left-sidebar { transform: none; box-shadow: 8px 0 24px rgba(20, 30, 60, .18); }
+      body.menu-open::after { content: ''; position: fixed; top: 60px; right: 0; bottom: 0; left: 240px; background: rgba(15, 23, 42, .3); z-index: 1010; }
+      .be-content { margin-left: 0; }
+      .be-navbar-header { width: auto; padding: 0 8px 0 12px; }
+      .brand-text, .be-user-nav .user-name { display: none; }
+      .main-content { padding: 16px 12px; }
+    }
+
+    /* ---------- Tarjetas ---------- */
+    .card { border: 0; border-radius: 10px; box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06); margin-bottom: 20px; }
+    .card-header { background: #fff; border-bottom: 0; padding: 15px 20px; border-radius: 10px 10px 0 0; font-size: 1.05rem; font-weight: 500; color: #1f2d3d; }
+    .card-header-divider { border-bottom: 1px solid #eef1f5; }
+    .card-header .tools { float: right; display: flex; align-items: center; gap: 6px; margin-left: 12px; }
+    .card-header .tools .icon { font-size: 1.25rem; color: #7b8798; }
+    .card-title { font-size: 1.1rem; font-weight: 500; margin: 0; }
+    .card-subtitle { font-size: .82rem; color: #7b8798; margin-top: 2px; font-weight: 400; }
+    .card-border-color { border-top: 3px solid #4285f4; }
+    .card-border { border: 1px solid #e8ecf1; box-shadow: none; }
+    .card-footer { background: #fafbfd; border-top: 1px solid #eef1f5; padding: 12px 20px; }
+    .card-table > .card-body { padding: 0; }
+    .card-table .table { margin-bottom: 0; }
+    .card-table .table th:first-child, .card-table .table td:first-child { padding-left: 20px; }
+    .card-table .table th:last-child, .card-table .table td:last-child { padding-right: 20px; }
+    .tab-container .nav-tabs { padding: 0 20px; border-bottom: 1px solid #e8ecf1; }
+    .tab-container .tab-content { padding: 20px; }
+    .nav-tabs .nav-link { border: 0; border-bottom: 2px solid transparent; color: #5f6b7a; padding: .7rem 1rem; margin-bottom: -1px; }
+    .nav-tabs .nav-link:hover { color: #2f6fe0; border-color: transparent transparent #cfe0ff; }
+    .nav-tabs .nav-link.active { color: #2f6fe0; background: transparent; border-color: transparent transparent #4285f4; font-weight: 500; }
+    .card > .card-body > .nav-tabs { margin-bottom: 0; }
+
+    /* ---------- Tablas y filtros ---------- */
+    .table th { font-size: .78rem; color: #6b7788; font-weight: 500; border-top: 0; border-bottom: 1px solid #e8ecf1; white-space: nowrap; background: #fff; }
+    .table td { vertical-align: middle; border-top: 1px solid #f0f2f6; }
+    .table-striped tbody tr:nth-of-type(odd) { background: #fafbfd; }
+    .table-hover tbody tr:hover { background: #f1f6ff; }
+    .table td.number, .table th.number { text-align: right; }
+    td.actions, th.actions { width: 1%; white-space: nowrap; text-align: right; }
+    .no-fill { width: 1%; white-space: nowrap; }
+    .table-borderless td, .table-borderless th { border: 0; }
+    .row.table-filters-container { margin: 0; padding: 14px 20px 4px; background: #fcfdff; border-bottom: 1px solid #eef1f5; }
+    .table-filters-container .table-filters { margin-bottom: 10px; }
+    .table-filter-title { font-size: .7rem; color: #7b8798; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+
+    /* ---------- Formularios ---------- */
+    .form-group label, label { font-size: .85rem; font-weight: 500; color: #4a5568; margin-bottom: .25rem; }
+    .form-control { border-color: #d5dbe3; border-radius: 6px; }
+    .form-control:focus { border-color: #4285f4; box-shadow: 0 0 0 .18rem rgba(66, 133, 244, .18); }
+    .custom-control-label { font-weight: 400; }
+    .custom-control-input:checked ~ .custom-control-label::before { background-color: #4285f4; border-color: #4285f4; }
+    .custom-file-label { border-radius: 6px; }
+    .custom-control-inline { margin-right: 1rem; }
+    .switch-button { position: relative; display: inline-block; width: 46px; height: 22px; flex-shrink: 0; }
+    .switch-button input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; z-index: 2; cursor: pointer; }
+    .switch-button > span { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #cfd6df; border-radius: 22px; transition: .2s; }
+    .switch-button > span label { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; margin: 0; transition: .2s; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+    .switch-button input:checked + span { background: #4285f4; } .switch-button input:checked + span label { left: 26px; }
+    .switch-button-yesno > span::after { content: 'OFF'; position: absolute; right: 7px; top: 4px; font-size: .58rem; color: #fff; font-weight: 700; }
+    .switch-button-yesno input:checked + span::after { content: 'ON'; left: 7px; right: auto; }
+
+    /* ---------- Alertas (formato con ícono) ---------- */
+    .alert { border: 0; border-radius: 8px; display: flex; align-items: stretch; padding: 0; overflow: hidden; }
+    .alert .icon { display: flex; align-items: center; justify-content: center; width: 48px; font-size: 1.5rem; flex-shrink: 0; }
+    .alert .message { padding: .8rem 1rem; flex: 1; }
+    .alert .close { position: static; padding: .8rem 1rem; }
+    .alert-success { background: #e7f6ec; color: #1e6b3a; } .alert-success .icon { background: #34a853; color: #fff; }
+    .alert-info { background: #e3f4f9; color: #146176; } .alert-info .icon { background: #25a5c4; color: #fff; }
+    .alert-warning { background: #fff6dc; color: #7a5a00; } .alert-warning .icon { background: #fbbc05; color: #3a2c00; }
+    .alert-danger { background: #fde8e6; color: #9a2a20; } .alert-danger .icon { background: #ea4335; color: #fff; }
+    .alert-primary { background: #e6efff; color: #214d9c; } .alert-primary .icon { background: #4285f4; color: #fff; }
+
+    /* ---------- Línea de tiempo ---------- */
+    .user-timeline { list-style: none; padding-left: 0; margin: 0 0 0 6px; border-left: 2px solid #e3e8ef; }
+    .user-timeline li { position: relative; padding: 0 0 14px 18px; }
+    .user-timeline li::before { content: ''; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #4285f4; border: 2px solid #fff; }
+    .user-timeline-date { font-size: .75rem; color: #8d99a8; } .user-timeline-title { font-weight: 500; color: #1f2d3d; } .user-timeline-description { font-size: .85rem; color: #6b7788; }
+
+    /* ---------- Modales ---------- */
+    .modal-content { border: 0; border-radius: 10px; box-shadow: 0 12px 40px rgba(20, 30, 60, .2); }
+    .modal-header { border-bottom: 1px solid #eef1f5; } .modal-footer { border-top: 1px solid #eef1f5; }
+  </style>
+<!-- ▶ [CRM-01] ESTILOS · CSS propio del prototipo -->
+  <style>
+    .kpi-card { color:#fff; border-radius:6px; padding:1rem 1.25rem; margin-bottom:20px; }
+    .kpi-card .kpi-title { font-size:.8rem; opacity:.9; margin-bottom:.4rem; }
+    .kpi-card .kpi-value { font-size:1.6rem; font-weight:600; line-height:1.1; }
+    .kpi-card .kpi-sub { font-size:.78rem; opacity:.9; margin-top:.3rem; }
+    .kpi-1 { background:linear-gradient(135deg,#1f9d6b,#34b887); }
+    .kpi-2 { background:linear-gradient(135deg,#2c9c95,#4cc3bb); }
+    .kpi-3 { background:linear-gradient(135deg,#3a6fd8,#5b94f5); }
+    .kpi-4 { background:linear-gradient(135deg,#d98a1e,#f2b04a); }
+    .avail th, .avail td { text-align:center; padding:.3rem .35rem; font-size:.74rem; white-space:nowrap; }
+    .avail td.name { text-align:left; min-width:210px; }
+    .cell-free { background:#e6f4ea; } .cell-res { background:#fff1c7; } .cell-blk { background:#f6d4d1; }
+    .legend span { display:inline-block; width:14px; height:14px; border-radius:3px; margin:0 4px 0 12px; vertical-align:middle; }
+    .map-box { position:relative; height:540px; border-radius:6px; overflow:hidden; border:1px solid #dcdfe4;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px) 0 0/60px 60px,
+        linear-gradient(0deg, rgba(0,0,0,.04) 1px, transparent 1px) 0 0/60px 60px, #eaf0f3; }
+    .map-box svg { position:absolute; inset:0; width:100%; height:100%; }
+    .pin { position:absolute; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4);
+      transform:translate(-50%,-50%); cursor:pointer; }
+    .pin.active { outline:3px solid #4285f4; }
+    .gallery-thumb { height:120px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:3rem; border-radius:4px 4px 0 0; }
+    .toast-host { position:fixed; top:80px; right:20px; z-index:2000; width:340px; }
+    .tbl-actions .btn { margin-right:2px; }
+    .step-circle { display:inline-block; width:26px; height:26px; line-height:26px; text-align:center; border-radius:50%; background:#4285f4; color:#fff; font-weight:600; margin-right:8px; }
+    .cursor-pointer { cursor:pointer; }
+    .sticky-sub { font-size:.82rem; color:#6c757d; }
+    .prototype-banner { background:#fff8e1; border:1px solid #ffe08a; color:#7a5d00; font-size:.78rem; padding:.35rem .75rem; border-radius:4px; margin-bottom:15px; }
+  </style>
+<!-- ▶ [CRM-01b] ESTILOS · kanban, panel de clientes y editor de actividades -->
+  <style>
+    .kanban { display:flex; gap:12px; overflow-x:auto; padding:12px; align-items:flex-start; }
+    .kcol { flex:1 0 230px; background:#f3f5f8; border-radius:6px; min-height:220px; }
+    .kcol.over { outline:2px dashed #4285f4; background:#eaf1fe; }
+    .khead { padding:8px 12px; font-weight:500; background:#fff; border-radius:6px 6px 0 0; }
+    .kbody { padding:8px; }
+    .kcard { background:#fff; border:1px solid #e3e8ef; border-radius:6px; padding:8px 10px; margin-bottom:8px; cursor:grab; box-shadow:0 1px 2px rgba(20,30,60,.05); }
+    .kcard.dragging { opacity:.5; } .kcard .kt { font-weight:500; }
+    .ks { font-size:.8rem; color:#6b7788; margin-top:2px; }
+    .pcard .card-header { font-size:.9rem; font-weight:500; padding:.5rem .75rem; }
+    .pitem { padding:6px 8px; margin-bottom:6px; background:#f7f8fb; border-radius:4px; }
+    .act-av { width:34px; height:34px; border-radius:50%; background:#e3e8ef; color:#4285f4; display:flex; align-items:center; justify-content:center; margin-right:10px; flex:0 0 34px; font-size:1.1rem; }
+    .act-body { font-size:.9rem; }
+    .ed-tb { background:#f1f3f6; padding:4px; border:1px solid #dcdfe4; border-top:0; }
+    .act-editor { min-height:110px; border:1px solid #dcdfe4; border-top:0; padding:8px 10px; background:#fff; outline:none; }
+    .act-editor:empty:before { content:attr(data-ph); color:#9aa5b1; }
+    .info-table th { font-weight:500; color:#6b7788; }
+  </style>
+</head>
+<body>
+<!-- ▶ [CRM-02] ESTRUCTURA · marco general de la página -->
+<div class="be-wrapper be-fixed-sidebar">
+<!-- ▶ [CRM-03] ENCABEZADO SUPERIOR · usuario y selector de sección -->
+  <nav class="navbar navbar-expand fixed-top be-top-header">
+    <div class="container-fluid">
+      <div class="be-navbar-header"><button class="menu-toggle d-lg-none" id="menu-toggle" type="button" aria-label="Menú"><span class="icon zmdi zmdi-menu"></span></button><a class="navbar-brand" href="#/negocios"><span class="brand-mark">O</span><span class="brand-text">OOH Manager</span></a></div>
+      <div class="page-title"><span>Negocios</span></div>
+      <div class="be-right-navbar">
+        <ul class="nav navbar-nav float-right be-user-nav">
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="avatar">VD</span><span class="user-name">Vendedor Demo</span></a>
+            <div class="dropdown-menu" role="menu">
+              <div class="user-info"><div class="user-name">Vendedor Demo</div><div class="user-position online">Ejecutivo comercial</div></div>
+              <a class="dropdown-item" href="administracion.html#/cuenta"><span class="icon zmdi zmdi-face"></span>Mi cuenta</a>
+              <a class="dropdown-item" href="administracion.html#/login"><span class="icon zmdi zmdi-power"></span>Cerrar sesión</a>
+            </div>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-right be-icons-nav">
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false" title="Cambiar de sección"><span class="icon zmdi zmdi-apps"></span></a>
+            <div class="dropdown-menu dropdown-menu-right">
+              <h6 class="dropdown-header">Sección</h6>
+              <a class="dropdown-item" href="comercial.html"><span class="icon zmdi zmdi-assignment"></span> Comercial</a>
+              <a class="dropdown-item active" href="crm.html"><span class="icon zmdi zmdi-accounts"></span> CRM (prototipo)</a>
+              <a class="dropdown-item" href="operaciones.html"><span class="icon zmdi zmdi-settings"></span> Operaciones</a>
+              <a class="dropdown-item" href="ubicaciones.html"><span class="icon zmdi zmdi-pin"></span> Ubicaciones</a>
+              <a class="dropdown-item" href="administracion.html#/usuarios"><span class="icon zmdi zmdi-lock"></span> Administración</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+<!-- ▶ [CRM-04] MENÚ LATERAL · contenedor (las opciones se generan en el bloque MENÚ LATERAL del script) -->
+  <div class="be-left-sidebar">
+    <div class="left-sidebar-wrapper">
+      <div class="left-sidebar-spacer">
+        <div class="left-sidebar-scroll">
+          <div class="left-sidebar-content"><ul class="sidebar-elements" id="menu"></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ▶ [CRM-05] CONTENIDO · zona donde se dibuja cada pantalla -->
+  <div class="be-content">
+    <div class="main-content container-fluid" id="content"></div>
+  </div>
+</div>
+
+<div id="modal-host"></div>
+<div class="toast-host" id="toast-host"></div>
+
+<!-- ▶ [CRM-06] LIBRERÍAS Y SCRIPT · jQuery, Bootstrap, Chart.js y lógica del prototipo -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Comportamiento del marco (reemplaza a app.js de Beagle): submenús y menú móvil
+(function () {
+  $(document).on('click', '.sidebar-elements li.parent > a', function (e) { e.preventDefault(); $(this).parent().toggleClass('open'); });
+  $(document).on('click', '#menu-toggle', function () { $('body').toggleClass('menu-open'); });
+  $(document).on('click', function (e) { if ($('body').hasClass('menu-open') && !$(e.target).closest('.be-left-sidebar, #menu-toggle').length) $('body').removeClass('menu-open'); });
+  $(window).on('hashchange', function () { $('body').removeClass('menu-open'); });
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+
+
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+   ▶ [CRM-07] UTILIDADES · formato de fechas, dinero y helpers
+   ===================================================================== */
+const $c = () => document.getElementById('content');
+const clp = n => '$' + Math.round(n || 0).toLocaleString('es-CL');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sum = a => a.reduce((x, y) => x + y, 0);
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const TODAY = new Date(2026, 9, 19);
+const TOD = iso(TODAY);
+const fdate = s => { if (!s) return '—'; const [y, m, d] = s.split('-'); return d + '-' + m + '-' + y; };
+const icon = n => `<span class="icon zmdi zmdi-${n}"></span>`;
+const badge = (t, c) => `<span class="badge badge-${c}">${t}</span>`;
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const match = (txt, q) => !q || norm(txt).includes(norm(q));
+const by = (arr, id) => arr.find(x => x.id === id);
+const nextId = (p, arr) => p + (Math.max(0, ...arr.map(x => parseInt(String(x.id).replace(/\D/g, ''), 10) || 0)) + 1);
+const kv = rows => `<table class="info-table"><tbody>${rows.map(r => `<tr><th class="pr-3 align-top text-nowrap">${r[0]}:</th><td class="pb-1">${r[1]}</td></tr>`).join('')}</tbody></table>`;
+const pager = (shown, noun) => `<div class="px-3 py-2 d-flex justify-content-between text-muted small"><span>Mostrando ${shown} ${noun}</span><span>Página 1 de 1</span></div>`;
+const optHtml = (opts, val) => opts.map(x => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(l)}</option>`; }).join('');
+
+/* =====================================================================
+   ▶ [CRM-08] DATOS DE EJEMPLO · anunciantes, agencias, marcas, contactos, negocios, cotizaciones, actividades
+   Todo es simulado: nada de esto viene de la app real, salvo los soportes (datos de QA).
+   ===================================================================== */
+const ME = 'Vendedor Demo';
+const USERS = [ME, 'María Rojas', 'Juan Soto', 'Andrea Pérez', 'Camilo Díaz'];
+const CATEGORIES = ['Automotriz', 'Retail', 'Financiero', 'Alimentos y bebidas', 'Inmobiliario', 'Telecomunicaciones', 'Salud'];
+const ST = ['Nuevo', 'En seguimiento', 'En negociación', 'Ganado', 'Perdido'];
+const ST_CLS = { 'Nuevo': 'info', 'En seguimiento': 'primary', 'En negociación': 'warning', 'Ganado': 'success', 'Perdido': 'secondary' };
+const ST_COLOR = { 'Nuevo': '#4285f4', 'En seguimiento': '#7e57c2', 'En negociación': '#f09a1a', 'Ganado': '#1f9d6b', 'Perdido': '#8d99a8' };
+const stBadge = s => badge(s, ST_CLS[s] || 'secondary');
+const ACT_TYPES = ['Nota', 'Correo', 'Llamada', 'Reunión'];
+const ACT_ICON = { 'Nota': 'assignment', 'Correo': 'email', 'Llamada': 'phone', 'Reunión': 'accounts' };
+
+const DB = {
+  clients: [
+    { id: 'C1', nombre: 'Automotriz Andes', razon: 'Automotriz Andes SpA', rut: '76.100.200-1', giro: 'Venta de vehículos', email: 'facturas@andes.example', dir: 'Av. Kennedy 5600, Vitacura', cat: 'Automotriz', agency: 'A1', ejecutivo: 'María Rojas' },
+    { id: 'C2', nombre: 'Retail Norte', razon: 'Retail Norte S.A.', rut: '76.200.300-2', giro: 'Comercio minorista', email: 'cobranza@retailnorte.example', dir: 'Av. Libertador 900, Santiago', cat: 'Retail', agency: 'A2', ejecutivo: 'Juan Soto' },
+    { id: 'C3', nombre: 'Banco Central Sur', razon: 'Banco Central Sur S.A.', rut: '97.300.400-3', giro: 'Servicios financieros', email: 'proveedores@bcsur.example', dir: 'Huérfanos 1100, Santiago', cat: 'Financiero', agency: 'A3', ejecutivo: 'María Rojas' },
+    { id: 'C4', nombre: 'Cadena Food Sur', razon: 'Cadena Food Sur Ltda.', rut: '76.400.500-4', giro: 'Restaurantes', email: 'pagos@foodsur.example', dir: 'Av. Matta 300, Santiago', cat: 'Alimentos y bebidas', agency: 'A4', ejecutivo: 'Andrea Pérez' },
+    { id: 'C5', nombre: 'Inmobiliaria Cordillera', razon: 'Inmobiliaria Cordillera SpA', rut: '76.500.600-5', giro: 'Desarrollo inmobiliario', email: 'finanzas@cordillera.example', dir: 'El Bosque Norte 500, Las Condes', cat: 'Inmobiliario', agency: '', ejecutivo: 'Juan Soto' },
+    { id: 'C6', nombre: 'Telecom Pacífico', razon: 'Telecom Pacífico S.A.', rut: '96.600.700-6', giro: 'Telecomunicaciones', email: 'ap@telepacifico.example', dir: 'Av. Apoquindo 3000, Las Condes', cat: 'Telecomunicaciones', agency: 'A1', ejecutivo: 'Camilo Díaz' },
+    { id: 'C7', nombre: 'Salud Vida Plena', razon: 'Clínica Vida Plena SpA', rut: '76.700.800-7', giro: 'Servicios de salud', email: 'tesoreria@vidaplena.example', dir: 'Av. Salvador 1200, Providencia', cat: 'Salud', agency: '', ejecutivo: 'Andrea Pérez' },
+    { id: 'C8', nombre: 'Bebidas del Valle', razon: 'Bebidas del Valle S.A.', rut: '76.800.900-8', giro: 'Bebidas', email: 'facturacion@bdv.example', dir: 'Camino Lo Boza 800, Pudahuel', cat: 'Alimentos y bebidas', agency: 'A1', ejecutivo: '' }
+  ],
+  agencies: [
+    { id: 'A1', nombre: 'MediaPlan Chile', razon: 'MediaPlan Chile SpA', rut: '76.910.111-1', giro: 'Agencia de medios', email: 'admin@mediaplan.example', dir: 'Av. Providencia 2000, of. 41', parent: '', ejecutivo: 'Camilo Díaz' },
+    { id: 'A2', nombre: 'Vía Pública Group', razon: 'Vía Pública Group S.A.', rut: '76.920.222-2', giro: 'Agencia de medios', email: 'admin@vpgroup.example', dir: 'Av. Apoquindo 4500, of. 12', parent: '', ejecutivo: 'Juan Soto' },
+    { id: 'A3', nombre: 'Estrategia 360', razon: 'Estrategia 360 Ltda.', rut: '76.930.333-3', giro: 'Publicidad', email: 'admin@estrategia360.example', dir: 'Huérfanos 835, Santiago', parent: 'A2', ejecutivo: 'María Rojas' },
+    { id: 'A4', nombre: 'Cuenta Directa', razon: 'Cuenta Directa Ltda.', rut: '76.940.444-4', giro: 'Publicidad', email: 'admin@cdirecta.example', dir: 'Los Leones 1200, Providencia', parent: 'A2', ejecutivo: 'Andrea Pérez' }
+  ],
+  /* cli / age = id del anunciante / de la agencia; conC / conA = contacto del anunciante / de la agencia */
+  brands: [
+    { id: 'M1', nombre: 'Andes SUV', cli: 'C1', age: 'A1', conC: 'K1', conA: 'K9', ejecutivo: 'María Rojas' },
+    { id: 'M2', nombre: 'Andes Eléctricos', cli: 'C1', age: 'A1', conC: 'K2', conA: 'K9', ejecutivo: 'María Rojas' },
+    { id: 'M3', nombre: 'Retail Norte', cli: 'C2', age: 'A2', conC: 'K3', conA: 'K10', ejecutivo: 'Juan Soto' },
+    { id: 'M4', nombre: 'Tarjeta Platinum', cli: 'C3', age: 'A3', conC: 'K4', conA: 'K11', ejecutivo: 'María Rojas' },
+    { id: 'M5', nombre: 'Combos Food', cli: 'C4', age: 'A4', conC: 'K5', conA: 'K12', ejecutivo: 'Andrea Pérez' },
+    { id: 'M6', nombre: 'Los Andes', cli: 'C5', age: '', conC: 'K6', conA: '', ejecutivo: 'Juan Soto' },
+    { id: 'M7', nombre: 'Fibra Giga', cli: 'C6', age: 'A1', conC: 'K7', conA: 'K9', ejecutivo: 'Camilo Díaz' },
+    { id: 'M8', nombre: 'Vida Plena', cli: 'C7', age: '', conC: 'K13', conA: '', ejecutivo: 'Andrea Pérez' },
+    { id: 'M9', nombre: 'Agua del Valle', cli: 'C8', age: 'A1', conC: 'K8', conA: 'K9', ejecutivo: 'Camilo Díaz' }
+  ],
+  /* cli = referencia 'c:ID' (anunciante) o 'a:ID' (agencia) */
+  contacts: [
+    { id: 'K1', nombre: 'Daniela Ruiz', tel: '+56 2 2666 1001', email: 'druiz@andes.example', cli: 'c:C1', marca: 'M1' },
+    { id: 'K2', nombre: 'Sebastián Vera', tel: '+56 2 2666 1002', email: 'svera@andes.example', cli: 'c:C1', marca: 'M2' },
+    { id: 'K3', nombre: 'Marcelo Pino', tel: '+56 2 2666 1003', email: 'mpino@retailnorte.example', cli: 'c:C2', marca: 'M3' },
+    { id: 'K4', nombre: 'Patricia León', tel: '+56 2 2666 1004', email: 'pleon@bcsur.example', cli: 'c:C3', marca: 'M4' },
+    { id: 'K5', nombre: 'Rodrigo Mora', tel: '+56 2 2666 1005', email: 'rmora@foodsur.example', cli: 'c:C4', marca: 'M5' },
+    { id: 'K6', nombre: 'Valentina Cruz', tel: '+56 2 2666 1006', email: 'vcruz@cordillera.example', cli: 'c:C5', marca: 'M6' },
+    { id: 'K7', nombre: 'Hernán Salas', tel: '+56 2 2666 1007', email: 'hsalas@telepacifico.example', cli: 'c:C6', marca: 'M7' },
+    { id: 'K8', nombre: 'Tomás Rivas', tel: '+56 2 2666 1008', email: 'trivas@bdv.example', cli: 'c:C8', marca: 'M9' },
+    { id: 'K9', nombre: 'Fernanda Lagos', tel: '+56 2 2666 0101', email: 'flagos@mediaplan.example', cli: 'a:A1', marca: '' },
+    { id: 'K10', nombre: 'Nicolás Araya', tel: '+56 2 2666 0202', email: 'naraya@vpgroup.example', cli: 'a:A2', marca: '' },
+    { id: 'K11', nombre: 'Ignacio Pardo', tel: '+56 2 2666 0303', email: 'ipardo@estrategia360.example', cli: 'a:A3', marca: '' },
+    { id: 'K12', nombre: 'Josefina Reyes', tel: '+56 2 2666 0404', email: 'jreyes@cdirecta.example', cli: 'a:A4', marca: '' },
+    { id: 'K13', nombre: 'Marta Olivares', tel: '+56 2 2666 1013', email: 'molivares@vidaplena.example', cli: 'c:C7', marca: 'M8' }
+  ],
+  negocios: [
+    { id: 'N1', serial: 'NEG-0001', nombre: 'Lanzamiento SUV Primavera', cli: 'c:C1', marca: 'M1', estado: 'En negociación', ejecutivo: 'María Rojas', presupuesto: 18000000, inicio: '2026-11-01', fin: '2026-12-31', creado: '2026-10-02', upd: '2026-10-16' },
+    { id: 'N2', serial: 'NEG-0002', nombre: 'Black Friday 2026', cli: 'c:C2', marca: 'M3', estado: 'En seguimiento', ejecutivo: 'Juan Soto', presupuesto: 4000000, inicio: '2026-11-15', fin: '2026-11-30', creado: '2026-10-08', upd: '2026-10-12' },
+    { id: 'N3', serial: 'NEG-0003', nombre: 'Campaña Crédito Hipotecario', cli: 'c:C3', marca: 'M4', estado: 'Ganado', ejecutivo: 'María Rojas', presupuesto: 9000000, inicio: '2026-11-12', fin: '2026-12-31', creado: '2026-09-28', upd: '2026-10-17' },
+    { id: 'N4', serial: 'NEG-0004', nombre: 'Navidad Retail', cli: 'c:C2', marca: 'M3', estado: 'En negociación', ejecutivo: 'Juan Soto', presupuesto: 2500000, inicio: '2026-12-01', fin: '2026-12-31', creado: '2026-09-20', upd: '2026-10-18' },
+    { id: 'N5', serial: 'NEG-0005', nombre: 'Prevención Invierno', cli: 'c:C7', marca: 'M8', estado: 'Perdido', ejecutivo: 'Andrea Pérez', presupuesto: 1200000, inicio: '2027-05-01', fin: '2027-05-31', creado: '2026-10-14', upd: '2026-10-14' },
+    { id: 'N6', serial: 'NEG-0006', nombre: 'Verano 2027', cli: 'c:C8', marca: 'M9', estado: 'En seguimiento', ejecutivo: 'Camilo Díaz', presupuesto: 900000, inicio: '2026-11-10', fin: '2026-12-09', creado: '2026-10-05', upd: '2026-10-15' },
+    { id: 'N7', serial: 'NEG-0007', nombre: 'Proyecto Las Condes', cli: 'c:C5', marca: 'M6', estado: 'Nuevo', ejecutivo: 'Juan Soto', presupuesto: 2200000, inicio: '2026-11-01', fin: '2026-11-30', creado: '2026-10-09', upd: '2026-10-18' },
+    { id: 'N8', serial: 'NEG-0008', nombre: 'Aniversario Cadena', cli: 'c:C4', marca: 'M5', estado: 'Nuevo', ejecutivo: 'Andrea Pérez', presupuesto: 2100000, inicio: '2026-12-10', fin: '2027-01-09', creado: '2026-10-17', upd: '2026-10-17' },
+    { id: 'N9', serial: 'NEG-0009', nombre: 'Plan anual MediaPlan 2027', cli: 'a:A1', marca: 'M7', estado: 'Nuevo', ejecutivo: 'Camilo Díaz', presupuesto: 24000000, inicio: '2027-01-01', fin: '2027-12-31', creado: '2026-10-19', upd: '2026-10-19' }
+  ],
+  /* Soportes de ejemplo (datos de QA): id, nombre, precio mensual, producción */
+  sop: [
+    { id: 'B-001', nombre: 'B-001 - Soporte - Pantalla Digital - Otros', tarifa: 1785844, prod: 250018 },
+    { id: 'B-002', nombre: 'B-002 - Soporte - Centro Comercial - Otros', tarifa: 2794323, prod: 391205 },
+    { id: 'B-003', nombre: 'B-003 - Soporte - Valla', tarifa: 1173395, prod: 164275 },
+    { id: 'B-007', nombre: 'B-007 - Soporte - Mobiliario Urbano Impreso - Otros', tarifa: 2064181, prod: 288985 },
+    { id: 'B-008', nombre: 'B-008 - Soporte - Valla', tarifa: 2606071, prod: 364850 },
+    { id: 'B-011', nombre: 'B-011 - Soporte - Aeropuerto - Otros', tarifa: 2165804, prod: 303213 },
+    { id: 'B-018', nombre: 'B-018 - Soporte - Pantallas Digitales', tarifa: 1558175, prod: 218145 },
+    { id: 'B-020', nombre: 'B-020 - Soporte - Pantallas Digitales', tarifa: 2078148, prod: 290941 }
+  ],
+  quotes: [
+    { id: 'Q41', serial: 'CA-0041', titulo: 'Lanzamiento SUV Primavera', desc: 'Campaña de lanzamiento del nuevo SUV en eje oriente.', cliente: 'C1', clienteTemp: '', agencia: 'A1', agenciaTemp: '', negocio: 'N1', marca: 'M1', estado: 'En negociación', presupuesto: 18000000, ejecutivo: 'María Rojas', inicio: '2026-11-01', fin: '2026-12-31', upd: '2026-10-16', soportes: [{ id: 'B-003', qty: 1, meses: 2 }, { id: 'B-018', qty: 2, meses: 1 }, { id: 'B-020', qty: 1, meses: 2 }] },
+    { id: 'Q42', serial: 'CA-0042', titulo: 'Black Friday 2026', desc: '', cliente: 'C2', clienteTemp: '', agencia: 'A2', agenciaTemp: '', negocio: 'N2', marca: 'M3', estado: 'En seguimiento', presupuesto: 4000000, ejecutivo: 'Juan Soto', inicio: '2026-11-15', fin: '2026-11-30', upd: '2026-10-12', soportes: [{ id: 'B-008', qty: 1, meses: 1 }, { id: 'B-003', qty: 1, meses: 1 }] },
+    { id: 'Q43', serial: 'CA-0043', titulo: 'Campaña Crédito Hipotecario', desc: '', cliente: 'C3', clienteTemp: '', agencia: 'A3', agenciaTemp: '', negocio: 'N3', marca: 'M4', estado: 'Ganado', presupuesto: 9000000, ejecutivo: 'María Rojas', inicio: '2026-11-12', fin: '2026-12-31', upd: '2026-10-17', soportes: [{ id: 'B-007', qty: 1, meses: 1 }, { id: 'B-002', qty: 1, meses: 2 }] },
+    { id: 'Q44', serial: 'CA-0044', titulo: 'Navidad Retail', desc: '', cliente: 'C2', clienteTemp: '', agencia: 'A2', agenciaTemp: '', negocio: 'N4', marca: 'M3', estado: 'En negociación', presupuesto: 2500000, ejecutivo: 'Juan Soto', inicio: '2026-12-01', fin: '2026-12-31', upd: '2026-10-18', soportes: [{ id: 'B-020', qty: 1, meses: 1 }] },
+    { id: 'Q45', serial: 'CA-0045', titulo: 'Prevención Invierno', desc: '', cliente: 'C7', clienteTemp: '', agencia: '', agenciaTemp: '', negocio: 'N5', marca: 'M8', estado: 'Perdido', presupuesto: 1200000, ejecutivo: 'Andrea Pérez', inicio: '2027-05-01', fin: '2027-05-31', upd: '2026-10-14', soportes: [{ id: 'B-007', qty: 1, meses: 1 }] },
+    { id: 'Q46', serial: 'CA-0046', titulo: 'Verano 2027', desc: '', cliente: 'C8', clienteTemp: '', agencia: 'A1', agenciaTemp: '', negocio: 'N6', marca: 'M9', estado: 'En seguimiento', presupuesto: 900000, ejecutivo: 'Camilo Díaz', inicio: '2026-11-10', fin: '2026-12-09', upd: '2026-10-15', soportes: [{ id: 'B-011', qty: 1, meses: 1 }, { id: 'B-001', qty: 1, meses: 1 }] },
+    { id: 'Q47', serial: 'CA-0047', titulo: 'Proyecto Las Condes', desc: '', cliente: 'C5', clienteTemp: '', agencia: '', agenciaTemp: '', negocio: 'N7', marca: 'M6', estado: 'Nuevo', presupuesto: 2200000, ejecutivo: 'Juan Soto', inicio: '2026-11-01', fin: '2026-11-30', upd: '2026-10-18', soportes: [{ id: 'B-003', qty: 1, meses: 1 }] },
+    { id: 'Q48', serial: 'CA-0048', titulo: 'Aniversario Cadena', desc: '', cliente: 'C4', clienteTemp: '', agencia: 'A4', agenciaTemp: '', negocio: 'N8', marca: 'M5', estado: 'Nuevo', presupuesto: 2100000, ejecutivo: 'Andrea Pérez', inicio: '2026-12-10', fin: '2027-01-09', upd: '2026-10-17', soportes: [{ id: 'B-020', qty: 1, meses: 1 }] },
+    { id: 'Q49', serial: 'CA-0049', titulo: 'Cartelería sucursales (sin negocio)', desc: '', cliente: 'C6', clienteTemp: '', agencia: '', agenciaTemp: '', negocio: '', marca: '', estado: 'Nuevo', presupuesto: 0, ejecutivo: 'Camilo Díaz', inicio: '', fin: '', upd: '2026-10-10', soportes: [{ id: 'B-001', qty: 1, meses: 1 }] }
+  ],
+  /* Campañas activas o por comenzar (simuladas) para el panel de clientes */
+  campaigns: [
+    { id: 'D15', serial: 'CA-0015', titulo: 'Promo Verano Combos', cliente: 'C4', total: 5200000, desde: '2026-10-05', hasta: '2026-10-31' },
+    { id: 'D17', serial: 'CA-0017', titulo: 'Lanzamiento Proyecto Los Andes', cliente: 'C5', total: 3100000, desde: '2026-10-20', hasta: '2026-11-19' },
+    { id: 'D18', serial: 'CA-0018', titulo: 'Tarjeta Platinum', cliente: 'C3', total: 2400000, desde: '2026-10-12', hasta: '2026-11-11' },
+    { id: 'D19', serial: 'CA-0019', titulo: 'Fibra 1 Giga', cliente: 'C6', total: 4800000, desde: '2026-10-15', hasta: '2026-11-14' }
+  ],
+  docs: [
+    { id: 'F1', cli: 'c:C4', titulo: 'OC-7781.pdf', campana: 'Promo Verano Combos', tipo: 'pdf' },
+    { id: 'F2', cli: 'c:C3', titulo: 'OC-7810.pdf', campana: 'Tarjeta Platinum', tipo: 'pdf' },
+    { id: 'F3', cli: 'c:C3', titulo: 'brief-campana.xlsx', campana: 'Tarjeta Platinum', tipo: 'xls' },
+    { id: 'F4', cli: 'c:C7', titulo: 'OC-7702.pdf', campana: 'Campaña Vacunación Invierno', tipo: 'pdf' }
+  ],
+  activities: [
+    { id: 'T1', cli: 'c:C1', tipo: 'Reunión', html: 'Presentación del plan de medios SUV con Daniela Ruiz. Piden alternativa con pantallas digitales.', autor: 'María Rojas', fecha: '2026-10-16 11:30' },
+    { id: 'T2', cli: 'c:C1', tipo: 'Correo', html: 'Se envía cotización CA-0041 con 3 opciones de soportes.', autor: 'María Rojas', fecha: '2026-10-14 16:05' },
+    { id: 'T3', cli: 'c:C1', tipo: 'Llamada', html: 'Daniela confirma que el presupuesto se aprueba la primera semana de noviembre.', autor: 'María Rojas', fecha: '2026-10-09 10:15' },
+    { id: 'T4', cli: 'c:C2', tipo: 'Nota', html: 'Quieren cerrar Black Friday y Navidad en un mismo contrato.', autor: 'Juan Soto', fecha: '2026-10-12 09:40' },
+    { id: 'T5', cli: 'c:C2', tipo: 'Llamada', html: 'Marcelo pide mejorar precio de los soportes del eje poniente.', autor: 'Juan Soto', fecha: '2026-10-18 17:20' },
+    { id: 'T6', cli: 'c:C3', tipo: 'Reunión', html: 'Cierre de campaña Crédito Hipotecario; falta orden de compra.', autor: 'María Rojas', fecha: '2026-10-17 12:00' },
+    { id: 'T7', cli: 'a:A1', tipo: 'Nota', html: 'La agencia evalúa un plan anual para tres de sus anunciantes.', autor: 'Camilo Díaz', fecha: '2026-10-19 08:50' }
+  ]
+};
+
+/* ---------- Ayudas de dominio ---------- */
+const partyArr = r => r[0] === 'c' ? DB.clients : DB.agencies;
+const partyOf = r => r ? by(partyArr(r), r.slice(2)) : null;
+const partyName = r => (partyOf(r) || {}).nombre || '—';
+const tipoOf = r => r[0] === 'c' ? 'Anunciante' : 'Agencia';
+const refOpts = tipo => tipo === 'Agencia' ? DB.agencies.map(a => ['a:' + a.id, a.nombre]) : DB.clients.map(c => ['c:' + c.id, c.nombre]);
+const brandsOf = r => r ? DB.brands.filter(b => r[0] === 'c' ? b.cli === r.slice(2) : b.age === r.slice(2)) : [];
+const marcaOpts = r => [['', 'Sin marca']].concat(brandsOf(r).map(b => [b.id, b.nombre]));
+const brandName = id => id ? ((by(DB.brands, id) || {}).nombre || '—') : '—';
+const contactsOf = r => DB.contacts.filter(c => c.cli === r);
+const contactName = id => id ? ((by(DB.contacts, id) || {}).nombre || '—') : '—';
+const sopOf = id => by(DB.sop, id) || { id, nombre: id, tarifa: 0, prod: 0 };
+const qArr = q => sum(q.soportes.map(s => sopOf(s.id).tarifa * s.qty * s.meses));
+const qProd = q => sum(q.soportes.map(s => sopOf(s.id).prod * s.qty));
+const qTotal = q => qArr(q) + qProd(q);
+const quotesOf = n => DB.quotes.filter(q => q.negocio === n.id);
+const clientRefOfQuote = q => q.cliente ? 'c:' + q.cliente : '';
+const qCliName = q => q.cliente ? partyName('c:' + q.cliente) : (q.clienteTemp ? esc(q.clienteTemp) + ' <small class="text-muted">(temporal)</small>' : '—');
+const qAgeName = q => q.agencia ? partyName('a:' + q.agencia) : (q.agenciaTemp ? esc(q.agenciaTemp) + ' <small class="text-muted">(temporal)</small>' : '<span class="text-muted">Sin agencia</span>');
+/* Negocios de un cliente (si es agencia, incluye los de sus anunciantes) */
+const negociosOf = r => DB.negocios.filter(n => n.cli === r || (r[0] === 'a' && n.cli[0] === 'c' && (partyOf(n.cli) || {}).agency === r.slice(2)));
+const campaignsOf = r => DB.campaigns.filter(c => r[0] === 'c' ? c.cliente === r.slice(2) : (by(DB.clients, c.cliente) || {}).agency === r.slice(2));
+const touch = o => { o.upd = TOD; };
+
+/* =====================================================================
+   ▶ [CRM-09] COMPONENTES DE UI · notificaciones, modales, formularios y tablas
+   ===================================================================== */
+function notify(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'alert alert-' + (type || 'success') + ' alert-dismissible shadow-sm';
+  el.innerHTML = `<div class="icon"><span class="zmdi zmdi-check"></span></div><div class="message">${msg}</div><button class="close" data-dismiss="alert" type="button"><span>&times;</span></button>`;
+  document.getElementById('toast-host').appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+function modal(o) {
+  $('.modal').modal('hide'); $('.modal-backdrop').remove(); $('body').removeClass('modal-open');
+  const id = 'm' + Date.now();
+  document.getElementById('modal-host').innerHTML =
+    `<div class="modal fade" id="${id}" tabindex="-1" role="dialog"><div class="modal-dialog ${o.size || ''}" role="document"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">${o.title}</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+      <div class="modal-body">${o.body}</div>${o.footer ? `<div class="modal-footer">${o.footer}</div>` : ''}
+    </div></div></div>`;
+  const $m = $('#' + id); $m.modal('show'); return $m;
+}
+const closeModal = () => { $('.modal').modal('hide'); };
+function confirmDlg(msg, okLabel, cb, danger) {
+  const $m = modal({ title: 'Confirmar', size: 'modal-sm', body: `<p class="mb-0">${msg}</p>`,
+    footer: `<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-${danger ? 'danger' : 'primary'}" id="ok-btn">${okLabel}</button>` });
+  $m.find('#ok-btn').on('click', () => { closeModal(); cb(); });
+}
+function fld(label, name, val, o) {
+  o = o || {}; val = val == null ? '' : val; const t = o.type || 'text'; let ctl;
+  if (t === 'select') ctl = `<select class="form-control form-control-sm" name="${name}" ${o.req ? 'required' : ''}>${optHtml(o.opts || [], val)}</select>`;
+  else if (t === 'textarea') ctl = `<textarea class="form-control form-control-sm" name="${name}" rows="${o.rows || 4}">${esc(val)}</textarea>`;
+  else ctl = `<input class="form-control form-control-sm" type="${t}" name="${name}" value="${esc(val)}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.req ? 'required' : ''} ${o.min != null ? `min="${o.min}"` : ''}>`;
+  return `<div class="form-group ${o.cls || ''}"><label>${label}${o.req ? ' <span class="text-danger">*</span>' : ''}</label>${ctl}${o.help ? `<small class="form-text text-muted">${o.help}</small>` : ''}</div>`;
+}
+function card(title, body, tools) {
+  return `<div class="card card-border-color card-border-color-primary"><div class="card-header card-header-divider">${tools ? `<div class="tools">${tools}</div>` : ''}${title}</div><div class="card-body">${body}</div></div>`;
+}
+function head(title, actions) {
+  return `<div class="d-flex flex-wrap justify-content-between align-items-center mb-3"><h3 class="mb-0" style="font-weight:400">${title}</h3><div class="mt-2 mt-sm-0">${actions || ''}</div></div>`;
+}
+function btn(label, o) {
+  o = o || {};
+  return `<${o.href ? 'a href="' + o.href + '"' : 'button type="button"'} class="btn btn-${o.cls || 'primary'} ${o.size ? 'btn-' + o.size : ''} ${o.extra || ''}" ${o.act ? `data-act="${o.act}" data-id="${o.id || ''}"` : ''} ${o.dis ? 'disabled' : ''}>${o.ic ? icon(o.ic) + ' ' : ''}${label}</${o.href ? 'a' : 'button'}>`;
+}
+const icBtn = (ic, title, o) => btn('', Object.assign({ cls: 'secondary', size: 'sm', ic }, o || {})).replace('class="btn', `title="${title}" class="btn`);
+const submitBtn = (label, ic) => btn(label || 'Guardar', { ic: ic || 'check', extra: 'mr-2' }).replace('type="button"', 'type="submit"');
+const notFoundPage = t => ({ title: t, html: head(t + ' no encontrada') + card('No encontrada', '<p class="mb-0">El registro que buscas no existe o fue eliminado.</p>') });
+function tbl(cols, rows, opts) {
+  opts = opts || {};
+  if (!rows.length) return '<div class="text-center text-muted p-5">Sin resultados para los filtros aplicados.</div>';
+  return `<div class="table-responsive"><table class="table table-sm table-striped table-hover ${opts.cls || ''}"><thead><tr>${cols.map(c => `<th class="${c.cls || ''}">${c.h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ▶ [CRM-10] COMPONENTES DE UI · filtros de listados */
+const FS = {};
+let CUR = { refresh: null };
+function filterBar(key, defs) {
+  const f = FS[key] = FS[key] || {};
+  const html = defs.map(d => {
+    let ctl;
+    if (d.type === 'select') ctl = `<select class="form-control form-control-sm" data-f="${d.n}">${optHtml(d.opts, f[d.n])}</select>`;
+    else ctl = `<input class="form-control form-control-sm" type="${d.type || 'text'}" data-f="${d.n}" value="${esc(f[d.n] || '')}" placeholder="${esc(d.ph || '')}">`;
+    return `<div class="table-filters ${d.col || 'col-sm'} py-0"><span class="text-truncate table-filter-title mb-1 d-block">${d.label}</span><div class="filter-container">${ctl}</div></div>`;
+  });
+  const rowsOf = []; for (let i = 0; i < html.length; i += 4) rowsOf.push(html.slice(i, i + 4).join(''));
+  return `<div class="row table-filters-container pt-2" data-fkey="${key}"><div class="col-12">${rowsOf.map(r => `<div class="form-row">${r}</div>`).join('')}<div class="text-right pb-2"><button type="button" class="btn btn-secondary btn-sm" data-act="f-clear" data-id="${key}">Limpiar filtros</button></div></div></div>`;
+}
+document.addEventListener('input', e => { const el = e.target.closest('[data-f]'); if (el) onFilter(el); });
+document.addEventListener('change', e => { const el = e.target.closest('[data-f]'); if (el && el.tagName === 'SELECT') onFilter(el); });
+function onFilter(el) { const k = el.closest('[data-fkey]').dataset.fkey; FS[k][el.dataset.f] = el.value; if (CUR.refresh) CUR.refresh(); }
+const F = k => FS[k] = FS[k] || {};
+function listCard(key, defs, body) { return `<div class="card card-table card-border-color card-border-color-primary">${defs ? filterBar(key, defs) : ''}<div class="card-body" id="results">${body}</div></div>`; }
+const setResults = html => { const r = document.getElementById('results'); if (r) r.innerHTML = html; };
+
+/* ▶ [CRM-11] COMPONENTES DE UI · acciones delegadas */
+const ACT = {};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (b && ACT[b.dataset.act] && !b.disabled) { e.preventDefault(); ACT[b.dataset.act](b.dataset.id, b); }
+});
+ACT['f-clear'] = k => { FS[k] = {}; render(); };
+/* Buscadores internos de bloques (panel de clientes): filtran los elementos .pitem del contenedor indicado */
+document.addEventListener('input', e => { const el = e.target.closest('[data-psearch]'); if (!el) return; const box = document.getElementById(el.dataset.psearch); if (!box) return; box.querySelectorAll('.pitem').forEach(i => { i.style.display = match(i.textContent, el.value) ? '' : 'none'; }); });
+
+
+/* =====================================================================
+   ▶ [CRM-12] MENÚ LATERAL · según el wireframe: bloque CRM y sección Admin
+   ===================================================================== */
+const MENU = [
+  { t: 'Gestión clientes', i: 'accounts', h: '/clientes' },
+  { t: 'Negocios', i: 'case', h: '/negocios' },
+  { t: 'Cotizaciones', i: 'assignment', h: '/cotizaciones' }
+];
+const MENU_ADMIN = [
+  { t: 'Anunciantes', i: 'folder-person', h: '/anunciantes' },
+  { t: 'Agencias', i: 'city', h: '/agencias' },
+  { t: 'Marcas', i: 'label', h: '/marcas' },
+  { t: 'Contactos', i: 'account-box', h: '/contactos' }
+];
+const MENU_INFO = [{ t: 'Acerca del prototipo', i: 'info-outline', h: '/acerca' }];
+const menuHtml = items => items.map(m => `<li><a href="#${m.h}"><i class="icon zmdi zmdi-${m.i}"></i><span>${m.t}</span></a></li>`).join('');
+function setMenuActive(path) {
+  const links = Array.from(document.querySelectorAll('#menu a[href^="#/"]'));
+  document.querySelectorAll('#menu li.active').forEach(li => li.classList.remove('active'));
+  let best = null;
+  links.forEach(a => { const h = a.getAttribute('href').slice(1); if ((path === h || path.startsWith(h + '/')) && (!best || h.length > best.h.length)) best = { a, h }; });
+  if (best) best.a.closest('li').classList.add('active');
+}
+
+/* =====================================================================
+   ▶ [CRM-13] ROUTER · navegación entre pantallas
+   ===================================================================== */
+const routes = [];
+const route = (re, fn) => routes.push([re, fn]);
+const query = () => { const q = location.hash.split('?')[1] || ''; const o = {}; q.split('&').filter(Boolean).forEach(p => { const [k, v] = p.split('='); o[k] = decodeURIComponent(v || ''); }); return o; };
+function render() {
+  CUR = { refresh: null };
+  const path = (location.hash.replace(/^#/, '') || '/negocios').split('?')[0];
+  for (const [re, fn] of routes) {
+    const m = path.match(re);
+    if (m) {
+      const out = fn.apply(null, m.slice(1));
+      document.querySelector('.be-top-header .page-title span').textContent = out.title;
+      document.title = out.title + ' · OOH Manager CRM (prototipo)';
+      $c().innerHTML = out.html;
+      setMenuActive(path);
+      if (out.after) out.after();
+      window.scrollTo(0, 0);
+      return;
+    }
+  }
+  $c().innerHTML = head('Página no encontrada') + card('404', '<p>Esta pantalla no existe en el prototipo.</p>' + btn('Volver a Negocios', { href: '#/negocios' }));
+}
+const go = h => { location.hash = h; };
+window.addEventListener('hashchange', render);
+route(/^\/$/, () => { location.hash = '#/negocios'; return { title: 'Negocios', html: '' }; });
+
+/* =====================================================================
+   ▶ [CRM-14] NEGOCIOS · listado y kanban (#/negocios) — p.2 y p.3 del wireframe
+   ===================================================================== */
+const NEG_SORTS = [['upd', 'Última actualización'], ['creado', 'Fecha de creación'], ['presupuesto', 'Presupuesto (mayor a menor)'], ['serial', 'Código']];
+const negAgency = n => n.cli[0] === 'a' ? n.cli.slice(2) : ((partyOf(n.cli) || {}).agency || '');
+function negFiltered() {
+  const f = F('neg');
+  const r = DB.negocios.filter(n => (!f.cod || match(n.serial, f.cod)) && (!f.q || match(n.nombre + partyName(n.cli) + brandName(n.marca), f.q)) &&
+    (!f.cli || n.cli === 'c:' + f.cli) && (!f.age || negAgency(n) === f.age) && (!f.ejec || n.ejecutivo === f.ejec) && (!f.estado || n.estado === f.estado));
+  const s = f.sort || 'upd';
+  return r.slice().sort((a, b) => s === 'presupuesto' ? b.presupuesto - a.presupuesto : s === 'serial' ? a.serial.localeCompare(b.serial) : (b[s] || '').localeCompare(a[s] || ''));
+}
+const negActions = n => icBtn('eye', 'Ver', { href: '#/negocios/' + n.id }) + icBtn('edit', 'Editar', { act: 'neg-edit', id: n.id }) + icBtn('delete', 'Eliminar', { act: 'neg-del', id: n.id });
+function negTable(rows) {
+  return tbl([
+    { h: 'Código', cls: 'text-nowrap', f: n => `<a href="#/negocios/${n.id}"><b>${n.serial}</b></a>` }, { h: 'Negocio', f: n => esc(n.nombre) }, { h: 'Estado', f: n => stBadge(n.estado) },
+    { h: 'Tipo cliente', f: n => tipoOf(n.cli) }, { h: 'Cliente', f: n => `<a href="#/clientes/${n.cli.replace(':', '-')}">${esc(partyName(n.cli))}</a>` }, { h: 'Marca', f: n => esc(brandName(n.marca)) },
+    { h: 'Ejecutivo/a', f: n => n.ejecutivo }, { h: 'N° Cotizaciones', cls: 'text-center', f: n => quotesOf(n).length }, { h: 'Presupuesto', cls: 'number', f: n => clp(n.presupuesto) },
+    { h: 'Fecha inicio', cls: 'text-nowrap', f: n => fdate(n.inicio) }, { h: 'Acciones', cls: 'text-right tbl-actions text-nowrap', f: negActions }], rows) + pager(rows.length, 'negocios');
+}
+function negCard(n) {
+  const qs = quotesOf(n);
+  return `<div class="kcard" draggable="true" data-neg="${n.id}"><div class="d-flex justify-content-between"><a href="#/negocios/${n.id}" class="kt">${esc(n.nombre)}</a><span class="text-nowrap">${icBtn('edit', 'Editar', { act: 'neg-edit', id: n.id })}${icBtn('delete', 'Eliminar', { act: 'neg-del', id: n.id })}</span></div>
+    <div class="ks">${esc(partyName(n.cli))}${n.marca ? ' · ' + esc(brandName(n.marca)) : ''}</div>
+    <div class="ks">Valor estimado: <b>${clp(n.presupuesto)}</b></div>
+    ${qs.length ? qs.map(q => `<div class="ks">Cot <a href="#/cotizaciones/${q.id}">${q.serial}</a> ${stBadge(q.estado)}</div>`).join('') : '<div class="ks text-muted">Sin cotizaciones</div>'}
+    <div class="ks">Responsable: ${n.ejecutivo}</div><div class="ks text-muted">Creado: ${fdate(n.creado)}</div></div>`;
+}
+function negKanban(rows) {
+  return `<div class="kanban">${ST.map(s => { const c = rows.filter(n => n.estado === s); return `<div class="kcol" data-col="${s}"><div class="khead" style="border-top:3px solid ${ST_COLOR[s]}">${s} (${c.length})</div><div class="kbody">${c.map(negCard).join('') || '<div class="text-muted small text-center p-3">Sin negocios</div>'}</div></div>`; }).join('')}</div>`;
+}
+function bindKanban() {
+  let drag = null;
+  document.querySelectorAll('.kcard').forEach(c => { c.addEventListener('dragstart', e => { drag = c.dataset.neg; e.dataTransfer.setData('text/plain', drag); c.classList.add('dragging'); }); c.addEventListener('dragend', () => c.classList.remove('dragging')); });
+  document.querySelectorAll('.kcol').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('over'));
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); const n = by(DB.negocios, drag); if (!n || n.estado === col.dataset.col) return; n.estado = col.dataset.col; touch(n); notify(`«${esc(n.nombre)}» pasó a «${n.estado}».`); CUR.refresh(); });
+  });
+}
+route(/^\/negocios$/, () => {
+  const f = F('neg'), view = f.view || 'lista';
+  const body = () => { const r = negFiltered(); return view === 'kanban' ? negKanban(r) : negTable(r); };
+  CUR.refresh = () => { setResults(body()); if (view === 'kanban') bindKanban(); };
+  const defs = [{ n: 'cod', label: 'Código', ph: 'Ej: NEG-0001' }, { n: 'q', label: 'Buscar por término', ph: 'Ej: título, cliente, marca' }, { n: 'cli', label: 'Anunciante', type: 'select', opts: [['', 'Todos los anunciantes']].concat(DB.clients.map(c => [c.id, c.nombre])) }, { n: 'age', label: 'Agencia', type: 'select', opts: [['', 'Todas las agencias']].concat(DB.agencies.map(a => [a.id, a.nombre])) },
+    { n: 'ejec', label: 'Ejecutivo/a', type: 'select', opts: [['', 'Todos/as los/as ejecutivos/as']].concat(USERS) }, { n: 'estado', label: 'Estado', type: 'select', opts: [['', 'Todos los estados']].concat(ST) }, { n: 'sort', label: 'Ordenar por', type: 'select', opts: NEG_SORTS }];
+  const toggle = `<div class="btn-group mr-2"><button type="button" class="btn btn-sm btn-${view === 'lista' ? 'primary' : 'secondary'}" data-act="neg-view" data-id="lista" title="Vista lista">${icon('view-list')}</button><button type="button" class="btn btn-sm btn-${view === 'kanban' ? 'primary' : 'secondary'}" data-act="neg-view" data-id="kanban" title="Vista kanban">${icon('view-column')}</button></div>`;
+  return { title: 'Negocios', html: head('Negocios', toggle + btn('Crear negocio', { ic: 'plus', act: 'neg-new' })) + listCard('neg', defs, body()), after() { if (view === 'kanban') bindKanban(); } };
+});
+ACT['neg-view'] = v => { F('neg').view = v; render(); };
+
+/* =====================================================================
+   ▶ [CRM-15] NEGOCIOS · modal crear/editar y confirmación (p.4 y p.5 del wireframe)
+   ===================================================================== */
+function negModal(n, o) {
+  o = o || {}; const isNew = !n;
+  n = n || { nombre: '', cli: o.cli || '', marca: '', estado: 'Nuevo', ejecutivo: ME, presupuesto: '', inicio: '', fin: '' };
+  const tipo = n.cli ? tipoOf(n.cli) : 'Anunciante';
+  const $m = modal({ title: isNew ? 'Crear negocio' : 'Editar negocio ' + n.serial, body: `<form id="f-neg" novalidate>
+    ${fld('Nombre negocio', 'nombre', n.nombre, { req: 1 })}
+    <div class="form-row">${fld('Tipo cliente', 'tipo', tipo, { type: 'select', opts: ['Anunciante', 'Agencia'], cls: 'col-md-6' })}${fld('Nombre cliente', 'cli', n.cli, { type: 'select', req: 1, opts: [['', 'Seleccionar…']].concat(refOpts(tipo)), cls: 'col-md-6' })}</div>
+    ${fld('Marca', 'marca', n.marca, { type: 'select', opts: marcaOpts(n.cli) })}
+    <div class="form-row">${fld('Presupuesto estimado ($)', 'presupuesto', n.presupuesto, { type: 'number', min: 0, cls: 'col-md-6' })}${fld(isNew ? 'Fecha estimada' : 'Inicio estimado', 'inicio', n.inicio, { type: 'date', cls: 'col-md-6' })}</div>
+    ${isNew ? '' : `<div class="form-row">${fld('Fin estimado', 'fin', n.fin, { type: 'date', cls: 'col-md-4' })}${fld('Estado', 'estado', n.estado, { type: 'select', opts: ST, cls: 'col-md-4' })}${fld('Ejecutivo/a', 'ejecutivo', n.ejecutivo, { type: 'select', opts: USERS, cls: 'col-md-4' })}</div>`}</form>`,
+    footer: `<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="neg-ok">${isNew ? 'Crear' : 'Guardar'}</button>` });
+  const f = $m.find('#f-neg')[0];
+  f.tipo.addEventListener('change', () => { f.cli.innerHTML = optHtml([['', 'Seleccionar…']].concat(refOpts(f.tipo.value)), ''); f.marca.innerHTML = optHtml(marcaOpts(''), ''); });
+  f.cli.addEventListener('change', () => { f.marca.innerHTML = optHtml(marcaOpts(f.cli.value), ''); });
+  $m.find('#neg-ok').on('click', () => {
+    const errs = []; if (!f.nombre.value.trim()) errs.push('El nombre del negocio es obligatorio.'); if (!f.cli.value) errs.push('Selecciona el cliente.');
+    if (f.presupuesto.value !== '' && +f.presupuesto.value < 0) errs.push('El presupuesto no puede ser negativo.');
+    if (!isNew && f.fin.value && f.inicio.value && f.fin.value < f.inicio.value) errs.push('El fin estimado no puede ser anterior al inicio.');
+    if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+    const v = { nombre: f.nombre.value.trim(), cli: f.cli.value, marca: f.marca.value, presupuesto: +f.presupuesto.value || 0, inicio: f.inicio.value };
+    if (!isNew) Object.assign(v, { fin: f.fin.value, estado: f.estado.value, ejecutivo: f.ejecutivo.value });
+    let target;
+    if (isNew) { const num = Math.max(0, ...DB.negocios.map(x => +x.serial.slice(4))) + 1; target = Object.assign({ id: nextId('N', DB.negocios), serial: 'NEG-' + String(num).padStart(4, '0'), estado: 'Nuevo', ejecutivo: ME, fin: '', creado: TOD }, v); touch(target); DB.negocios.push(target); }
+    else { target = n; Object.assign(target, v); touch(target); }
+    if (o.done) { closeModal(); o.done(target, isNew); return; }
+    if (isNew) { modal({ title: 'Negocio creado con éxito', size: 'modal-sm', body: `<p class="mb-0"><b>${target.serial}</b> · ${esc(target.nombre)}</p>`, footer: `<a class="btn btn-secondary" href="#/negocios" data-dismiss="modal">Volver al listado</a><a class="btn btn-primary" href="#/cotizaciones/nueva?negocio=${target.id}" data-dismiss="modal">Crear cotización</a>` }); render(); }
+    else { closeModal(); notify('Los cambios fueron guardados.'); render(); }
+  });
+}
+ACT['neg-new'] = () => negModal(null);
+ACT['neg-new-for'] = ref => negModal(null, { cli: ref.replace('-', ':'), done: n => { notify('Negocio creado.'); render(); } });
+ACT['neg-edit'] = id => negModal(by(DB.negocios, id));
+ACT['neg-del'] = id => { const n = by(DB.negocios, id), qs = quotesOf(n);
+  confirmDlg(qs.length ? `«${esc(n.nombre)}» tiene ${qs.length} cotización(es). Al eliminarlo quedarán sin negocio. ¿Continuar?` : `¿Eliminar el negocio «${esc(n.nombre)}»?`, 'Eliminar', () => { qs.forEach(q => { q.negocio = ''; }); DB.negocios = DB.negocios.filter(x => x.id !== id); notify('Negocio eliminado.'); go('/negocios'); }, true); };
+
+/* =====================================================================
+   ▶ [CRM-16] NEGOCIOS · detalle (#/negocios/ID) — p.6 del wireframe
+   ===================================================================== */
+route(/^\/negocios\/([^/]+)$/, id => {
+  const n = by(DB.negocios, id); if (!n) return notFoundPage('Negocio');
+  const qs = quotesOf(n), ro = (l, v) => `<div class="col-md-4 form-group"><label class="mb-1">${l}</label><div class="form-control form-control-sm bg-light" style="height:auto;min-height:31px">${v || '—'}</div></div>`;
+  const hd = `<div class="form-row">${ro('Cód. negocio', `<b>${n.serial}</b>`)}${ro('Tipo cliente', tipoOf(n.cli))}${ro('Estado', stBadge(n.estado))}${ro('Ejecutivo/a', n.ejecutivo)}${ro('Cliente', `<a href="#/clientes/${n.cli.replace(':', '-')}">${esc(partyName(n.cli))}</a>`)}${ro('Marca', esc(brandName(n.marca)))}${ro('Presupuesto', clp(n.presupuesto))}${ro('Inicio estimado', fdate(n.inicio))}${ro('Fin estimado', fdate(n.fin))}</div>`;
+  const qt = qs.length ? tbl([{ h: 'Código', cls: 'text-nowrap', f: q => `<a href="#/cotizaciones/${q.id}"><b>${q.serial}</b></a>` }, { h: 'Título', f: q => esc(q.titulo) }, { h: 'Estado', f: q => stBadge(q.estado) }, { h: 'Cantidad soportes', cls: 'text-center', f: q => sum(q.soportes.map(s => s.qty)) },
+    { h: 'Total precio arriendo', cls: 'number', f: q => clp(qArr(q)) }, { h: 'Total precio producción', cls: 'number', f: q => clp(qProd(q)) }, { h: 'Total cotización', cls: 'number', f: q => `<b>${clp(qTotal(q))}</b>` },
+    { h: 'Acciones', cls: 'text-right tbl-actions text-nowrap', f: q => icBtn('eye', 'Ver', { href: '#/cotizaciones/' + q.id }) + icBtn('edit', 'Editar', { href: '#/cotizaciones/' + q.id + '/editar' }) + icBtn('close', 'Quitar del negocio', { act: 'q-unlink', id: q.id }) }], qs)
+    : '<div class="text-center text-muted p-4">Este negocio aún no tiene cotizaciones.</div>';
+  return { title: n.nombre, html: head(esc(n.nombre), btn('Volver al listado', { href: '#/negocios', cls: 'secondary', extra: 'mr-2' }) + btn('Editar', { ic: 'edit', act: 'neg-edit', id: n.id, cls: 'secondary', extra: 'mr-2' }) + btn('Crear cotización', { ic: 'plus', href: '#/cotizaciones/nueva?negocio=' + n.id })) + card('Negocio', hd) + `<div class="card card-table"><div class="card-header card-header-divider">Cotizaciones (${qs.length})</div>${qt}</div>` };
+});
+ACT['q-unlink'] = id => { const q = by(DB.quotes, id); confirmDlg(`¿Quitar la cotización ${q.serial} de este negocio? La cotización no se elimina.`, 'Quitar', () => { q.negocio = ''; notify('Cotización desvinculada.'); render(); }); };
+
+
+/* =====================================================================
+   ▶ [CRM-17] COTIZACIONES · listado (#/cotizaciones) — p.7 del wireframe
+   ===================================================================== */
+const Q_SORTS = [['upd', 'Última actualización'], ['serial', 'Código'], ['total', 'Total (mayor a menor)']];
+function quotesFiltered() {
+  const f = F('qt');
+  const r = DB.quotes.filter(q => (!f.cod || match(q.serial, f.cod)) && (!f.q || match(q.titulo + q.serial + q.clienteTemp + q.agenciaTemp + (q.cliente ? partyName('c:' + q.cliente) : ''), f.q)) && (!f.cli || q.cliente === f.cli) && (!f.age || q.agencia === f.age) && (!f.ejec || q.ejecutivo === f.ejec) && (!f.estado || q.estado === f.estado) && (!f.neg || (f.neg === 'sin' ? !q.negocio : q.negocio === f.neg)));
+  const s = f.sort || 'upd';
+  return r.slice().sort((a, b) => s === 'total' ? qTotal(b) - qTotal(a) : s === 'serial' ? a.serial.localeCompare(b.serial) : b.upd.localeCompare(a.upd));
+}
+route(/^\/cotizaciones$/, () => {
+  const res = () => { const r = quotesFiltered(); return tbl([{ h: 'Código', cls: 'text-nowrap', f: q => `<a href="#/cotizaciones/${q.id}"><b>${q.serial}</b></a>` }, { h: 'Anunciante', f: q => qCliName(q) }, { h: 'Título', f: q => esc(q.titulo) },
+    { h: 'Negocio', f: q => q.negocio ? `<a href="#/negocios/${q.negocio}">${esc((by(DB.negocios, q.negocio) || {}).serial)}</a>` : '<span class="text-muted">Sin negocio</span>' }, { h: 'Precio total arriendo', cls: 'number', f: q => clp(qArr(q)) },
+    { h: 'Agencia', f: q => qAgeName(q) }, { h: 'Ejecutivo/a', f: q => q.ejecutivo }, { h: 'Estado', f: q => stBadge(q.estado) }, { h: 'Última actualización', cls: 'text-nowrap', f: q => fdate(q.upd) },
+    { h: '', cls: 'text-right tbl-actions text-nowrap', f: q => icBtn('eye', 'Ver', { href: '#/cotizaciones/' + q.id }) + icBtn('edit', 'Editar', { href: '#/cotizaciones/' + q.id + '/editar' }) }], r) + pager(r.length, 'cotizaciones'); };
+  CUR.refresh = () => setResults(res());
+  const defs = [{ n: 'cod', label: 'Código', ph: 'Ej: CA-0001 CA-0002' }, { n: 'q', label: 'Buscar por término', ph: 'Ej: título, código, anunciante nuevo, agencia nueva' }, { n: 'cli', label: 'Anunciante', type: 'select', opts: [['', 'Todos los anunciantes']].concat(DB.clients.map(c => [c.id, c.nombre])) }, { n: 'age', label: 'Agencia', type: 'select', opts: [['', 'Todas las agencias']].concat(DB.agencies.map(a => [a.id, a.nombre])) },
+    { n: 'ejec', label: 'Ejecutivo/a', type: 'select', opts: [['', 'Todos/as los/as ejecutivos/as']].concat(USERS) }, { n: 'estado', label: 'Estado', type: 'select', opts: [['', 'Todos los estados']].concat(ST) }, { n: 'neg', label: 'Negocio', type: 'select', opts: [['', 'Todos'], ['sin', 'Sin negocio']].concat(DB.negocios.map(n => [n.id, n.serial + ' · ' + n.nombre])) }, { n: 'sort', label: 'Ordenar por', type: 'select', opts: Q_SORTS }];
+  return { title: 'Cotizaciones', html: head('Cotizaciones', btn('Crear cotización', { ic: 'plus', href: '#/cotizaciones/nueva' })) + listCard('qt', defs, res()) };
+});
+
+/* =====================================================================
+   ▶ [CRM-18] COTIZACIONES · formulario con tarjeta CRM (#/cotizaciones/nueva, /ID/editar) — p.8 y p.9
+   Simulado: la selección de soportes real (catálogo, mapa, reservas, precios) vive en Comercial; aquí se muestran soportes fijos.
+   ===================================================================== */
+const soportesCard = q => `<div class="card card-border-color card-border-color-primary"><div class="card-header card-header-divider"><div class="tools"><button type="button" class="btn btn-secondary btn-sm" disabled title="La selección de soportes no forma parte de este prototipo">${icon('plus')} Agregar soporte</button></div>Selección de soportes</div>
+  <div class="card-body"><div class="alert alert-info alert-icon mb-3"><div class="icon"><span class="zmdi zmdi-info"></span></div><div class="message">Simulación: la selección de soportes, el mapa y las reservas están en el módulo Comercial. Aquí se muestran soportes de ejemplo para calcular los totales del negocio.</div></div>
+  ${tbl([{ h: 'N°', f: s => s._i }, { h: 'Soporte', f: s => esc(sopOf(s.id).nombre) }, { h: 'Precio mensual', cls: 'number', f: s => clp(sopOf(s.id).tarifa) }, { h: 'Unidades', cls: 'text-center', f: s => s.qty }, { h: 'Duración', cls: 'text-center', f: s => s.meses + (s.meses === 1 ? ' mes' : ' meses') }, { h: 'P. arriendo', cls: 'number', f: s => clp(sopOf(s.id).tarifa * s.qty * s.meses) }, { h: 'P. producción', cls: 'number', f: s => clp(sopOf(s.id).prod * s.qty) }], q.soportes.map((s, i) => Object.assign({}, s, { _i: i + 1 })))}
+  <div class="text-right"><b>Total arriendo:</b> ${clp(qArr(q))} · <b>Total producción:</b> ${clp(qProd(q))} · <b>Total cotización:</b> ${clp(qTotal(q))}</div></div></div>`;
+function quoteForm(q) {
+  const isNew = !q, qs = query();
+  const pre = qs.negocio ? by(DB.negocios, qs.negocio) : null;
+  q = q || { titulo: '', desc: '', cliente: pre && pre.cli[0] === 'c' ? pre.cli.slice(2) : '', clienteTemp: '', agencia: pre && pre.cli[0] === 'a' ? pre.cli.slice(2) : '', agenciaTemp: '', negocio: pre ? pre.id : '', marca: pre ? pre.marca : '', estado: 'Nuevo', presupuesto: pre ? pre.presupuesto : '', ejecutivo: pre ? pre.ejecutivo : ME, inicio: pre ? pre.inicio : '', fin: pre ? pre.fin : '', soportes: [{ id: 'B-003', qty: 1, meses: 1 }, { id: 'B-018', qty: 1, meses: 1 }] };
+  const negOpts = () => [['', 'Sin negocio — Buscar…']].concat(DB.negocios.map(n => [n.id, n.serial + ' · ' + n.nombre]));
+  const cliRef = () => q.cliente ? 'c:' + q.cliente : (q.agencia ? 'a:' + q.agencia : '');
+  const html = head(isNew ? 'Crear cotización' : 'Editar cotización ' + q.serial) + `<form id="f-q" novalidate><div class="row"><div class="col-lg-8">
+    ${card('Información general', `<div class="form-row">${fld('Título', 'titulo', q.titulo, { req: 1, cls: 'col-md-12' })}</div><div class="form-row">${fld('Información adicional Cotización', 'desc', q.desc, { type: 'textarea', rows: 4, cls: 'col-md-6' })}
+      <div class="col-md-6"><div class="form-group"><label>Anunciante</label><select class="form-control form-control-sm" name="cliente">${optHtml([['', 'Anunciante nuevo']].concat(DB.clients.map(c => [c.id, c.nombre])), q.cliente)}</select></div><div class="form-group" id="g-ctemp"><input class="form-control form-control-sm" name="clienteTemp" placeholder="Nombre de fantasía (temporal)" value="${esc(q.clienteTemp)}"></div>
+      <div class="form-group"><label>Agencia</label><select class="form-control form-control-sm" name="agencia">${optHtml([['', 'Sin agencia']].concat(DB.agencies.map(a => [a.id, a.nombre])), q.agencia)}</select></div><div class="form-group" id="g-atemp"><input class="form-control form-control-sm" name="agenciaTemp" placeholder="Nombre de fantasía (temporal)" value="${esc(q.agenciaTemp)}"></div></div></div>`)}
+    <div id="q-sop">${soportesCard(q)}</div></div>
+    <div class="col-lg-4">${card('CRM', `<div class="form-group"><label>Negocio</label><div class="input-group input-group-sm"><select class="form-control form-control-sm" name="negocio">${optHtml(negOpts(), q.negocio)}</select><div class="input-group-append"><button type="button" class="btn btn-primary" data-act="q-newneg" title="Crear negocio">${icon('plus')}</button></div></div></div>
+      <div class="form-row">${fld('Marca', 'marca', q.marca, { type: 'select', opts: marcaOpts(cliRef()), cls: 'col-6' })}${fld('Estado', 'estado', q.estado, { type: 'select', opts: ST, cls: 'col-6' })}</div>
+      <div class="form-row">${fld('Presupuesto estimado ($)', 'presupuesto', q.presupuesto, { type: 'number', min: 0, cls: 'col-6' })}${fld('Ejecutivo/a', 'ejecutivo', q.ejecutivo, { type: 'select', opts: USERS, cls: 'col-6' })}</div>
+      <div class="form-row">${fld('Inicio estimado', 'inicio', q.inicio, { type: 'date', cls: 'col-6' })}${fld('Fin estimado', 'fin', q.fin, { type: 'date', cls: 'col-6' })}</div>
+      <small class="text-muted">Al elegir un negocio se completan marca, presupuesto, ejecutivo y período si están vacíos (comportamiento supuesto).</small>`)}</div></div>
+    <div class="mb-4">${submitBtn(isNew ? 'Crear cotización' : 'Guardar cambios')}${btn('Cancelar', { cls: 'secondary', href: '#/cotizaciones' })}</div></form>`;
+  return { title: isNew ? 'Crear cotización' : 'Editar cotización', html, after() {
+    const f = document.getElementById('f-q');
+    const togTemp = () => { document.getElementById('g-ctemp').style.display = f.cliente.value ? 'none' : ''; document.getElementById('g-atemp').style.display = f.agencia.value ? 'none' : ''; };
+    const refreshMarca = () => { const ref = f.cliente.value ? 'c:' + f.cliente.value : (f.agencia.value ? 'a:' + f.agencia.value : ''), cur = f.marca.value; f.marca.innerHTML = optHtml(marcaOpts(ref), cur); };
+    f.cliente.addEventListener('change', () => { togTemp(); refreshMarca(); }); f.agencia.addEventListener('change', () => { togTemp(); refreshMarca(); }); togTemp();
+    const fromNeg = () => { const n = by(DB.negocios, f.negocio.value); if (!n) return;
+      if (n.cli[0] === 'c' && !f.cliente.value) f.cliente.value = n.cli.slice(2); if (n.cli[0] === 'a' && !f.agencia.value) f.agencia.value = n.cli.slice(2);
+      togTemp(); f.marca.innerHTML = optHtml(marcaOpts(n.cli), n.marca); if (!f.presupuesto.value) f.presupuesto.value = n.presupuesto; if (!f.inicio.value) f.inicio.value = n.inicio; if (!f.fin.value) f.fin.value = n.fin; f.ejecutivo.value = n.ejecutivo; };
+    f.negocio.addEventListener('change', fromNeg);
+    window.__qNegCreated = n => { f.negocio.innerHTML = optHtml(negOpts(), n.id); fromNeg(); };
+    f.addEventListener('submit', e => { e.preventDefault(); const errs = [];
+      if (!f.titulo.value.trim()) errs.push('El título es obligatorio.'); if (!f.cliente.value && !f.clienteTemp.value.trim()) errs.push('Selecciona un anunciante o ingresa un nombre de fantasía temporal.');
+      if (f.presupuesto.value !== '' && +f.presupuesto.value < 0) errs.push('El presupuesto no puede ser negativo.'); if (f.inicio.value && f.fin.value && f.fin.value < f.inicio.value) errs.push('El fin estimado no puede ser anterior al inicio.');
+      if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+      const v = { titulo: f.titulo.value.trim(), desc: f.desc.value, cliente: f.cliente.value, clienteTemp: f.cliente.value ? '' : f.clienteTemp.value.trim(), agencia: f.agencia.value, agenciaTemp: f.agencia.value ? '' : f.agenciaTemp.value.trim(), negocio: f.negocio.value, marca: f.marca.value, estado: f.estado.value, presupuesto: +f.presupuesto.value || 0, ejecutivo: f.ejecutivo.value, inicio: f.inicio.value, fin: f.fin.value };
+      let t = q;
+      if (isNew) { const num = Math.max(0, ...DB.quotes.map(x => +x.serial.slice(3))) + 1; t = Object.assign({ id: nextId('Q', DB.quotes), serial: 'CA-' + String(num).padStart(4, '0'), soportes: q.soportes }, v); DB.quotes.push(t); } else Object.assign(t, v);
+      touch(t); const neg = by(DB.negocios, t.negocio); if (neg) touch(neg);
+      notify(isNew ? 'La cotización ha sido creada.' : 'Los cambios fueron guardados.'); go(neg ? '/negocios/' + neg.id : '/cotizaciones/' + t.id); });
+  } };
+}
+ACT['q-newneg'] = () => { const f = document.getElementById('f-q'); const ref = f.cliente.value ? 'c:' + f.cliente.value : (f.agencia.value ? 'a:' + f.agencia.value : '');
+  negModal(null, { cli: ref, done: n => { notify('Negocio ' + n.serial + ' creado y seleccionado.'); window.__qNegCreated(n); } }); };
+route(/^\/cotizaciones\/nueva$/, () => quoteForm(null));
+route(/^\/cotizaciones\/([^/]+)\/editar$/, id => by(DB.quotes, id) ? quoteForm(by(DB.quotes, id)) : notFoundPage('Cotización'));
+
+/* =====================================================================
+   ▶ [CRM-19] COTIZACIONES · detalle de solo lectura (#/cotizaciones/ID)
+   ===================================================================== */
+route(/^\/cotizaciones\/(?!nueva$)([^/]+)$/, id => {
+  const q = by(DB.quotes, id); if (!q) return notFoundPage('Cotización');
+  const n = by(DB.negocios, q.negocio);
+  return { title: q.serial, html: head(`${q.serial} · ${esc(q.titulo)}`, (n ? btn('Volver al negocio', { href: '#/negocios/' + n.id, cls: 'secondary', extra: 'mr-2' }) : btn('Volver al listado', { href: '#/cotizaciones', cls: 'secondary', extra: 'mr-2' })) + btn('Editar', { ic: 'edit', href: '#/cotizaciones/' + q.id + '/editar' })) +
+    `<div class="row"><div class="col-lg-6">${card('Información general', kv([['Título', esc(q.titulo)], ['Anunciante', qCliName(q)], ['Agencia', qAgeName(q)], ['Información adicional', esc(q.desc) || '—'], ['Última actualización', fdate(q.upd)]]))}</div>
+    <div class="col-lg-6">${card('CRM', kv([['Negocio', n ? `<a href="#/negocios/${n.id}">${n.serial} · ${esc(n.nombre)}</a>` : '<span class="text-muted">Sin negocio</span>'], ['Marca', esc(brandName(q.marca))], ['Estado', stBadge(q.estado)], ['Presupuesto estimado', clp(q.presupuesto)], ['Ejecutivo/a', q.ejecutivo], ['Período estimado', fdate(q.inicio) + ' → ' + fdate(q.fin)]]))}</div></div>` + `<div id="q-sop">${soportesCard(q).replace(/<button[^>]*disabled[^>]*>.*?<\/button>/, '')}</div>` };
+});
+
+
+/* =====================================================================
+   ▶ [CRM-20] PANEL DE CLIENTES · vista 360° (#/clientes, #/clientes/c-ID, #/clientes/a-ID) — p.1 del wireframe
+   ===================================================================== */
+let ACT_CUR = 'Nota';
+const pickHtml = sel => `<select id="cli-pick" class="form-control form-control-sm" style="min-width:260px"><option value="">Buscar cliente…</option><optgroup label="Anunciantes">${DB.clients.map(c => `<option value="c:${c.id}" ${sel === 'c:' + c.id ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('')}</optgroup><optgroup label="Agencias">${DB.agencies.map(a => `<option value="a:${a.id}" ${sel === 'a:' + a.id ? 'selected' : ''}>${esc(a.nombre)}</option>`).join('')}</optgroup></select>`;
+document.addEventListener('change', e => { if (e.target.id === 'cli-pick' && e.target.value) go('/clientes/' + e.target.value.replace(':', '-')); });
+const pblock = (id, title, n, body, tools) => `<div class="card pcard"><div class="card-header d-flex justify-content-between align-items-center flex-wrap"><span>${title} (${n})</span><span class="d-flex align-items-center"><input class="form-control form-control-sm mr-1" style="width:105px" data-psearch="blk-${id}" placeholder="Buscar">${tools || ''}</span></div><div class="card-body p-2" id="blk-${id}">${body || '<div class="text-muted small text-center p-2">Sin registros.</div>'}</div></div>`;
+const sanitize = h => String(h).replace(/<(\/?)(\w+)[^>]*>/g, (m, s, t) => ['b', 'i', 'u', 'ul', 'ol', 'li', 'br', 'div', 'p'].includes(t.toLowerCase()) ? `<${s}${t.toLowerCase()}>` : '');
+route(/^\/clientes$/, () => ({ title: 'Gestión clientes', html: head('Gestión clientes') + card('Panel de clientes', `<div class="mb-3">${pickHtml('')}</div><p class="text-muted">Selecciona un anunciante o una agencia para ver su panel: contactos, negocios, campañas, marcas, documentos y actividades.</p><div class="row">${DB.clients.map(c => `<div class="col-md-3 mb-1"><a href="#/clientes/c-${c.id}">${icon('account')} ${esc(c.nombre)}</a></div>`).join('')}${DB.agencies.map(a => `<div class="col-md-3 mb-1"><a href="#/clientes/a-${a.id}">${icon('city')} ${esc(a.nombre)} <small class="text-muted">(agencia)</small></a></div>`).join('')}</div>`) }));
+route(/^\/clientes\/([ca])-([^/]+)$/, (k, id) => {
+  const ref = k + ':' + id, p = partyOf(ref); if (!p) return notFoundPage('Cliente');
+  const cons = contactsOf(ref), negs = negociosOf(ref).slice().sort((a, b) => b.upd.localeCompare(a.upd)), camps = campaignsOf(ref).filter(c => c.hasta >= TOD), brands = brandsOf(ref), docs = DB.docs.filter(d => d.cli === ref || (ref[0] === 'a' && (by(DB.clients, (d.cli.slice(2))) || {}).agency === id)), acts = DB.activities.filter(a => a.cli === ref).slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const estado = camps.length || negs.some(n => n.estado !== 'Ganado' && n.estado !== 'Perdido') ? 'Activo' : 'Inactivo';
+  const header = `<div class="card"><div class="card-body py-3"><div class="d-flex flex-wrap align-items-center justify-content-between"><div class="mb-2">${pickHtml(ref)}</div></div><div class="d-flex flex-wrap align-items-end"><div class="mr-5"><div class="text-muted small">${tipoOf(ref)}</div><h4 class="mb-0">${esc(p.nombre)}</h4></div><div class="mr-5"><div class="text-muted small">Estado</div>${badge(estado, estado === 'Activo' ? 'success' : 'secondary')}</div><div><div class="text-muted small">Responsable</div>${p.ejecutivo || '<span class="text-muted">Sin asignar</span>'} ${icBtn('edit', 'Cambiar responsable', { act: 'resp-edit', id: ref })}</div></div></div></div>`;
+  const conItems = cons.map(c => `<div class="pitem"><div class="d-flex justify-content-between"><div><b>${esc(c.nombre)}</b>${c.marca ? ` <span class="badge badge-light">${esc(brandName(c.marca))}</span>` : ''}<div class="ks">${esc(c.email) || '—'}</div><div class="ks">${esc(c.tel) || '—'}</div></div><span class="text-nowrap">${icBtn('edit', 'Editar', { act: 'con-edit', id: c.id })}${icBtn('delete', 'Eliminar', { act: 'con-del', id: c.id })}</span></div></div>`).join('');
+  const negItems = negs.map(n => `<div class="pitem"><div class="d-flex justify-content-between"><div><a href="#/negocios/${n.id}"><b>${esc(n.nombre)}</b></a> ${stBadge(n.estado)}<div class="ks">Creado: ${fdate(n.creado)} · Valor estimado: <b>${clp(n.presupuesto)}</b></div>${quotesOf(n).map(q => `<div class="ks">Cot <a href="#/cotizaciones/${q.id}">${q.serial}</a> ${stBadge(q.estado)}</div>`).join('')}<div class="ks">Responsable: ${n.ejecutivo}</div></div><span class="text-nowrap">${icBtn('edit', 'Editar', { act: 'neg-edit', id: n.id })}${icBtn('delete', 'Eliminar', { act: 'neg-del', id: n.id })}</span></div></div>`).join('');
+  const campItems = camps.map(c => `<div class="pitem"><b>${esc(c.titulo)}</b><div class="ks">Precio total: <b>${clp(c.total)}</b></div><div class="ks">CA ${c.serial} · ${fdate(c.desde)} → ${fdate(c.hasta)}</div></div>`).join('');
+  const brandRows = brands.length ? `<table class="table table-sm mb-0"><thead><tr><th>Nombre</th><th>Contacto</th></tr></thead><tbody>${brands.map(b => `<tr class="pitem"><td>${esc(b.nombre)}</td><td>${esc(contactName(ref[0] === 'c' ? b.conC : b.conA))}</td></tr>`).join('')}</tbody></table>` : '';
+  const docItems = docs.map(d => `<div class="pitem d-flex justify-content-between align-items-center"><div><span class="zmdi zmdi-${d.tipo === 'pdf' ? 'collection-pdf' : 'file'} mr-2" style="color:${d.tipo === 'pdf' ? '#d93025' : '#1f9d6b'};font-size:1.3rem"></span><b>${esc(d.titulo)}</b><div class="ks">${esc(d.campana)}</div></div><span class="text-nowrap">${icBtn('download', 'Descargar', { act: 'doc-dl', id: d.id })}${icBtn('delete', 'Eliminar', { act: 'doc-del', id: d.id })}</span></div>`).join('');
+  const actItems = acts.map(a => `<div class="pitem d-flex"><div class="act-av"><span class="zmdi zmdi-${ACT_ICON[a.tipo]}"></span></div><div class="flex-grow-1"><div class="ks"><b>${a.tipo}</b> · ${esc(a.autor)} · ${a.fecha}</div><div class="act-body">${a.html}</div></div><div class="ks text-muted text-nowrap pl-2">Tipo de registro: ${a.tipo}</div></div>`).join('');
+  const composer = `<div class="font-weight-bold mb-2">Registrar una nueva actividad</div><ul class="nav nav-tabs mb-0">${ACT_TYPES.map(t => `<li class="nav-item"><a class="nav-link py-1 ${t === ACT_CUR ? 'active' : ''}" href="#" data-act="act-tab" data-id="${t}">${t}</a></li>`).join('')}</ul>
+    <div class="ed-tb">${[['bold', 'format-bold'], ['italic', 'format-italic'], ['underline', 'format-underline'], ['insertUnorderedList', 'format-list-bulleted'], ['insertOrderedList', 'format-list-numbered']].map(x => `<button type="button" class="btn btn-sm btn-light" data-act="ed-cmd" data-id="${x[0]}">${icon(x[1])}</button>`).join('')}</div>
+    <div id="act-editor" class="act-editor" contenteditable="true" data-ph="Escribe una ${ACT_CUR.toLowerCase()}…"></div><div class="text-right mt-2"><button type="button" class="btn btn-secondary btn-sm" data-act="act-add" data-id="${ref}">Registrar</button></div>`;
+  return { title: 'Gestión clientes · ' + p.nombre, html: head('Gestión clientes') + header + `<div class="row">
+    <div class="col-xl-3 col-lg-4">${pblock('con', 'Contactos', cons.length, conItems, icBtn('plus', 'Nuevo contacto', { act: 'con-new-for', id: ref }))}${pblock('neg', 'Negocios', negs.length, negItems, icBtn('plus', 'Crear negocio', { act: 'neg-new-for', id: ref.replace(':', '-') }))}${pblock('camp', 'Campañas activas', camps.length, campItems)}</div>
+    <div class="col-xl-6 col-lg-8"><div class="card"><div class="card-header card-header-divider text-center">RESUMEN DE ACTIVIDADES</div><div class="card-body">${composer}<hr><div class="d-flex justify-content-between align-items-center mb-2"><b>Historial de actividades recientes</b><input class="form-control form-control-sm" style="width:160px" data-psearch="blk-act" placeholder="Buscar"></div><div id="blk-act">${actItems || '<div class="text-muted small text-center p-3">Aún no hay actividades registradas.</div>'}</div></div></div></div>
+    <div class="col-xl-3 col-lg-12">${pblock('mar', 'Marcas', brands.length, brandRows)}${pblock('doc', 'Documentos adjuntos', docs.length, docItems)}</div></div>` };
+});
+ACT['act-tab'] = t => { ACT_CUR = t; const ed = document.getElementById('act-editor'); document.querySelectorAll('[data-act=act-tab]').forEach(a => a.classList.toggle('active', a.dataset.id === t)); if (ed) ed.dataset.ph = 'Escribe una ' + t.toLowerCase() + '…'; };
+document.addEventListener('mousedown', e => { if (e.target.closest('[data-act=ed-cmd]')) e.preventDefault(); });
+ACT['ed-cmd'] = c => { const ed = document.getElementById('act-editor'); if (ed) { ed.focus(); document.execCommand(c, false, null); } };
+ACT['act-add'] = ref => { const ed = document.getElementById('act-editor'), h = sanitize(ed.innerHTML);
+  if (!ed.textContent.trim()) { notify('Escribe el contenido de la actividad.', 'warning'); return; }
+  DB.activities.unshift({ id: nextId('T', DB.activities), cli: ref, tipo: ACT_CUR, html: h, autor: ME, fecha: TOD + ' ' + new Date().toTimeString().slice(0, 5) }); notify('Actividad registrada.'); render(); };
+ACT['resp-edit'] = ref => { const p = partyOf(ref); const $m = modal({ title: 'Cambiar responsable', size: 'modal-sm', body: fld('Responsable', 'resp', p.ejecutivo, { type: 'select', opts: [['', 'Sin asignar']].concat(USERS) }), footer: '<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="ok">Guardar</button>' });
+  $m.find('#ok').on('click', () => { p.ejecutivo = $m.find('[name=resp]').val(); closeModal(); notify('Responsable actualizado.'); render(); }); };
+ACT['doc-dl'] = id => notify('Descarga simulada de «' + esc((by(DB.docs, id) || {}).titulo) + '».', 'info');
+ACT['doc-del'] = id => confirmDlg('¿Eliminar el documento adjunto?', 'Eliminar', () => { DB.docs = DB.docs.filter(d => d.id !== id); notify('Documento eliminado.'); render(); }, true);
+
+
+/* =====================================================================
+   ▶ [CRM-21] CONTACTOS · listado y modal (#/contactos) — p.12 y p.13 del wireframe
+   ===================================================================== */
+function conModal(c, o) {
+  o = o || {}; const isNew = !c;
+  c = c || { nombre: '', tel: '', email: '', cli: o.cli || '', marca: '' };
+  const tipo = c.cli ? tipoOf(c.cli) : 'Anunciante';
+  const $m = modal({ title: isNew ? 'Nuevo Contacto' : 'Editar contacto', body: `<form id="f-con" novalidate>${fld('Nombre', 'nombre', c.nombre, { req: 1 })}${fld('Teléfono', 'tel', c.tel)}${fld('Correo', 'email', c.email, { type: 'email' })}
+    <div class="form-row">${fld('Tipo Cliente', 'tipo', tipo, { type: 'select', opts: ['Anunciante', 'Agencia'], cls: 'col-md-6' })}${fld('Cliente', 'cli', c.cli, { type: 'select', req: 1, opts: [['', 'Seleccionar…']].concat(refOpts(tipo)), cls: 'col-md-6' })}</div>${fld('Marca', 'marca', c.marca, { type: 'select', opts: marcaOpts(c.cli) })}</form>`,
+    footer: `<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="ok">${isNew ? 'Crear' : 'Guardar'}</button>` });
+  const f = $m.find('#f-con')[0];
+  f.tipo.addEventListener('change', () => { f.cli.innerHTML = optHtml([['', 'Seleccionar…']].concat(refOpts(f.tipo.value)), ''); f.marca.innerHTML = optHtml(marcaOpts(''), ''); });
+  f.cli.addEventListener('change', () => { f.marca.innerHTML = optHtml(marcaOpts(f.cli.value), ''); });
+  $m.find('#ok').on('click', () => { const errs = [];
+    if (!f.nombre.value.trim()) errs.push('El nombre es obligatorio.'); if (!f.cli.value) errs.push('Selecciona el cliente.'); if (f.email.value && !/^\S+@\S+\.\S+$/.test(f.email.value)) errs.push('El correo no es válido.');
+    if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+    const v = { nombre: f.nombre.value.trim(), tel: f.tel.value.trim(), email: f.email.value.trim(), cli: f.cli.value, marca: f.marca.value };
+    if (isNew) DB.contacts.push(Object.assign({ id: nextId('K', DB.contacts) }, v)); else Object.assign(c, v);
+    closeModal(); notify(isNew ? 'El contacto ha sido creado.' : 'Los cambios fueron guardados.'); render(); });
+}
+ACT['con-new'] = () => conModal(null);
+ACT['con-new-for'] = ref => conModal(null, { cli: ref });
+ACT['con-edit'] = id => conModal(by(DB.contacts, id));
+ACT['con-del'] = id => { const c = by(DB.contacts, id); confirmDlg(`¿Eliminar el contacto «${esc(c.nombre)}»?`, 'Eliminar', () => { DB.contacts = DB.contacts.filter(x => x.id !== id); DB.brands.forEach(b => { if (b.conC === id) b.conC = ''; if (b.conA === id) b.conA = ''; }); notify('Contacto eliminado.'); render(); }, true); };
+route(/^\/contactos$/, () => {
+  const res = () => { const f = F('con'); const r = DB.contacts.filter(c => (!f.q || match(c.nombre + c.email + c.tel, f.q)) && (!f.cli || c.cli === 'c:' + f.cli) && (!f.age || c.cli === 'a:' + f.age) && (!f.marca || c.marca === f.marca));
+    return tbl([{ h: 'Nombre', f: c => `<b>${esc(c.nombre)}</b>` }, { h: 'Teléfono', cls: 'text-nowrap', f: c => esc(c.tel) || '—' }, { h: 'Correo', f: c => esc(c.email) || '—' }, { h: 'Tipo cliente', f: c => tipoOf(c.cli) }, { h: 'Cliente', f: c => `<a href="#/clientes/${c.cli.replace(':', '-')}">${esc(partyName(c.cli))}</a>` }, { h: 'Marca', f: c => esc(brandName(c.marca)) },
+      { h: 'Acciones', cls: 'text-right tbl-actions text-nowrap', f: c => icBtn('eye', 'Ver cliente', { href: '#/clientes/' + c.cli.replace(':', '-') }) + icBtn('edit', 'Editar', { act: 'con-edit', id: c.id }) + icBtn('delete', 'Eliminar', { act: 'con-del', id: c.id }) }], r) + pager(r.length, 'contactos'); };
+  CUR.refresh = () => setResults(res());
+  const defs = [{ n: 'q', label: 'Buscar', ph: 'Nombre, correo o teléfono' }, { n: 'cli', label: 'Anunciante', type: 'select', opts: [['', 'Todos']].concat(DB.clients.map(c => [c.id, c.nombre])) }, { n: 'age', label: 'Agencia', type: 'select', opts: [['', 'Todas']].concat(DB.agencies.map(a => [a.id, a.nombre])) }, { n: 'marca', label: 'Marca', type: 'select', opts: [['', 'Todas']].concat(DB.brands.map(b => [b.id, b.nombre])) }];
+  return { title: 'Contactos', html: head('Contactos', btn('Nuevo contacto', { ic: 'plus', act: 'con-new' })) + listCard('con', defs, res()) };
+});
+
+/* =====================================================================
+   ▶ [CRM-22] MARCAS · listado y modal (#/marcas) — p.10 y p.11 del wireframe
+   ===================================================================== */
+const conTip = id => { const c = by(DB.contacts, id); return c ? `${esc(c.nombre)} <span class="zmdi zmdi-info text-info" title="Teléfono: ${esc(c.tel) || '—'} · Correo: ${esc(c.email) || '—'}" style="cursor:help"></span>` : '<span class="text-muted">—</span>'; };
+function brandModal(b, o) {
+  o = o || {}; const isNew = !b;
+  b = b || { nombre: '', cli: o.cli || '', age: o.age || '', conC: '', conA: '', ejecutivo: ME };
+  const conOpts = ref => [['', 'Sin contacto']].concat(ref ? contactsOf(ref).map(c => [c.id, c.nombre]) : []);
+  const $m = modal({ title: isNew ? 'Nueva Marca' : 'Editar marca', body: `<form id="f-br" novalidate>${fld('Nombre', 'nombre', b.nombre, { req: 1 })}
+    <div class="form-row">${fld('Anunciante', 'cli', b.cli, { type: 'select', opts: [['', 'Sin anunciante']].concat(DB.clients.map(c => [c.id, c.nombre])), cls: 'col-md-6' })}${fld('Contacto', 'conC', b.conC, { type: 'select', opts: conOpts(b.cli ? 'c:' + b.cli : ''), cls: 'col-md-6' })}</div>
+    <div class="form-row">${fld('Agencia', 'age', b.age, { type: 'select', opts: [['', 'Sin agencia']].concat(DB.agencies.map(a => [a.id, a.nombre])), cls: 'col-md-6' })}${fld('Contacto', 'conA', b.conA, { type: 'select', opts: conOpts(b.age ? 'a:' + b.age : ''), cls: 'col-md-6' })}</div>${fld('Ejecutivo', 'ejecutivo', b.ejecutivo, { type: 'select', opts: [['', 'Sin asignar']].concat(USERS) })}</form>`,
+    footer: `<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="ok">${isNew ? 'Crear' : 'Guardar'}</button>` });
+  const f = $m.find('#f-br')[0];
+  f.cli.addEventListener('change', () => { f.conC.innerHTML = optHtml(conOpts(f.cli.value ? 'c:' + f.cli.value : ''), ''); });
+  f.age.addEventListener('change', () => { f.conA.innerHTML = optHtml(conOpts(f.age.value ? 'a:' + f.age.value : ''), ''); });
+  $m.find('#ok').on('click', () => { const errs = [];
+    if (!f.nombre.value.trim()) errs.push('El nombre es obligatorio.'); if (!f.cli.value && !f.age.value) errs.push('La marca debe tener al menos un anunciante o una agencia.');
+    if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+    const v = { nombre: f.nombre.value.trim(), cli: f.cli.value, age: f.age.value, conC: f.conC.value, conA: f.conA.value, ejecutivo: f.ejecutivo.value };
+    if (isNew) DB.brands.push(Object.assign({ id: nextId('M', DB.brands) }, v)); else Object.assign(b, v);
+    closeModal(); notify(isNew ? 'La marca ha sido creada.' : 'Los cambios fueron guardados.'); render(); });
+}
+ACT['brand-new'] = () => brandModal(null);
+ACT['brand-new-for'] = v => { const [k, id] = v.split(':'); brandModal(null, k === 'c' ? { cli: id } : { age: id }); };
+ACT['brand-edit'] = id => brandModal(by(DB.brands, id));
+ACT['brand-del'] = id => { const b = by(DB.brands, id), n = DB.negocios.filter(x => x.marca === id).length + DB.quotes.filter(x => x.marca === id).length;
+  if (n) { notify(`No se puede eliminar «${esc(b.nombre)}»: tiene ${n} negocio(s) o cotización(es) asociados.`, 'warning'); return; }
+  confirmDlg(`¿Eliminar la marca «${esc(b.nombre)}»?`, 'Eliminar', () => { DB.brands = DB.brands.filter(x => x.id !== id); DB.contacts.forEach(c => { if (c.marca === id) c.marca = ''; }); notify('Marca eliminada.'); render(); }, true); };
+route(/^\/marcas$/, () => {
+  const res = () => { const f = F('br'); const r = DB.brands.filter(b => (!f.q || match(b.nombre, f.q)) && (!f.cli || b.cli === f.cli) && (!f.age || b.age === f.age) && (!f.con || b.conC === f.con || b.conA === f.con));
+    return tbl([{ h: 'Nombre', f: b => `<b>${esc(b.nombre)}</b>` }, { h: 'Anunciante', f: b => b.cli ? `<a href="#/clientes/c-${b.cli}">${esc(partyName('c:' + b.cli))}</a>` : '—' }, { h: 'Contacto', f: b => conTip(b.conC) }, { h: 'Agencia', f: b => b.age ? `<a href="#/clientes/a-${b.age}">${esc(partyName('a:' + b.age))}</a>` : '—' }, { h: 'Contacto', f: b => conTip(b.conA) }, { h: 'Ejecutivo', f: b => b.ejecutivo || '<span class="text-muted">Sin asignar</span>' },
+      { h: 'Acciones', cls: 'text-right tbl-actions text-nowrap', f: b => icBtn('eye', 'Ver cliente', { href: '#/clientes/' + (b.cli ? 'c-' + b.cli : 'a-' + b.age) }) + icBtn('edit', 'Editar', { act: 'brand-edit', id: b.id }) + icBtn('delete', 'Eliminar', { act: 'brand-del', id: b.id }) }], r) + pager(r.length, 'marcas'); };
+  CUR.refresh = () => setResults(res());
+  const defs = [{ n: 'q', label: 'Buscar', ph: 'Nombre de la marca' }, { n: 'cli', label: 'Anunciante', type: 'select', opts: [['', 'Todos']].concat(DB.clients.map(c => [c.id, c.nombre])) }, { n: 'age', label: 'Agencia', type: 'select', opts: [['', 'Todas']].concat(DB.agencies.map(a => [a.id, a.nombre])) }, { n: 'con', label: 'Contacto', type: 'select', opts: [['', 'Todos']].concat(DB.contacts.map(c => [c.id, c.nombre])) }];
+  return { title: 'Marcas', html: head('Marca', btn('Nueva marca', { ic: 'plus', act: 'brand-new' })) + listCard('br', defs, res()) };
+});
+
+/* =====================================================================
+   ▶ [CRM-23] ANUNCIANTES Y AGENCIAS · listados y formulario con tabla de marcas — p.14 y p.15 del wireframe
+   ===================================================================== */
+const validRut = r => /^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$/.test(r);
+const partyBase = k => k === 'c' ? '/anunciantes' : '/agencias';
+const partyUse = ref => DB.negocios.filter(n => n.cli === ref).length + DB.quotes.filter(q => (ref[0] === 'c' ? q.cliente : q.agencia) === ref.slice(2)).length + brandsOf(ref).length + contactsOf(ref).length;
+function partyList(k) {
+  const isC = k === 'c', arr = isC ? DB.clients : DB.agencies, key = 'p' + k;
+  const res = () => { const f = F(key); const r = arr.filter(x => match(x.nombre + x.razon, f.q) && (!isC || !f.cat || x.cat === f.cat) && (!f.ejec || x.ejecutivo === f.ejec));
+    return tbl([{ h: 'Nombre', f: x => `<a href="#/clientes/${k}-${x.id}"><b>${esc(x.nombre)}</b></a>` }, { h: 'Razón social', f: x => esc(x.razon) }, { h: 'RUT', cls: 'text-nowrap', f: x => x.rut }]
+      .concat(isC ? [{ h: 'Categoría', f: x => x.cat }, { h: 'Agencia', f: x => x.agency ? esc(partyName('a:' + x.agency)) : '<span class="text-muted">Sin agencia</span>' }] : [{ h: 'Agencia matriz', f: x => x.parent ? esc(partyName('a:' + x.parent)) : '—' }])
+      .concat([{ h: 'Responsable', f: x => x.ejecutivo || '<span class="text-muted">Sin asignar</span>' }, { h: 'Marcas', cls: 'text-center', f: x => brandsOf(k + ':' + x.id).length }, { h: '', cls: 'text-right tbl-actions text-nowrap', f: x => icBtn('eye', 'Ver en el panel de clientes', { href: '#/clientes/' + k + '-' + x.id }) + icBtn('edit', 'Editar', { href: '#' + partyBase(k) + '/' + x.id + '/editar' }) + icBtn('delete', 'Eliminar', { act: 'party-del', id: k + ':' + x.id }) }]), r) + pager(r.length, isC ? 'anunciantes' : 'agencias'); };
+  CUR.refresh = () => setResults(res());
+  const defs = [{ n: 'q', label: 'Nombre o razón social', ph: 'Buscar…' }].concat(isC ? [{ n: 'cat', label: 'Categoría', type: 'select', opts: [['', 'Todas']].concat(CATEGORIES) }] : []).concat([{ n: 'ejec', label: 'Responsable', type: 'select', opts: [['', 'Todos']].concat(USERS) }]);
+  return { title: isC ? 'Anunciantes' : 'Agencias', html: head(isC ? 'Anunciantes' : 'Agencias', btn(isC ? 'Crear anunciante' : 'Crear agencia', { ic: 'plus', href: '#' + partyBase(k) + (isC ? '/nuevo' : '/nueva') })) + listCard(key, defs, res()) };
+}
+route(/^\/anunciantes$/, () => partyList('c'));
+route(/^\/agencias$/, () => partyList('a'));
+ACT['party-del'] = v => { const [k, id] = v.split(':'), ref = k + ':' + id, p = partyOf(ref), n = partyUse(ref);
+  if (n) { notify(`No se puede eliminar «${esc(p.nombre)}»: tiene negocios, cotizaciones, marcas o contactos asociados.`, 'warning'); return; }
+  confirmDlg(`¿Eliminar ${k === 'c' ? 'el anunciante' : 'la agencia'} «${esc(p.nombre)}»? Esta acción es irreversible.`, 'Eliminar', () => { if (k === 'c') DB.clients = DB.clients.filter(x => x.id !== id); else { DB.agencies = DB.agencies.filter(x => x.id !== id); DB.clients.forEach(c => { if (c.agency === id) c.agency = ''; }); } notify('Registro eliminado.'); go(partyBase(k)); }, true); };
+function partyForm(k, o) {
+  const isC = k === 'c', n = !o, arr = isC ? DB.clients : DB.agencies, t = isC ? 'anunciante' : 'agencia', ref = o ? k + ':' + o.id : '';
+  o = o || { nombre: '', razon: '', rut: '', giro: '', email: '', dir: '', cat: '', agency: '', ejecutivo: '', parent: '' };
+  const brands = ref ? brandsOf(ref) : [];
+  const marcas = n ? '<p class="text-muted mb-0">Guarda el registro para poder agregar marcas.</p>' : `<div class="d-flex justify-content-between mb-2"><input class="form-control form-control-sm" style="width:200px" data-psearch="blk-mar" placeholder="Buscar"><button type="button" class="btn btn-secondary btn-sm" data-act="brand-new-for" data-id="${ref}">${icon('plus')} Nueva marca</button></div><div id="blk-mar">${brands.length ? `<div class="table-responsive"><table class="table table-sm table-striped mb-0"><thead><tr><th>Marca</th>${isC ? '' : '<th>Anunciante</th>'}<th>Contacto</th><th>Teléfono</th><th>Correo</th><th>Ejecutivo</th></tr></thead><tbody>${brands.map(b => { const c = by(DB.contacts, isC ? b.conC : b.conA) || {}; return `<tr class="pitem"><td>${esc(b.nombre)}</td>${isC ? '' : `<td>${b.cli ? esc(partyName('c:' + b.cli)) : '—'}</td>`}<td>${esc(c.nombre) || '—'}</td><td>${esc(c.tel) || '—'}</td><td>${esc(c.email) || '—'}</td><td>${b.ejecutivo || '—'}</td></tr>`; }).join('')}</tbody></table></div>` : '<p class="text-muted mb-0">Sin marcas.</p>'}</div>`;
+  return { title: (n ? 'Crear ' : 'Editar ') + t, html: head((n ? 'Crear ' : 'Editar ') + t) + `<form id="f-party" novalidate><div class="row"><div class="col-lg-7">${card('Información general', `<div class="form-row">${fld('Nombre', 'nombre', o.nombre, { req: 1, cls: 'col-md-12' })}</div>${isC ? `<div class="form-row">${fld('Categoría', 'cat', o.cat, { type: 'select', opts: [['', 'Ninguna']].concat(CATEGORIES), cls: 'col-md-4' })}${fld('Agencia', 'agency', o.agency, { type: 'select', opts: [['', 'Sin agencia']].concat(DB.agencies.map(a => [a.id, a.nombre])), cls: 'col-md-4' })}${fld('Responsable', 'ejecutivo', o.ejecutivo, { type: 'select', opts: [['', 'Ninguno']].concat(USERS), cls: 'col-md-4' })}</div>` : `<div class="form-row">${fld('Asignar a grupo (agencia matriz)', 'parent', o.parent, { type: 'select', opts: [['', 'Sin grupo']].concat(DB.agencies.filter(a => a !== o).map(a => [a.id, a.nombre])), cls: 'col-md-6' })}${fld('Responsable', 'ejecutivo', o.ejecutivo, { type: 'select', opts: [['', 'Ninguno']].concat(USERS), cls: 'col-md-6' })}</div>`}`)}</div>
+    <div class="col-lg-5">${card('Datos de facturación', `<div class="form-row">${fld('Razón social', 'razon', o.razon, { req: 1, cls: 'col-md-7' })}${fld('RUT', 'rut', o.rut, { req: 1, ph: '12.345.678-9', cls: 'col-md-5' })}</div><div class="form-row">${fld('Giro', 'giro', o.giro, { cls: 'col-md-6' })}${fld('E-mail', 'email', o.email, { type: 'email', cls: 'col-md-6' })}</div>${fld('Dirección', 'dir', o.dir)}`)}</div></div>
+    ${card('Marcas', marcas)}<div class="mb-4">${submitBtn(n ? 'Crear ' + t : 'Guardar cambios')}${btn('Cancelar', { cls: 'secondary', href: '#' + partyBase(k) })}</div></form>`,
+    after() { document.getElementById('f-party').addEventListener('submit', e => { e.preventDefault(); const f = e.target, errs = [];
+      if (!f.nombre.value.trim()) errs.push('El nombre es obligatorio.'); if (!f.razon.value.trim()) errs.push('La razón social es obligatoria.');
+      if (!validRut(f.rut.value.trim())) errs.push('El RUT no tiene un formato válido (ej: 76.123.456-7).'); else if (arr.some(x => x !== o && x.rut === f.rut.value.trim())) errs.push('Ya existe un registro con ese RUT.');
+      if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+      const v = { nombre: f.nombre.value.trim(), razon: f.razon.value.trim(), rut: f.rut.value.trim(), giro: f.giro.value, email: f.email.value, dir: f.dir.value, ejecutivo: f.ejecutivo.value };
+      if (isC) Object.assign(v, { cat: f.cat.value, agency: f.agency.value }); else v.parent = f.parent.value;
+      if (n) { v.id = nextId(isC ? 'C' : 'A', arr); arr.push(v); o = v; } else Object.assign(o, v);
+      notify(n ? (isC ? 'El anunciante ha sido creado.' : 'La agencia ha sido creada.') : 'Los cambios fueron guardados.'); go('/clientes/' + k + '-' + o.id); }); } };
+}
+route(/^\/anunciantes\/nuevo$/, () => partyForm('c', null));
+route(/^\/agencias\/nueva$/, () => partyForm('a', null));
+route(/^\/anunciantes\/([^/]+)\/editar$/, id => by(DB.clients, id) ? partyForm('c', by(DB.clients, id)) : notFoundPage('Anunciante'));
+route(/^\/agencias\/([^/]+)\/editar$/, id => by(DB.agencies, id) ? partyForm('a', by(DB.agencies, id)) : notFoundPage('Agencia'));
+
+/* =====================================================================
+   ▶ [CRM-24] ACERCA DEL PROTOTIPO · qué es real, qué es simulado (#/acerca)
+   ===================================================================== */
+route(/^\/acerca$/, () => ({ title: 'Acerca del prototipo', html: head('Acerca del prototipo') + `<div class="row"><div class="col-lg-8">${card('Qué es este prototipo', `<p>Prototipo clickeable del módulo <b>CRM</b> a partir del wireframe <i>CRM.pdf</i>. Sirve para validar el flujo con stakeholders y dev; no guarda datos (al recargar la página vuelve al estado inicial).</p>
+    <h6>Datos</h6><ul><li><b>Soportes:</b> los 8 soportes de ejemplo usan precios reales de QA.</li><li><b>Anunciantes, agencias, marcas, contactos, negocios, cotizaciones, campañas, documentos y actividades:</b> inventados para la demostración.</li></ul>
+    <h6>Simulado</h6><ul><li>La selección de soportes de la cotización (catálogo, mapa, reservas, precios): se muestran soportes fijos; el módulo Comercial tiene el flujo real.</li><li>Autorización, confirmación de campaña y edición avanzada.</li><li>Permisos por ejecutivo: todos ven todo.</li><li>Descarga de documentos adjuntos.</li></ul>
+    <h6>Supuestos tomados donde el wireframe no define</h6><ul><li>La cotización tiene su propio estado CRM (Nuevo, En seguimiento, En negociación, Ganado, Perdido), independiente del estado del negocio.</li><li>El estado del negocio se cambia a mano (editar, o arrastrando la tarjeta en el kanban).</li><li>Al elegir un negocio en la cotización se completan marca, presupuesto, período y ejecutivo si están vacíos.</li><li>El estado del cliente en el panel se calcula: «Activo» si tiene campañas vigentes o negocios abiertos.</li><li>Una marca necesita al menos un anunciante o una agencia.</li><li>Se agregaron botones «+» en los bloques Contactos y Negocios del panel y en la tarjeta CRM de la cotización (el wireframe solo lo muestra en la cotización).</li></ul>
+    <p class="mb-0 text-muted">Las preguntas abiertas están en el documento de discovery (<i>DISCOVERY-CRM.md</i>).</p>`)}</div></div>` }));
+
+/* =====================================================================
+   ▶ [CRM-25] ARRANQUE · carga inicial
+   ===================================================================== */
+document.getElementById('menu').innerHTML = '<li class="divider">CRM</li>' + menuHtml(MENU) + '<li class="divider">Admin</li>' + menuHtml(MENU_ADMIN) + '<li class="divider">Prototipo</li>' + menuHtml(MENU_INFO);
+$(document).ready(function () { render(); });
+})();
+</script>
+</body>
+</html>
