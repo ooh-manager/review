@@ -188,7 +188,15 @@
     .role-bar .lbl { font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:#7b8798; }
     .role-bar .btn.active { background:#4285f4; border-color:#4285f4; color:#fff; }
     .tooltip-inner { max-width:300px; text-align:left; }
-    .adj-up { color:#c98a00; } .adj-down { color:#2e9a4d; }
+    .adj-up { color:#3a5a8c; } .adj-down { color:#9a4242; }
+    #adj-panel:not(:empty) { margin:-.25rem 0 1rem; display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
+    #adj-panel .adj-chips { display:contents; }
+    .adj-title { font-size:.8rem; font-weight:500; color:#4a5568; white-space:nowrap; }
+    .adj-chips { display:flex; flex-wrap:wrap; gap:4px; }
+    .adj-chip { font-weight:500; font-size:.72rem; padding:.3em .55em; border:1px solid transparent; white-space:nowrap; }
+    .adj-desc { background:#f1d8d8; color:#8f3f3f; border-color:#e5c0c0; }
+    .adj-rec { background:#d9e4f3; color:#35527f; border-color:#c3d3ea; }
+    .adj-zero { background:#eef0f3; color:#7b8798; border-color:#e1e5ea; }
     .adj-table td { vertical-align:middle; }
     .alert table th { color:inherit; background:transparent; }
     .alert table td { border-color:rgba(0,0,0,.08); }
@@ -218,6 +226,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // Comportamiento del marco: submenús y menú móvil
 (function () {
@@ -316,6 +325,13 @@ const DB = {
   deals: []
 };
 
+/* Grupo (agencia matriz) y contactos de cada agencia (como en el modelo real: máx. 2 contactos, uno financiero y uno comercial). */
+const AG_EXTRA = {
+  A1: { parent: '', contacts: [{ id: 'K1', category: 'commercial', name: 'Fernanda Lagos', email: 'flagos@mediaplan.example', phone: '+56 2 2666 0101' }, { id: 'K2', category: 'financial', name: 'Pablo Reyes', email: 'preyes@mediaplan.example', phone: '+56 2 2666 0111' }] },
+  A2: { parent: '', contacts: [{ id: 'K3', category: 'commercial', name: 'Nicolás Araya', email: 'naraya@vpgroup.example', phone: '+56 2 2666 0202' }] },
+  A3: { parent: 'A2', contacts: [] }, A4: { parent: 'A2', contacts: [] }
+};
+DB.agencies.forEach(a => Object.assign(a, AG_EXTRA[a.id]));
 const by = (arr, id) => arr.find(x => x.id === id);
 const clientOf = id => by(DB.clients, id);
 const clientName = id => (clientOf(id) || {}).nombre || '—';
@@ -340,7 +356,7 @@ const dealProd = d => sum(d.bids.map(b => +b.prod || 0)) + svcProd(d);
 const dealTotal = d => dealLease(d) + dealProd(d);
 
 /* Los cuatro precios que admiten ajuste. Cada uno tiene UNA sola regla: sin ajuste, descuento o recargo. */
-const PKEYS = [['tarifa', 'Precio mensual'], ['minimo', 'Precio mínimo'], ['prod', 'Precio producción'], ['serv', 'Servicios adicionales']];
+const PKEYS = [['minimo', 'Precio mínimo'], ['tarifa', 'Precio mensual'], ['prod', 'Precio producción'], ['serv', 'Servicios adicionales']];
 const emptyRules = () => ({ tarifa: { t: '', p: 0 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: '', p: 0 } });
 const normRules = r => { const o = emptyRules(); PKEYS.forEach(([k]) => { const x = (r || {})[k] || {}; if ((x.t === 'desc' || x.t === 'rec') && +x.p > 0) o[k] = { t: x.t, p: +x.p }; }); return o; };
 const hasRules = r => !!r && PKEYS.some(([k]) => r[k] && r[k].t);
@@ -351,7 +367,11 @@ const adjVal = (rule, v) => (!rule || !rule.t) ? v : Math.max(0, Math.round(v * 
 const pctNum = p => String(+p).replace('.', ',');
 const pctTxt = rule => rule && rule.t ? (rule.t === 'desc' ? '−' : '+') + pctNum(rule.p) + '%' : '';
 const ruleWord = rule => rule && rule.t ? (rule.t === 'desc' ? 'Descuento ' : 'Recargo ') + pctNum(rule.p) + '%' : 'Sin ajuste';
-const rulesChips = r => PKEYS.filter(([k]) => r[k].t).map(([k, l]) => `<span class="badge badge-${r[k].t === 'desc' ? 'success' : 'warning'} mr-1 mb-1">${l} ${pctTxt(r[k])}</span>`).join('') || '<span class="text-muted">Sin ajustes</span>';
+/* Etiqueta de un precio: azul = descuento, rojo = recargo, gris = sin ajuste (0%). Siempre se muestran los cuatro, en el mismo orden. */
+const chipCls = rule => rule && rule.t === 'desc' ? 'adj-desc' : rule && rule.t === 'rec' ? 'adj-rec' : 'adj-zero';
+const chipTxt = rule => rule && rule.t ? pctTxt(rule) : '±0%';
+const rulesChips = r => `<span class="adj-chips">${PKEYS.map(([k, l]) => `<span class="badge adj-chip ${chipCls(r[k])}">${l} ${chipTxt(r[k])}</span>`).join('')}</span>`;
+const adjBadge = rule => `<span class="badge adj-chip ${chipCls(rule)}">${rule && rule.t ? ruleWord(rule) : 'Sin ajuste'}</span>`;
 /* Perfil del usuario (solo para el prototipo): el administrador puede ver los % de ajuste; el ejecutivo nunca. */
 let ROLE = 'admin'; try { ROLE = sessionStorage.getItem('aj-role') || 'admin'; } catch (_) {}
 const isAdmin = () => ROLE === 'admin';
@@ -367,10 +387,8 @@ function repriceDeal(d, rules) {
   rules = normRules(rules || agencyRules(d.agency));
   d.bids.forEach(b => { const it = itemOf(b.item); b.unit = adjVal(rules.tarifa, it.tarifa); b.prod = adjVal(rules.prod, it.prod); b.net = bidNet(b); });
   d.services.forEach(s => { s.price = adjVal(rules.serv, svcPrice(s.service, s.item)); });
-  d.adjApplied = { agency: d.agency, rules }; d.adjIgnore = '';
+  d.adjApplied = { agency: d.agency, rules };
 }
-/* Una cotización queda «desactualizada» cuando el perfil de la agencia cambió después de ajustar sus precios. */
-const staleDeal = d => { if (!realAgency(d.agency)) return false; const cur = rulesKey(agencyRules(d.agency)); return cur !== rulesKey(dealRules(d)) && d.adjIgnore !== cur; };
 
 /* Semilla de cotizaciones */
 let _bn = 0, _sn = 0;
@@ -384,7 +402,7 @@ function addDeal(o) {
   let d;
   d = addDeal({ serial: 'CA-0041', client: 'C1', agency: 'A1', title: 'Lanzamiento SUV Primavera', user: 'María Rojas', created: '2026-10-02', updated: '2026-10-16' });
   d.bids.push(mkBid('B-003', { durQty: 2 }), mkBid('B-018', { qty: 2 }), mkBid('B-020', { durQty: 2 })); d.services.push(mkSvc('V1', 'B-003'), mkSvc('V2', 'B-003', { pricing: 'production' }));
-  /* Esta cotización se valorizó cuando MediaPlan tenía otro perfil: queda «desactualizada» a propósito para probar la pregunta. */
+  /* Esta cotización se valorizó cuando MediaPlan tenía otro perfil: conserva esos precios aunque el perfil actual sea distinto. */
   repriceDeal(d, { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 10 } });
   d = addDeal({ serial: 'CA-0042', client: 'C2', agency: 'A2', title: 'Black Friday 2026', user: 'Juan Soto', created: '2026-10-08', updated: '2026-10-12' });
   d.bids.push(mkBid('B-008', { durQty: 15, measure: 'day' }), mkBid('B-014', { durQty: 15, measure: 'day' })); repriceDeal(d);
@@ -544,7 +562,7 @@ route(/^\/agencias$/, () => {
   const f = F('age');
   const rows = () => DB.agencies.filter(a => match(a.nombre + a.razon, f.q) && match(a.rut, f.rut));
   const res = () => { const r = rows(); return tbl([{ h: 'Nombre', f: a => `<a href="#/agencias/${a.id}"><b>${esc(a.nombre)}</b></a>` }, { h: 'Razón social', f: a => esc(a.razon) }, { h: 'RUT', cls: 'text-nowrap', f: a => a.rut },
-    ].concat(isAdmin() ? [{ h: 'Ajuste de precios', f: a => rulesChips(normRules(a.adj)) }] : []).concat([{ h: 'Cotizaciones', cls: 'text-center', f: a => agencyDeals(a.id).length },
+    ].concat(isAdmin() ? [{ h: 'Ajuste de precios', f: a => rulesChips(normRules(a.adj)) }] : []).concat([
     { h: '', cls: 'text-right tbl-actions text-nowrap', f: a => icBtn('eye', 'Ver', { href: '#/agencias/' + a.id }) + icBtn('edit', 'Editar', { href: '#/agencias/' + a.id + '/editar' }) + icBtn('delete', 'Eliminar', { act: 'ag-del', id: a.id }) }]), r) + pager(r.length, 'agencias'); };
   CUR.refresh = () => setResults(res());
   return { title: 'Agencias', html: head('Agencias', (isAdmin() ? btn('Importar', { cls: 'secondary', href: '#/importar/agencias', extra: 'mr-2' }) : '') + btn('Crear agencia', { ic: 'plus', href: '#/agencias/nueva' })) + listCard('age', [{ n: 'q', label: 'Nombre o razón social', ph: 'Buscar…' }, { n: 'rut', label: 'RUT' }], res()) };
@@ -554,7 +572,7 @@ ACT['ag-del'] = id => { const a = agencyOf(id), n = agencyDeals(id).length;
   confirmDlg(`¿Eliminar la agencia «${esc(a.nombre)}»? Esta acción es irreversible.`, 'Eliminar', () => { DB.agencies = DB.agencies.filter(x => x.id !== id); notify('Registro eliminado.'); go('/agencias'); }, true); };
 
 const validRut = r => /^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$/.test(r);
-const ADJ_REF = { tarifa: 1000000, minimo: 700000, prod: 200000, serv: 100000 };   /* valor de referencia para el ejemplo en vivo */
+const ADJ_REF = { minimo: 1000, tarifa: 1000, prod: 500, serv: 100 };   /* valor de referencia para el ejemplo en vivo */
 function agencyForm(o) {
   const n = !o; const src = o || { nombre: '', razon: '', rut: '', giro: '', email: '', dir: '', adj: emptyRules() };
   const r = normRules(src.adj);
@@ -565,7 +583,8 @@ function agencyForm(o) {
   const html = `<div class="row"><div class="col-lg-9">${head(n ? 'Crear agencia' : 'Editar agencia')}<form id="f-agency" novalidate>
     ${card('Datos generales', `<div class="form-row">${fld('Nombre', 'nombre', src.nombre, { req: 1, cls: 'col-md-6' })}${fld('Razón social', 'razon', src.razon, { req: 1, cls: 'col-md-6' })}</div>
       <div class="form-row">${fld('Número identificador nacional (RUT)', 'rut', src.rut, { req: 1, ph: '76.123.456-7', cls: 'col-md-6' })}${fld('Giro', 'giro', src.giro, { cls: 'col-md-6' })}</div>
-      <div class="form-row">${fld('Email de facturación', 'email', src.email, { type: 'email', cls: 'col-md-6' })}${fld('Dirección', 'dir', src.dir, { cls: 'col-md-6' })}</div>`)}
+      <div class="form-row">${fld('Email de facturación', 'email', src.email, { type: 'email', cls: 'col-md-6' })}${fld('Dirección', 'dir', src.dir, { cls: 'col-md-6' })}</div>
+      <div class="form-row">${fld('Grupo (agencia matriz)', 'parent', src.parent || '', { type: 'select', cls: 'col-md-6', opts: [['', 'Sin grupo']].concat(DB.agencies.filter(a => a !== o).map(a => [a.id, a.nombre])) })}</div>`)}
     ${!isAdmin() ? '' : card('Ajuste de precios', `<p class="text-muted small">Define si los precios de esta agencia llevan un <b>descuento</b> o un <b>recargo</b>. Cada precio admite solo uno de los dos, y el porcentaje puede ser distinto en cada uno. Se aplica automáticamente al elegir la agencia en una cotización.</p>
       <div class="adj-box mb-3"><div class="small text-bold mb-2">${icon('flash')} Aplicar el mismo ajuste de forma masiva</div>
         <div class="form-row align-items-end"><div class="col-md-3 form-group mb-1"><label class="small mb-0">Tipo de ajuste</label><select class="form-control form-control-sm" data-bulk-t><option value="desc">Descuento</option><option value="rec">Recargo</option><option value="">Sin ajuste (quitar)</option></select></div>
@@ -616,11 +635,10 @@ function agencyForm(o) {
         else if (rule.t === 'desc' && rule.p > 100) errs.push(`${l}: un descuento no puede superar el 100%.`);
         else adj[k] = rule; });
       if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
-      const v = { nombre: f.nombre.value.trim(), razon: f.razon.value.trim(), rut: f.rut.value.trim(), giro: f.giro.value, email: f.email.value, dir: f.dir.value, adj };
-      const changed = !n && rulesKey(adj) !== rulesKey(o.adj);
+      const v = { nombre: f.nombre.value.trim(), razon: f.razon.value.trim(), rut: f.rut.value.trim(), giro: f.giro.value, email: f.email.value, dir: f.dir.value, parent: f.parent.value, adj };
+      if (n) v.contacts = [];
       let target = o; if (n) { v.id = nextId('A', DB.agencies); DB.agencies.push(v); target = v; } else Object.assign(o, v);
-      const pend = changed ? agencyDeals(target.id).filter(staleDeal).length : 0;
-      notify(n ? 'La agencia ha sido creada.' : 'Los cambios fueron guardados.' + (pend ? ` ${pend} cotización(es) existente(s) no se modificaron: al abrirlas se te preguntará si quieres ajustar los precios.` : ''));
+      notify(n ? 'La agencia ha sido creada.' : 'Los cambios fueron guardados.');
       go('/agencias/' + target.id);
     });
   } };
@@ -629,119 +647,160 @@ route(/^\/agencias\/nueva$/, () => agencyForm(null));
 route(/^\/agencias\/([^/]+)\/editar$/, id => agencyOf(id) ? agencyForm(agencyOf(id)) : notFoundPage('Agencia'));
 route(/^\/agencias\/(?!nueva$)([^/]+)$/, id => {
   const o = agencyOf(id); if (!o) return notFoundPage('Agencia');
-  const r = normRules(o.adj), ds = agencyDeals(o.id);
-  return { title: o.nombre, html: head(esc(o.nombre), btn('Editar', { ic: 'edit', href: '#/agencias/' + o.id + '/editar' })) + `<div class="row"><div class="col-lg-5">
-    ${card('Datos', kv([['Razón social', esc(o.razon)], ['RUT', o.rut], ['Giro', esc(o.giro) || '—'], ['Email de facturación', esc(o.email) || '—'], ['Dirección', esc(o.dir) || '—']]))}
-    ${!isAdmin() ? '' : card('Ajuste de precios', tbl([{ h: 'Precio', f: x => x[1] }, { h: 'Ajuste', f: x => r[x[0]].t ? badge(ruleWord(r[x[0]]), r[x[0]].t === 'desc' ? 'success' : 'warning') : '<span class="text-muted">Sin ajuste</span>' }], PKEYS))}</div>
-    <div class="col-lg-7"><div class="card card-table"><div class="card-header card-header-divider">Cotizaciones (${ds.length})</div>${ds.length ? tbl([{ h: 'Serie', f: d => `<a href="#/cotizaciones/${d.id}/editar"><b>${d.serial}</b></a>` }, { h: 'Título', f: d => esc(d.title) }, { h: 'Ajuste aplicado', f: d => adjStatus(d) }, { h: 'Total', cls: 'number', f: d => clp(dealTotal(d)) }], ds) : '<div class="text-center text-muted p-4">Sin cotizaciones.</div>'}</div></div></div>` };
+  const r = normRules(o.adj);
+  return { title: o.nombre, html: head(esc(o.nombre), btn('Editar', { ic: 'edit', href: '#/agencias/' + o.id + '/editar' })) + `<div class="row"><div class="col-lg-6">
+    ${card('Datos', kv([['Razón social', esc(o.razon)], ['RUT', o.rut], ['Giro', esc(o.giro) || '—'], ['Email de facturación', esc(o.email) || '—'], ['Dirección', esc(o.dir) || '—'], ['Grupo', o.parent && agencyOf(o.parent) ? `<a href="#/agencias/${o.parent}">${esc(agencyName(o.parent))}</a>` : 'Sin grupo']]))}
+    ${card('Contactos', (o.contacts || []).length ? tbl([{ h: 'Tipo', f: c => CAT_ES[c.category] }, { h: 'Nombre', f: c => esc(c.name) }, { h: 'E-mail', f: c => esc(c.email) }, { h: 'Teléfono', f: c => esc(c.phone) }], o.contacts) : '<p class="text-muted mb-0">Sin contactos registrados.</p>')}
+    </div>
+    <div class="col-lg-6">${!isAdmin() ? '' : card('Ajuste de precios', tbl([{ h: 'Precio', f: x => x[1] }, { h: 'Ajuste', f: x => adjBadge(r[x[0]]) }], PKEYS))}</div></div>` };
 });
-/* Estado del ajuste de una cotización, para listados y fichas */
-function adjStatus(d) {
-  if (!realAgency(d.agency)) return '<span class="text-muted">—</span>';
-  /* Sin porcentajes: el administrador ve solo si la cotización lleva ajuste (el detalle va en el tooltip); el ejecutivo, solo el aviso de desactualizada. */
-  const mine = dealRules(d), tip = isAdmin() ? (hasRules(mine) ? `<span class="badge badge-light mr-1 mb-1" title="${esc(rulesLines(mine).replace(/<br>/g, '\n'))}">${icon('label')} Con ajuste</span>` : '<span class="text-muted">Sin ajuste</span>') : '';
-  return tip + (staleDeal(d) ? ` <span class="badge badge-danger mb-1" title="Los precios de la agencia cambiaron después de valorizar esta cotización.">${icon('alert-triangle')} Desactualizada</span>` : '') || '<span class="text-muted">—</span>';
+/* =====================================================================
+   ▶ [AJ-09b] IMPORTADOR DE AGENCIAS con ajustes de precios (de COM-24, #/importar/agencias)
+   Replica el flujo real (concern Import / Importable): archivo con hojas «Agencias» y «Contactos», operaciones por ID,
+   validación previa que aborta toda la carga si hay observaciones, y resultados por correo. Solo administradores.
+   ===================================================================== */
+const IMP_OPS = [[0, 'Solo crear agencias'], [1, 'Actualizar agencias (por ID)'], [2, 'Crear y actualizar agencias (por ID)']];
+const IMP_MAX_ROWS = 2000;
+const IMP_ADJ = [['minimo', 'Precio mínimo'], ['tarifa', 'Precio mensual'], ['prod', 'Precio producción'], ['serv', 'Servicios adicionales']];
+const IMP_HDR_AG = ['ID', 'Nombre', 'Razón social', 'Número identificador nacional', 'Giro', 'Dirección', 'E-mail', 'Grupo'].concat(IMP_ADJ.reduce((o, a) => o.concat([a[1] + ' - Tipo de ajuste', a[1] + ' - %']), []));
+const IMP_HDR_CO = ['ID', 'Tipo de contacto', 'Nombre', 'E-mail', 'Teléfono', 'Agencia (ID)'];
+const impKey = h => norm(h).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+const CAT_ES = { financial: 'Financiero', commercial: 'Comercial' };
+const emailOk = e => !e || /^\S+@\S+\.\S+$/.test(e);
+const impType = v => { v = norm(v).trim(); if (!v) return null; if (v === 'sin ajuste') return ''; if (v === 'descuento') return 'desc'; if (v === 'recargo') return 'rec'; return undefined; };
+const allContacts = () => DB.agencies.reduce((o, a) => o.concat((a.contacts || []).map(c => Object.assign({ agency: a.id }, c))), []);
+let IMP_LAST = [];
+
+/* Lee una hoja y devuelve filas { n: nº de fila en el archivo, v: valores por encabezado } o los encabezados que faltan */
+function impSheet(ws, headers) {
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+  if (!aoa.length) return { missing: headers };
+  const want = headers.map(impKey), keys = (aoa[0] || []).map(impKey);
+  const missing = headers.filter((h, i) => !keys.includes(want[i]));
+  if (missing.length) return { missing };
+  if (aoa.length - 1 > IMP_MAX_ROWS) return { tooMany: true };
+  const rows = aoa.slice(1).map((r, i) => ({ n: i + 2, v: want.reduce((o, k) => { const c = r[keys.indexOf(k)]; o[k] = String(c == null ? '' : c).trim(); return o; }, {}) })).filter(r => Object.values(r.v).some(x => x !== ''));
+  return { rows };
+}
+const gv = (r, h) => r.v[impKey(h)] || '';
+
+/* Etapa 1 · validación previa de todo el archivo. Cualquier observación aborta la importación completa. */
+function impStage1(rows, sheet, noun, existing, op, withName) {
+  const skipped = [], ids = new Set(existing.map(x => String(x.id)));
+  const dup = h => { const c = {}; rows.forEach(r => { const x = gv(r, h); if (x) c[x] = (c[x] || 0) + 1; }); return new Set(Object.keys(c).filter(k => c[k] > 1)); };
+  const dupId = dup('ID'), dupName = withName ? dup('Nombre') : new Set();
+  const plan = rows.map(r => {
+    const id = gv(r, 'ID'), add = reason => skipped.push({ sheet, row: r.n, reason }); let fn;
+    if (id && dupId.has(id)) add(`El archivo contiene más de un ${noun} con el ID "${id}"`);
+    if (withName && gv(r, 'Nombre') && dupName.has(gv(r, 'Nombre'))) add(`El archivo contiene más de un ${noun} con el Nombre "${gv(r, 'Nombre')}"`);
+    if (withName && !validRut(gv(r, 'Número identificador nacional'))) add(`Formato incorrecto para Número identificador nacional "${gv(r, 'Número identificador nacional')}"`);
+    if (op === 0) { if (ids.has(id)) { add(`Ya existe un ${noun} con el ID "${id}"`); fn = 'skip'; } else fn = 'create'; }
+    else if (op === 1) { if (ids.has(id)) fn = 'update'; else { add(`No se pudo encontrar un ${noun} con el ID "${id}"`); fn = 'skip'; } }
+    else fn = ids.has(id) ? 'update' : 'create';
+    return { r, fn };
+  });
+  return { plan, skipped };
 }
 
-/* =====================================================================
-   ▶ [AJ-09b] IMPORTADOR DE AGENCIAS con carga masiva de ajustes de precios (de COM-24, #/importar/agencias)
-   Solo administradores. En el prototipo se procesa un .csv real (separador ; o ,); el sistema real también acepta .xlsx y .xlsm.
-   ===================================================================== */
-const IMP_OPS = [['create', 'Solo crear agencias'], ['update', 'Actualizar agencias (por Número identificador nacional)'], ['both', 'Crear y actualizar agencias (por Número identificador nacional)'], ['adj', 'Actualizar solo ajustes de precios (por Número identificador nacional)']];
-const IMP_COLS = ['nombre', 'rut', 'razon_social', 'giro', 'email', 'direccion', 'mensual_tipo', 'mensual_pct', 'minimo_tipo', 'minimo_pct', 'produccion_tipo', 'produccion_pct', 'servicios_tipo', 'servicios_pct'];
-const IMP_ADJ = [['mensual', 'tarifa', 'Precio mensual'], ['minimo', 'minimo', 'Precio mínimo'], ['produccion', 'prod', 'Precio producción'], ['servicios', 'serv', 'Servicios adicionales']];
-const csvLine = a => a.map(v => { v = String(v == null ? '' : v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';');
-function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
-function parseCsv(text) {
-  text = text.replace(/^﻿/, ''); const first = text.split(/\r?\n/)[0] || ''; const d = (first.match(/;/g) || []).length >= (first.match(/,/g) || []).length ? ';' : ',';
-  const rows = []; let row = [], cur = '', q = false;
-  for (let i = 0; i < text.length; i++) { const c = text[i];
-    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
-    else if (c === '"') q = true; else if (c === d) { row.push(cur); cur = ''; } else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; } else cur += c; }
-  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
-  return rows.filter(r => r.some(x => x.trim() !== ''));
-}
-const impHdr = h => norm(h).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').replace(/^numero_identificador_nacional$/, 'rut');
-const impType = v => { v = norm(v).trim(); if (!v) return null; if (/^(sin ajuste|sin_ajuste|ninguno)$/.test(v)) return ''; if (/^(descuento|desc)$/.test(v)) return 'desc'; if (/^(recargo|rec)$/.test(v)) return 'rec'; return undefined; };
-function processImport(text, op) {
-  const rows = parseCsv(text), res = { created: 0, updated: 0, errors: [], pend: 0, total: 0 };
-  if (rows.length < 2) { res.fatal = 'El archivo no tiene filas de datos.'; return res; }
-  const idx = {}; rows[0].forEach((h, i) => { idx[impHdr(h)] = i; });
-  if (idx.rut == null) { res.fatal = 'Falta la columna «rut» en la fila de encabezados.'; return res; }
-  const seen = new Set(), touched = new Set();
-  rows.slice(1).forEach((cells, n) => {
-    const line = n + 2, get = k => ((cells[idx[k]] || '') + '').trim(), errs = []; res.total++;
-    const rut = get('rut');
-    if (!validRut(rut)) errs.push('RUT vacío o con formato inválido (ej: 76.123.456-7)');
-    else if (seen.has(rut)) errs.push('RUT repetido dentro del archivo'); seen.add(rut);
-    const ex = DB.agencies.find(a => a.rut === rut);
-    if (validRut(rut)) {
-      if (op === 'create' && ex) errs.push('Ya existe una agencia con ese RUT (modo «solo crear»)');
-      if ((op === 'update' || op === 'adj') && !ex) errs.push('No existe una agencia con ese RUT');
-      if (!ex && op !== 'adj') { if (!get('nombre')) errs.push('Campo obligatorio vacío: nombre'); if (!get('razon_social')) errs.push('Campo obligatorio vacío: razón social'); }
-    }
-    const patch = {};
-    IMP_ADJ.forEach(([pre, key, label]) => {
-      const t = impType(get(pre + '_tipo')), praw = get(pre + '_pct').replace(',', '.');
-      if (t === undefined) { errs.push(label + ': tipo de ajuste no válido (usa Descuento, Recargo o Sin ajuste)'); return; }
-      if (t === null) { if (praw) errs.push(label + ': indica el tipo de ajuste'); return; }
-      if (t === '') { patch[key] = { t: '', p: 0 }; return; }
-      const p = +praw;
-      if (!(p > 0)) errs.push(label + ': el porcentaje debe ser un número mayor a 0');
-      else if (t === 'desc' && p > 100) errs.push(label + ': un descuento no puede superar el 100%');
-      else patch[key] = { t, p };
-    });
-    if (errs.length) { res.errors.push({ row: line, rut, msg: errs.join('; ') }); return; }
-    if (!ex) {
-      DB.agencies.push({ id: nextId('A', DB.agencies), nombre: get('nombre'), razon: get('razon_social'), rut, giro: get('giro'), email: get('email'), dir: get('direccion'), adj: normRules(Object.assign(emptyRules(), patch)) }); res.created++; return;
-    }
-    const before = rulesKey(ex.adj);
-    if (op !== 'adj') [['nombre', 'nombre'], ['razon_social', 'razon'], ['giro', 'giro'], ['email', 'email'], ['direccion', 'dir']].forEach(([c, k]) => { if (get(c)) ex[k] = get(c); });
-    ex.adj = normRules(Object.assign({}, normRules(ex.adj), patch)); res.updated++;
-    if (rulesKey(ex.adj) !== before) touched.add(ex.id);
+/* Etapa 2 · importación: cada fila se valida como modelo; las fallidas se informan en el correo y el resto se importa. */
+function impAgency(r, fn, res) {
+  const errs = [], ex = fn === 'update' ? by(DB.agencies, gv(r, 'ID')) : null, grupo = gv(r, 'Grupo');
+  if (!gv(r, 'Nombre')) errs.push('Nombre no puede estar en blanco');
+  if (!emailOk(gv(r, 'E-mail'))) errs.push('E-mail no es válido');
+  if (grupo) { const p = by(DB.agencies, grupo);
+    if (!p) errs.push(`Grupo: no existe una agencia con el ID "${grupo}"`); else if (ex && p.id === ex.id) errs.push('No se puede asignar una agencia a sí misma');
+    else if (p.parent) errs.push('El grupo elegido ya pertenece a otro grupo'); else if (ex && DB.agencies.some(a => a.parent === ex.id)) errs.push('Una agencia con subagencias no puede pertenecer a un grupo'); }
+  const adj = emptyRules();
+  IMP_ADJ.forEach(([key, label]) => {
+    const t = impType(gv(r, label + ' - Tipo de ajuste')), praw = gv(r, label + ' - %').replace('%', '').replace(',', '.').trim();
+    if (t === undefined) { errs.push(`${label}: tipo de ajuste no válido (usa Descuento, Recargo o Sin ajuste)`); return; }
+    if (!t) { if (praw) errs.push(`${label}: ${t === null ? 'indica el tipo de ajuste' : '«Sin ajuste» no admite porcentaje'}`); return; }
+    const p = +praw;
+    if (!(p > 0)) errs.push(`${label}: el porcentaje debe ser un número mayor a 0`); else if (t === 'desc' && p > 100) errs.push(`${label}: un descuento no puede superar el 100%`); else adj[key] = { t, p };
   });
-  res.pend = DB.deals.filter(d => touched.has(d.agency) && staleDeal(d)).length; res.changedAdj = touched.size;
-  return res;
+  if (errs.length) { res.skipped.push({ sheet: 'Agencias', row: r.n, reason: errs.join('; ') }); return; }
+  const v = { nombre: gv(r, 'Nombre'), razon: gv(r, 'Razón social'), rut: gv(r, 'Número identificador nacional').toUpperCase(), giro: gv(r, 'Giro'), dir: gv(r, 'Dirección'), email: gv(r, 'E-mail').toLowerCase(), parent: grupo, adj };
+  if (!ex) { DB.agencies.push(Object.assign({ id: nextId('A', DB.agencies), contacts: [] }, v)); res.created.ag++; return; }
+  Object.assign(ex, v); res.updated.ag++;
 }
+function impContact(r, fn, res) {
+  const errs = [], cat = { financiero: 'financial', comercial: 'commercial' }[norm(gv(r, 'Tipo de contacto'))], comp = by(DB.agencies, gv(r, 'Agencia (ID)'));
+  const cur = fn === 'update' ? allContacts().find(c => String(c.id) === gv(r, 'ID')) : null;
+  if (!gv(r, 'Nombre')) errs.push('Nombre no puede estar en blanco');
+  if (!cat) errs.push('Tipo de contacto no es válido (usa Financiero o Comercial)');
+  if (!emailOk(gv(r, 'E-mail'))) errs.push('E-mail no es válido');
+  if (!comp) errs.push(`Agencia: no existe una agencia con el ID "${gv(r, 'Agencia (ID)')}"`);
+  else if (cat && (comp.contacts || []).some(c => c.category === cat && (!cur || c.id !== cur.id))) errs.push('Tipo de contacto ya ha sido tomado (la agencia ya tiene un contacto de ese tipo)');
+  if (errs.length) { res.skipped.push({ sheet: 'Contactos', row: r.n, reason: errs.join('; ') }); return; }
+  const v = { category: cat, name: gv(r, 'Nombre'), email: gv(r, 'E-mail').toLowerCase(), phone: gv(r, 'Teléfono') };
+  if (!cur) { comp.contacts = comp.contacts || []; comp.contacts.push(Object.assign({ id: 'K' + (allContacts().length + 1 + Math.floor(Math.random() * 1000)) }, v)); res.created.co++; return; }
+  const old = by(DB.agencies, cur.agency); old.contacts = old.contacts.filter(c => c.id !== cur.id); comp.contacts = comp.contacts || []; comp.contacts.push(Object.assign({ id: cur.id }, v)); res.updated.co++;
+}
+
 route(/^\/importar\/agencias$/, () => {
   if (!isAdmin()) return { title: 'Importar agencias', html: head('Importar agencias') + `<div class="alert alert-warning"><div class="icon"><span class="zmdi zmdi-lock"></span></div><div class="message">El importador de agencias, que incluye los ajustes de precios, solo está disponible para el perfil <b>Administrador</b>.</div></div>` };
-  const html = head('Importar agencias') + `<div class="row"><div class="col-lg-7">${card('Importar agencias', `<form id="f-imp">${fld('¿Qué información de agencias quieres cargar?', 'op', 'create', { type: 'select', opts: IMP_OPS })}
-    <div class="form-group"><label>Carga un archivo</label><div class="custom-file"><input type="file" class="custom-file-input" id="imp-file" accept=".csv,.xlsx,.xlsm"><label class="custom-file-label" for="imp-file">Elige un archivo desde tu disco</label></div><small class="form-text text-muted">Formatos .xlsx, .xlsm o .csv. Tamaño máx. 10 MB. <b>En este prototipo se procesa el .csv.</b></small></div>
-    <p><a href="#" data-act="imp-tpl">${icon('download')} Descargar plantilla base</a> · <a href="#" data-act="imp-help">Ver instrucciones detalladas</a></p><button class="btn btn-primary" type="submit">Importar</button></form>`)}<div id="imp-result"></div></div>
-    <div class="col-lg-5">${card('Exportar agencias', `<p class="text-muted">Descarga el listado completo de agencias con sus ajustes de precios, en el mismo formato de la plantilla. Sirve como base para modificarlos de forma masiva y volver a importarlos.</p><button class="btn btn-secondary" data-act="imp-export">${icon('download')} Descargar todo</button>`)}</div></div>`;
+  const html = head('Importar agencias') + `<div id="imp-alert"></div><div class="row"><div class="col-lg-6">${card('Importar agencias', `<form id="f-imp">${fld('¿Qué información de agencias quieres cargar?', 'operation', 0, { type: 'select', opts: IMP_OPS })}
+    <div class="form-group"><label>Carga un archivo</label><div class="custom-file"><input type="file" class="custom-file-input" id="imp-file" accept=".xlsx,.xlsm,.csv"><label class="custom-file-label" for="imp-file">Elige un archivo desde tu disco</label></div><small class="form-text text-muted">${icon('alert-circle-o')} Formatos .xlsx, .xlsm y .csv. Tamaño máx. 10 MB.</small></div>
+    <p><a href="#" data-act="imp-tpl">${icon('download')} Descargar plantilla de importación</a> · <a href="#" data-act="imp-help">Ver instrucciones</a></p><button class="btn btn-primary btn-lg" type="submit">Importar</button></form>`)}</div>
+    <div class="col-lg-6">${card('Exportar agencias', `<p class="text-muted">Descarga todas las agencias, con sus contactos y ajustes de precios, en el mismo formato de la plantilla. Puedes modificarlas y volver a importarlas con «Actualizar agencias (por ID)».</p><div class="text-center"><button class="btn btn-secondary" data-act="imp-export">${icon('download')} Descargar todo</button></div>`)}</div></div><div id="imp-result"></div>`;
   return { title: 'Importar agencias', html, after() {
-    const fi = document.getElementById('imp-file');
+    const fi = document.getElementById('imp-file'), al = document.getElementById('imp-alert'), box = document.getElementById('imp-result');
+    const alert_ = (type, msg) => { al.innerHTML = `<div class="alert alert-${type}"><div class="icon"><span class="zmdi zmdi-${type === 'success' ? 'check' : type === 'warning' ? 'alert-triangle' : 'alert-circle'}"></span></div><div class="message">${msg}</div></div>`; };
     fi.addEventListener('change', e => { e.target.nextElementSibling.textContent = e.target.files[0] ? e.target.files[0].name : 'Elige un archivo desde tu disco'; });
     document.getElementById('f-imp').addEventListener('submit', e => {
-      e.preventDefault(); const file = fi.files[0], op = e.target.op.value;
-      if (!file) { notify('Primero selecciona un archivo.', 'warning'); return; }
-      if (!/\.csv$/i.test(file.name)) { notify('En este prototipo solo se procesa el formato .csv. El sistema real también acepta .xlsx y .xlsm.', 'warning'); return; }
-      if (file.size > 10 * 1024 * 1024) { notify('El archivo supera los 10 MB.', 'warning'); return; }
+      e.preventDefault(); al.innerHTML = ''; box.innerHTML = ''; const file = fi.files[0], op = +e.target.operation.value;
+      if (!file) { alert_('danger', 'No se encontró un archivo para cargar.'); return; }
+      const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+      if (!['.csv', '.xlsx', '.xlsm'].includes(ext)) { alert_('danger', `Formato inválido: ${ext.slice(1).toUpperCase()}`); return; }
+      if (file.size > 10 * 1024 * 1024) { alert_('danger', 'El archivo supera los 10 MB.'); return; }
       const fr = new FileReader();
       fr.onload = () => {
-        const r = processImport(String(fr.result), op), box = document.getElementById('imp-result');
-        if (r.fatal) { box.innerHTML = `<div class="alert alert-danger"><div class="icon"><span class="zmdi zmdi-alert-circle"></span></div><div class="message">${esc(r.fatal)}</div></div>`; return; }
-        box.innerHTML = card('Resultado de la importación', `<p><span class="badge badge-success mr-1">${r.created} creadas</span><span class="badge badge-info mr-1">${r.updated} actualizadas</span><span class="badge badge-${r.errors.length ? 'danger' : 'secondary'}">${r.errors.length} con observaciones</span> <span class="text-muted small ml-1">de ${r.total} filas</span></p>
-          ${r.pend ? `<div class="alert alert-warning"><div class="icon"><span class="zmdi zmdi-alert-triangle"></span></div><div class="message">${r.changedAdj} agencia(s) cambiaron sus ajustes. <b>${r.pend} cotización(es) existente(s)</b> no se modificaron y quedaron como «Desactualizada»: se preguntará al abrirlas si se quieren ajustar.</div></div>` : ''}
-          ${r.errors.length ? `<p class="small text-muted">Las filas con observaciones no se importaron; el resto sí.</p>` + tbl([{ h: 'Nro. de Fila', cls: 'no-fill', f: x => x.row }, { h: 'RUT', cls: 'text-nowrap', f: x => esc(x.rut) || '—' }, { h: 'Razón', f: x => esc(x.msg) }], r.errors) : '<p class="text-success mb-0">Todas las filas se procesaron sin observaciones.</p>'}`);
-        notify('Importación finalizada: ' + r.created + ' creadas, ' + r.updated + ' actualizadas, ' + r.errors.length + ' con observaciones.', r.errors.length ? 'warning' : 'success');
+        let wb; try { wb = XLSX.read(new Uint8Array(fr.result), { type: 'array', codepage: 65001 }); } catch (err) { alert_('danger', 'Error: el archivo está dañado o su contenido no se puede leer.'); return; }
+        const isCsv = ext === '.csv', agName = isCsv ? wb.SheetNames[0] : 'Agencias';
+        if (!wb.Sheets[agName]) { alert_('danger', "El archivo no tiene una hoja llamada 'Agencias'"); return; }
+        if (!isCsv && !wb.Sheets['Contactos']) { alert_('danger', "El archivo no tiene una hoja llamada 'Contactos'"); return; }
+        const ag = impSheet(wb.Sheets[agName], IMP_HDR_AG), co = isCsv ? { rows: [] } : impSheet(wb.Sheets['Contactos'], IMP_HDR_CO);
+        const bad = [ag, co].find(x => x.missing || x.tooMany);
+        if (bad) { alert_('danger', bad.tooMany ? `El archivo cargado supera la cantidad de filas permitida (Máximo: ${IMP_MAX_ROWS}).` : `No se encontraron los encabezados: ${bad.missing.map(h => '«' + h + '»').join(', ')}.`); return; }
+        const s1a = impStage1(ag.rows, 'Agencias', 'Agencia', DB.agencies, op, true), s1c = impStage1(co.rows, 'Contactos', 'Contacto', allContacts(), op, false), skipped = s1a.skipped.concat(s1c.skipped);
+        if (skipped.length) { IMP_LAST = skipped; alert_('warning', `El archivo tiene observaciones en ${new Set(skipped.map(s => s.sheet + s.row)).size} fila(s). <b>No se importó ningún registro.</b> <a href="#" class="alert-link" data-act="imp-skipped">Ver detalles</a>`); return; }
+        alert_('success', 'Importación en curso. Una vez terminada recibirás un correo con los resultados.');
+        const res = { created: { ag: 0, co: 0 }, updated: { ag: 0, co: 0 }, skipped: [] };
+        setTimeout(() => {
+          s1a.plan.forEach(p => impAgency(p.r, p.fn, res)); s1c.plan.forEach(p => impContact(p.r, p.fn, res));
+          const n = res.skipped.length;
+          box.innerHTML = card(`${icon('email')} Correo de resultados (simulado)`, `<p class="mb-1"><b>Importación de agencias finalizada.</b></p><p><span class="badge badge-success mr-1">${res.created.ag} agencias creadas</span><span class="badge badge-info mr-1">${res.updated.ag} agencias actualizadas</span><span class="badge badge-success mr-1">${res.created.co} contactos creados</span><span class="badge badge-info mr-1">${res.updated.co} contactos actualizados</span><span class="badge badge-${n ? 'danger' : 'secondary'}">${n} filas no importadas</span></p>
+            ${n ? tbl([{ h: 'Hoja', cls: 'no-fill', f: x => x.sheet }, { h: 'Nro. de Fila', cls: 'no-fill', f: x => x.row }, { h: 'Razón', f: x => esc(x.reason) }], res.skipped) : '<p class="text-success mb-0">Todas las filas se importaron correctamente.</p>'}`);
+        }, 900);
       };
-      fr.readAsText(file, 'utf-8');
+      fr.readAsArrayBuffer(file);
     });
   } };
 });
+ACT['imp-skipped'] = () => modal({ title: 'Agencias con observaciones', size: 'modal-lg', body: tbl([{ h: 'Hoja', cls: 'no-fill', f: x => x.sheet }, { h: 'Nro. de Fila', cls: 'no-fill', f: x => x.row }, { h: 'Razón', f: x => esc(x.reason) }], IMP_LAST.slice().sort((a, b) => a.row - b.row)), footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+
+/* Plantilla y exportación: mismo libro de dos hojas (Agencias y Contactos) */
+const adjCells = a => { const r = normRules(a.adj); return IMP_ADJ.reduce((o, [k]) => o.concat([r[k].t === 'desc' ? 'Descuento' : r[k].t === 'rec' ? 'Recargo' : '', r[k].t ? r[k].p : '']), []); };
+function impBook(agRows, coRows) {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([IMP_HDR_AG].concat(agRows)), 'Agencias');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([IMP_HDR_CO].concat(coRows)), 'Contactos');
+  return wb;
+}
 ACT['imp-tpl'] = () => {
-  const ex = [['Agencia Ejemplo Uno', '77.111.222-3', 'Agencia Ejemplo Uno SpA', 'Agencia de medios', 'admin@ejemplo1.cl', 'Av. Ejemplo 100', 'Descuento', '10', 'Descuento', '5', 'Sin ajuste', '', 'Recargo', '3'], ['Agencia Ejemplo Dos', '77.333.444-5', 'Agencia Ejemplo Dos Ltda.', 'Publicidad', 'admin@ejemplo2.cl', 'Los Leones 500', 'Recargo', '8', 'Recargo', '8', 'Recargo', '5', '', '']];
-  download('plantilla-agencias.csv', [csvLine(IMP_COLS)].concat(ex.map(csvLine)).join('\r\n')); notify('Plantilla descargada: plantilla-agencias.csv', 'info');
+  const ex = [['', 'Agencia Ejemplo Uno', 'Agencia Ejemplo Uno SpA', '77.111.222-3', 'Agencia de medios', 'Av. Ejemplo 100', 'admin@ejemplo1.cl', '', 'Descuento', 5, 'Descuento', 10, '', '', 'Recargo', 3], ['', 'Agencia Ejemplo Dos', 'Agencia Ejemplo Dos Ltda.', '77.333.444-5', 'Publicidad', 'Los Leones 500', 'admin@ejemplo2.cl', 'A2', 'Recargo', 8, 'Recargo', 8, 'Recargo', 5, '', '']];
+  XLSX.writeFile(impBook(ex, []), 'plantilla-agencias.xlsx'); notify('Plantilla descargada: plantilla-agencias.xlsx (las filas de ejemplo son solo del prototipo).', 'info');
 };
 ACT['imp-export'] = () => {
-  const rows = DB.agencies.map(a => { const r = normRules(a.adj); return [a.nombre, a.rut, a.razon, a.giro, a.email, a.dir].concat(IMP_ADJ.reduce((o, [, key]) => o.concat([r[key].t === 'desc' ? 'Descuento' : r[key].t === 'rec' ? 'Recargo' : 'Sin ajuste', r[key].t ? r[key].p : '']), [])); });
-  download('agencias.csv', [csvLine(IMP_COLS)].concat(rows.map(csvLine)).join('\r\n')); notify('Exportación generada: agencias.csv', 'info');
+  const ag = DB.agencies.map(a => [a.id, a.nombre, a.razon, a.rut, a.giro, a.dir, a.email, a.parent || ''].concat(adjCells(a)));
+  const co = allContacts().map(c => [c.id, CAT_ES[c.category], c.name, c.email, c.phone, c.agency]);
+  XLSX.writeFile(impBook(ag, co), 'agencias.xlsx'); notify('Exportación generada: agencias.xlsx', 'info');
 };
-ACT['imp-help'] = () => modal({ title: 'Instrucciones de importación de agencias', size: 'modal-lg', body: `<p>La primera fila debe contener los encabezados. Separador <code>;</code> o <code>,</code>.</p>
-  ${tbl([{ h: 'Columna', f: c => `<code>${c[0]}</code>` }, { h: 'Obligatoria', f: c => c[1] }, { h: 'Descripción', f: c => c[2] }], [['nombre', 'Al crear', 'Nombre de la agencia.'], ['rut', 'Siempre', 'Número identificador nacional (76.123.456-7). Identifica la agencia al actualizar.'], ['razon_social', 'Al crear', 'Razón social.'], ['giro, email, direccion', 'No', 'Datos de contacto y facturación.'],
-    ['mensual_tipo · minimo_tipo · produccion_tipo · servicios_tipo', 'No', '<b>Descuento</b>, <b>Recargo</b> o <b>Sin ajuste</b>. Un solo tipo por precio.'], ['mensual_pct · minimo_pct · produccion_pct · servicios_pct', 'Si hay tipo', 'Porcentaje mayor a 0 (admite coma decimal). El descuento no puede superar 100 %; el recargo no tiene tope.']])}
-  <ul class="small mb-0"><li>Para <b>crear</b>, un tipo vacío equivale a «Sin ajuste».</li><li>Para <b>actualizar</b>, una celda vacía <b>no cambia</b> el valor actual; «Sin ajuste» lo quita explícitamente.</li><li>Las filas con errores no se importan; el resto sí.</li><li>Las cotizaciones existentes no cambian sus precios: quedan «Desactualizadas» para decidir al abrirlas.</li></ul>`, footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+ACT['imp-help'] = () => modal({ title: 'Instrucciones de importación de agencias', size: 'modal-lg', body: `<p>El archivo tiene dos hojas: <b>Agencias</b> y <b>Contactos</b>. La primera fila de cada hoja son los encabezados. Máximo ${IMP_MAX_ROWS} filas por hoja.</p>
+  <h6>Hoja «Agencias»</h6>${tbl([{ h: 'Columna', f: c => `<b>${c[0]}</b>` }, { h: 'Descripción', f: c => c[1] }], [['ID', 'Identificador de la agencia. Vacío al crear; obligatorio al actualizar.'], ['Nombre', 'Obligatorio. No puede repetirse dentro del archivo.'], ['Razón social · Giro · Dirección · E-mail', 'Datos de la agencia.'], ['Número identificador nacional', 'RUT con formato válido (76.123.456-7).'], ['Grupo', 'ID de la agencia matriz (opcional).'],
+    ['Precio mínimo / mensual / producción / Servicios adicionales — Tipo de ajuste', '<b>Descuento</b>, <b>Recargo</b> o <b>Sin ajuste</b> (vacío equivale a Sin ajuste). Un solo tipo por precio.'], ['… — %', 'Porcentaje mayor a 0 (admite coma decimal). Descuento hasta 100 %; el recargo no tiene tope.']])}
+  <h6 class="mt-3">Hoja «Contactos»</h6><p class="small">Columnas: ${IMP_HDR_CO.join(', ')}. Tipo de contacto: Financiero o Comercial (uno de cada tipo por agencia).</p>
+  <ul class="small mb-0"><li>Al <b>actualizar</b>, cada fila reemplaza los datos de la agencia: <b>una celda vacía borra el valor actual</b> (también los ajustes, que quedan como Sin ajuste). Lo recomendable es exportar, editar y volver a importar.</li><li>Si el archivo tiene observaciones de formato o de ID, <b>no se importa nada</b>. Las filas que fallen al guardar se informan en el correo de resultados y el resto se importa.</li><li>Las cotizaciones existentes no cambian sus precios con la importación.</li><li>En este prototipo, un .csv se lee solo como hoja Agencias.</li></ul>`, footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
 
 /* =====================================================================
    ▶ [AJ-10] COTIZACIONES · listado (de COM-25)
@@ -750,7 +809,7 @@ route(/^\/cotizaciones$/, () => {
   const f = F('deals');
   const rows = () => DB.deals.filter(d => match(d.title + d.serial + clientLabel(d), f.q) && (!f.agency || d.agency === f.agency)).sort((a, b) => b.updated.localeCompare(a.updated));
   const res = () => { const r = rows(); return tbl([{ h: 'Serie', f: d => `<b class="text-nowrap">${d.serial}</b>` }, { h: 'Anunciante', f: d => clientLabel(d) }, { h: 'Título', f: d => esc(d.title) },
-    { h: 'Agencia', f: d => realAgency(d.agency) ? esc(agencyName(d.agency)) : (d.agencyTemp ? `<em>${esc(d.agencyTemp)}</em>` : '<span class="text-muted">—</span>') }, { h: 'Ajuste de agencia', f: d => adjStatus(d) },
+    { h: 'Agencia', f: d => realAgency(d.agency) ? esc(agencyName(d.agency)) : (d.agencyTemp ? `<em>${esc(d.agencyTemp)}</em>` : '<span class="text-muted">—</span>') },
     { h: 'Precio total arriendo', cls: 'number', f: d => clp(dealLease(d)) }, { h: 'Precio total producción', cls: 'number', f: d => clp(dealProd(d)) },
     { h: '', cls: 'text-right tbl-actions text-nowrap', f: d => icBtn('edit', 'Editar', { href: '#/cotizaciones/' + d.id + '/editar' }) }], r) + pager(r.length, 'cotizaciones'); };
   CUR.refresh = () => setResults(res());
@@ -775,7 +834,6 @@ function newBid(item) {
 function quoteFormPage() {
   const d = FORM.data, n = FORM.mode === 'new';
   const html = `<form id="f-deal" novalidate autocomplete="off">
-    <div id="adj-alert"></div>
     <div class="card card-border-color card-border-color-primary"><div class="card-header card-header-divider">Información General${n ? '' : ` <span class="text-muted">· ${d.serial}</span>`}</div><div class="card-body"><div class="form-row"><div class="col-md">
         ${fld('Título', 'title', d.title, { req: 1 })}
         ${fld('Información adicional Cotización', 'description', d.description, { type: 'textarea', rows: 4 })}
@@ -783,7 +841,8 @@ function quoteFormPage() {
       </div><div class="col-md">
         ${fld('Anunciante', 'client', d.client || 'placeholder', { type: 'select', opts: [['placeholder', 'Anunciante temporal (nombre de fantasía)']].concat(DB.clients.map(c => [c.id, c.nombre])) })}
         <div class="form-group"><div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">${icon('edit')}</div></div><input class="form-control" name="clientTemp" value="${esc(d.clientTemp)}" placeholder="Nombre de fantasía (temporal)" ${d.client ? 'readonly' : ''}></div></div>
-        ${fld('Agencia' + (isAdmin() ? ' <span id="adj-tip" class="zmdi zmdi-info-outline text-info" style="cursor:help;display:none" data-toggle="tooltip"></span>' : ''), 'agency', d.agency || (d.agencyTemp ? 'placeholder' : ''), { type: 'select', opts: [['', 'Sin agencia'], ['placeholder', 'Agencia temporal (nombre de fantasía)']].concat(DB.agencies.map(a => [a.id, a.nombre])) })}
+        ${fld('Agencia', 'agency', d.agency || (d.agencyTemp ? 'placeholder' : ''), { type: 'select', opts: [['', 'Sin agencia'], ['placeholder', 'Agencia temporal (nombre de fantasía)']].concat(DB.agencies.map(a => [a.id, a.nombre])) })}
+        <div id="adj-panel"></div>
         <div class="form-group"><div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">${icon('edit')}</div></div><input class="form-control" name="agencyTemp" value="${esc(d.agencyTemp)}" placeholder="Nombre de fantasía (temporal)" ${d.agency === '' && d.agencyTemp ? '' : 'readonly'}></div></div>
       </div></div></div></div>
 
@@ -804,27 +863,11 @@ function quoteFormPage() {
   return { title: n ? 'Crear cotización' : 'Editar cotización', html, after() { refreshBids(); refreshAdj(); renderCatalog(); bindQuoteForm(); } };
 }
 
-/* Panel con el ajuste vigente y aviso cuando el perfil de la agencia cambió */
+/* Etiquetas con el ajuste vigente de la agencia (las mismas del listado de agencias). Solo administradores y solo con agencia elegida. */
 function refreshAdj() {
-  const d = FORM.data, a = document.getElementById('adj-alert'); if (!a) return;
-  const ag = realAgency(d.agency), r = dealRules(d), cur = agencyRules(d.agency);
-  /* Tooltip solo para administradores: indica los % de descuento/recargo de la agencia seleccionada. */
-  const tip = document.getElementById('adj-tip');
-  if (tip) {
-    $(tip).tooltip('dispose'); tip.style.display = ag && isAdmin() ? '' : 'none';
-    if (ag && isAdmin()) {
-      const body = `<b>Ajuste de «${esc(ag.nombre)}»</b><br>${hasRules(cur) ? rulesLines(cur) : 'Esta agencia no tiene ajustes: se usan los precios lista.'}${staleDeal(d) ? `<hr class="my-1" style="border-color:#fff"><b>Aplicado en esta cotización</b><br>${hasRules(r) ? rulesLines(r) : 'Precios lista'}` : ''}`;
-      tip.setAttribute('title', body); $(tip).tooltip({ html: true, placement: 'right', trigger: 'hover focus' });
-    }
-  }
-  if (!staleDeal(d)) { a.innerHTML = ''; return; }
-  a.innerHTML = `<div class="alert alert-warning"><div class="icon"><span class="zmdi zmdi-alert-triangle"></span></div><div class="message"><b>Los precios de la agencia «${esc(ag.nombre)}» cambiaron</b> desde que se valorizó esta cotización.
-    ¿Quieres ajustar los precios a la configuración actual de la agencia? Se recalcularán soportes, producción y servicios.
-    <div class="mt-2"><button type="button" class="btn btn-primary btn-sm mr-2" data-act="adj-update">Ajustar precios</button><button type="button" class="btn btn-secondary btn-sm" data-act="adj-keep">Mantener precios actuales</button></div></div></div>`;
+  const p = document.getElementById('adj-panel'); if (!p) return;
+  p.innerHTML = realAgency(FORM.data.agency) && isAdmin() ? `<div class="adj-title">Ajuste de precios:</div>${rulesChips(agencyRules(FORM.data.agency))}` : '';
 }
-ACT['adj-update'] = () => { repriceDeal(FORM.data); refreshBids(); refreshAdj(); renderCatalog(); notify('Precios ajustados a la configuración actual de la agencia. Guarda los cambios para confirmar.', 'info'); };
-ACT['adj-keep'] = () => { FORM.data.adjIgnore = rulesKey(agencyRules(FORM.data.agency)); refreshAdj(); notify('Se mantienen los precios actuales. Guarda los cambios para confirmar.', 'info'); };
-
 /* Tabla de soportes de la cotización */
 const minCell = b => { const d = FORM.data, it = itemOf(b.item), r = dealRules(d), min = minOf(d, it), under = b.unit < min; return clp(min) + (under ? ` <span class="zmdi zmdi-alert-triangle text-warning" title="Este soporte se está vendiendo bajo el precio mínimo: ${clp(min)}"></span>` : ''); };
 function bidRowHtml(b, i) {
@@ -863,8 +906,6 @@ function bindQuoteForm() {
     d.agency = e.target.value === 'placeholder' ? '' : e.target.value;
     const had = d.bids.length || d.services.length; repriceDeal(d); refreshBids(); refreshAdj(); renderCatalog();
     if (had) notify('Precios actualizados según la agencia seleccionada.', 'info');
-    const tip = document.getElementById('adj-tip');   /* el administrador ve el tooltip con los % al seleccionar la agencia */
-    if (tip && tip.style.display !== 'none') { $(tip).tooltip('show'); setTimeout(() => $(tip).tooltip('hide'), 4000); }
   });
   f.addEventListener('submit', e => { e.preventDefault(); saveQuote(); });
 }
