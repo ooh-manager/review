@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOH Manager · Material por soporte (prototipo)</title>
+  <!-- Autocontenido con CDN (Bootstrap 4.4.1, jQuery 3.5.1, Material Design Iconic Font 2.2.0), mismo marco que comercial-cdn.html / operaciones-cdn.html.
+       El formulario del soporte y la tarjeta de tarea replican las vistas actuales de la plataforma (items/_form, ops/tasks/show). -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234285f4'/%3E%3Ctext x='16' y='22.5' font-size='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EO%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+  <style>
+    /* ---------- Base (tema tipo Beagle) ---------- */
+    html { font-size: 15px; }
+    body { font-family: 'Roboto', -apple-system, 'Segoe UI', Arial, sans-serif; background: #eeeeee; color: #404040; -webkit-font-smoothing: antialiased; }
+    a { color: #2f6fe0; } a:hover { color: #1f56c0; }
+    h1, h2, h3, h4, h5, h6 { color: #333; font-weight: 300; }
+    .text-primary { color: #4285f4 !important; } .text-success { color: #2e9a4d !important; } .text-danger { color: #d93025 !important; }
+    .icon { display: inline-block; vertical-align: middle; font-size: 1.2em; line-height: 1; }
+    .btn .icon { margin-right: 2px; margin-top: -2px; }
+    .btn { border-radius: 3px; font-weight: 500; }
+    .btn-primary { background: #4285f4; border-color: #4285f4; } .btn-primary:hover, .btn-primary:focus { background: #2f6fe0; border-color: #2f6fe0; }
+    .btn-secondary { background: #eef1f5; border-color: #dde2e8; color: #3c4858; }
+    .btn-secondary:hover, .btn-secondary:focus { background: #dfe5ec; border-color: #cdd5de; color: #1f2d3d; }
+    .btn-dark { background: #404040; border-color: #404040; }
+    .btn-danger { background: #ea4335; border-color: #ea4335; }
+    .btn-space { margin-right: .5rem; }
+    .badge { font-weight: 500; padding: .35em .6em; border-radius: 3px; }
+    .badge-primary { background: #4285f4; } .badge-success { background: #34a853; } .badge-danger { background: #ea4335; }
+    .badge-warning { background: #fbbc05; color: #3a2c00; } .badge-info { background: #25a5c4; } .badge-secondary { background: #8d99a8; }
+
+    /* ---------- Encabezado y banner del prototipo ---------- */
+    .top-header { background: #fff; height: 56px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #e0e0e0; }
+    .navbar-brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 1.05rem; color: #1f2d3d; padding: 0; margin: 0; }
+    .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #4285f4, #6fa3ff); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: .9rem; }
+    .page-title { margin-left: 18px; font-size: 1.25rem; font-weight: 300; color: #333; }
+    .module-chip { margin-left: 10px; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; background: #eaf1ff; color: #2f6fe0; padding: .2rem .55rem; border-radius: 20px; font-weight: 500; }
+    .user-box { margin-left: auto; display: flex; align-items: center; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e8f0fe; color: #2f6fe0; display: inline-grid; place-items: center; font-size: .78rem; font-weight: 600; margin-right: 9px; }
+    .user-box .user-name { font-weight: 500; font-size: .88rem; line-height: 1.1; } .user-box small { color: #6c757d; font-size: .74rem; }
+    .proto-banner { background: #1f2d3d; color: #fff; padding: 0 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; }
+    .proto-banner .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; padding: 12px 0; }
+    .proto-tabs { display: flex; flex-wrap: wrap; }
+    .proto-tabs button { background: none; border: 0; border-bottom: 3px solid transparent; color: rgba(255,255,255,.75); padding: 12px 16px 9px; font-size: .9rem; cursor: pointer; font-family: inherit; text-align: left; }
+    .proto-tabs button small { display: block; font-size: .66rem; opacity: .6; }
+    .proto-tabs button:hover { color: #fff; }
+    .proto-tabs button.active { color: #fff; border-bottom-color: #6fa3ff; font-weight: 500; }
+    .proto-opt { margin-left: auto; font-size: .82rem; display: flex; align-items: center; }
+    .proto-opt label { color: #fff; margin: 0; font-weight: 400; cursor: pointer; }
+    .main-content { padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
+    .proto-pick { background: #fff8e1; border: 1px dashed #e6c35c; color: #7a5d00; font-size: .8rem; padding: .4rem .75rem; border-radius: 3px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .breadcrumb { background: transparent; padding: 0; margin: 0 0 18px; font-size: .85rem; }
+    .breadcrumb-item a { color: #404040; } .breadcrumb-item.active { color: #777; }
+
+    /* ---------- Tarjetas, tablas, formularios, alertas, modales ---------- */
+    .card { border: 0; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.02), 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; }
+    .card-header { background: #fff; border-bottom: 0; padding: 18px 20px 10px; border-radius: 3px 3px 0 0; font-size: 1.3rem; font-weight: 300; color: #333; }
+    .card-header-divider { border-bottom: 1px solid #e5e5e5; margin: 0 20px; padding: 18px 0 12px; }
+    .card-header .tools { float: right; display: flex; align-items: center; gap: 6px; margin-left: 12px; }
+    .card-header .tools .icon { font-size: 1.4rem; color: #8a8a8a; }
+    .card-title { font-size: 1.3rem; font-weight: 300; margin: 0; }
+    .card-subtitle { font-size: .8rem; color: #8a8a8a; margin-top: 2px; font-weight: 400; }
+    .card-border-color { border-top: 3px solid #4285f4; }
+    .card-table > .card-body { padding: 0; } .card-table .table { margin-bottom: 0; }
+    .card-table .table th:first-child, .card-table .table td:first-child { padding-left: 20px; }
+    .card-table .table th:last-child, .card-table .table td:last-child { padding-right: 20px; }
+    .card-table .card-header { padding-bottom: 12px; }
+    .table th { font-size: .78rem; color: #6b7788; font-weight: 500; border-top: 0; border-bottom: 1px solid #e5e5e5; white-space: nowrap; background: #fff; }
+    .table td { vertical-align: middle; border-top: 1px solid #f0f0f0; }
+    .table-striped tbody tr:nth-of-type(odd) { background: #fafafa; }
+    .table-hover tbody tr:hover { background: #f1f6ff; }
+    .table td.number, .table th.number { text-align: right; }
+    td.actions, th.actions { width: 1%; white-space: nowrap; text-align: right; }
+    .info-table { font-size: .85rem; }
+    .info-table th { padding-right: 1rem; vertical-align: top; font-weight: 700; white-space: nowrap; color: #333; } .info-table td { padding-bottom: .3rem; }
+    label { font-size: .85rem; font-weight: 500; color: #4a5568; margin-bottom: .25rem; }
+    .form-control { border-color: #d5dbe3; border-radius: 3px; }
+    .form-control:focus { border-color: #4285f4; box-shadow: 0 0 0 .18rem rgba(66, 133, 244, .18); }
+    .input-group > .form-control:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .nav-tabs { border-bottom: 1px solid #e5e5e5; padding: 0 20px; }
+    .nav-tabs .nav-link { border: 0; border-bottom: 2px solid transparent; color: #5f6b7a; padding: .8rem 1rem; margin-bottom: -1px; cursor: pointer; }
+    .nav-tabs .nav-link:hover { color: #2f6fe0; }
+    .nav-tabs .nav-link.active { color: #2f6fe0; background: transparent; border-bottom-color: #4285f4; font-weight: 500; }
+    .side-nav a { display: block; padding: .45rem 1.25rem; color: #404040; font-size: .9rem; border-left: 3px solid transparent; text-decoration: none; }
+    .side-nav a:hover, .side-nav a.on { background: #f4f7fc; color: #2f6fe0; border-left-color: #4285f4; }
+    .side-sticky { position: sticky; top: 130px; }
+    .alert { border: 0; border-radius: 3px; display: flex; align-items: stretch; padding: 0; overflow: hidden; }
+    .alert .icon { display: flex; align-items: center; justify-content: center; width: 48px; font-size: 1.5rem; flex-shrink: 0; }
+    .alert .message { padding: .8rem 1rem; flex: 1; }
+    .alert .close { position: static; padding: .8rem 1rem; }
+    .alert-success { background: #e7f6ec; color: #1e6b3a; } .alert-success .icon { background: #34a853; color: #fff; }
+    .alert-info { background: #e3f4f9; color: #146176; } .alert-info .icon { background: #25a5c4; color: #fff; }
+    .alert-warning { background: #fff6dc; color: #7a5a00; } .alert-warning .icon { background: #fbbc05; color: #3a2c00; }
+    .modal-content { border: 0; border-radius: 3px; box-shadow: 0 12px 40px rgba(20, 30, 60, .2); }
+    .modal-header { border-bottom: 1px solid #eef1f5; } .modal-footer { border-top: 1px solid #eef1f5; }
+    .gallery-thumb { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 3rem; }
+    .photo-big { background: #8a8a8a; height: 536px; display: flex; align-items: center; justify-content: center; color: #f3f3ee; font-size: 17rem; }
+    .map-ph { background: #eaf0f3; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #6b7788; min-height: 300px; height: 100%; }
+    .toast-host { position: fixed; top: 80px; right: 20px; z-index: 2000; width: 340px; }
+    .note-only-save { color: #6c757d; display: block; }
+
+    /* ---------- Marcas de lo nuevo ---------- */
+    .new-tag { font-size: .62rem; padding: .2em .5em; margin-left: 4px; vertical-align: 1px; }
+    .table .col-new { background: #eaf6ee !important; }
+    .table th.col-new { color: #1e6b3a; }
+    body.hide-new .new-tag { display: none; }
+    body.hide-new .table .col-new { background: transparent !important; }
+    body.hide-new .table th.col-new { color: #6b7788; }
+  </style>
+</head>
+<body>
+<div class="sticky-top">
+  <div class="top-header">
+    <a class="navbar-brand" href="#"><span class="brand-mark">O</span><span>OOH Manager</span></a>
+    <div class="page-title" id="page-title"></div><span class="module-chip" id="module-chip"></span>
+    <div class="user-box"><span class="avatar" id="avatar"></span><div><div class="user-name" id="user-name"></div><small id="user-role"></small></div></div>
+  </div>
+  <div class="proto-banner">
+    <span class="label">Prototipo · Material</span>
+    <div class="proto-tabs" id="tabs"></div>
+    <div class="proto-opt"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="opt-new" checked><label class="custom-control-label" for="opt-new">Resaltar lo nuevo</label></div></div>
+  </div>
+</div>
+<div class="main-content" id="content"></div>
+<div id="modal-host"></div>
+<div class="toast-host" id="toast-host"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ===================== Utilidades y componentes ===================== */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const icon = n => `<span class="icon zmdi zmdi-${n}"></span>`;
+const clp = n => '$' + Math.round(n || 0).toLocaleString('es-CL');
+const fdate = s => { if (!s) return '—'; const [y, m, d] = s.split('-'); return d + '-' + m + '-' + y; };
+const fslash = s => s ? s.split('-').reverse().join('/') : '—';
+const num = v => String(v).replace('.', ',');
+const NEW = '<span class="badge badge-success new-tag">Nuevo</span>';
+
+const kv = rows => `<table class="info-table"><tbody>${rows.map(r => `<tr><th class="pr-3 align-top text-nowrap">${r[0]}:${r[2] ? NEW : ''}</th><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
+function notify(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'alert alert-' + (type || 'success') + ' alert-dismissible shadow-sm';
+  el.innerHTML = `<div class="icon"><span class="zmdi zmdi-${type === 'info' ? 'info' : 'check'}"></span></div><div class="message">${msg}</div><button class="close" data-dismiss="alert" type="button"><span>&times;</span></button>`;
+  document.getElementById('toast-host').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+function modal(o) {
+  $('.modal').modal('hide'); $('.modal-backdrop').remove(); $('body').removeClass('modal-open');
+  const id = 'm' + Date.now();
+  document.getElementById('modal-host').innerHTML =
+    `<div class="modal fade" id="${id}" tabindex="-1" role="dialog"><div class="modal-dialog ${o.size || ''}" role="document"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">${o.title}</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+      <div class="modal-body">${o.body}</div>${o.footer ? `<div class="modal-footer">${o.footer}</div>` : ''}
+    </div></div></div>`;
+  const $m = $('#' + id); $m.modal('show'); return $m;
+}
+const head = (title, actions) => `<div class="d-flex flex-wrap justify-content-between align-items-center mb-3"><h3 class="mb-0">${title}</h3><div class="mt-2 mt-sm-0">${actions || ''}</div></div>`;
+const btn = (label, o) => { o = o || {}; return `<button type="button" class="btn btn-${o.cls || 'primary'} ${o.size ? 'btn-' + o.size : ''} ${o.extra || ''}" ${o.act ? `data-act="${o.act}" data-id="${o.id || ''}"` : ''} ${o.title ? `title="${o.title}"` : ''}>${o.ic ? icon(o.ic) + ' ' : ''}${label}</button>`; };
+function tbl(cols, rows) {
+  if (!rows.length) return '<div class="text-center text-muted p-5">Sin resultados.</div>';
+  return `<div class="table-responsive"><table class="table table-sm table-striped table-hover"><thead><tr>${cols.map(c => `<th class="${c.cls || ''}">${c.h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const tip = t => `<span class="icon zmdi zmdi-info-outline text-info" data-toggle="tooltip" title="${esc(t)}" style="cursor:help"></span>`;
+const onlySave = '<span class="note-only-save">' + icon('alert-circle-o') + ' Los cambios se verán reflejados <b>sólo al guardar</b> el soporte.</span>';
+
+/* ===================== Datos de ejemplo ===================== */
+const TYPE_COLOR = { 'Valla': '#4285f4', 'Unipole': '#5c6bc0', 'Mobiliario Urbano Impreso - Otros': '#26a69a', 'Centro Comercial - Otros': '#ec6b8a', 'Pantallas Digitales': '#7e57c2' };
+const TYPE_ICON = { 'Valla': 'view-web', 'Unipole': 'view-web', 'Mobiliario Urbano Impreso - Otros': 'widgets', 'Centro Comercial - Otros': 'store', 'Pantallas Digitales': 'tv' };
+const T0 = '2026-10-19';
+const LOREM = 'Es un hecho establecido hace demasiado tiempo que un lector se distraerá con el contenido del texto de un sitio mientras que mira su diseño. El punto de usar Lorem Ipsum es que tiene una distribución más o menos normal de las letras, al contrario de usar textos como por ejemplo "Contenido aquí, contenido aquí".';
+const S = {
+  view: 'ficha', cur: 'B-001', task: 'T-2041', draft: null, editMat: null, repTab: 'open', repFrom: '2026-10-01', repTo: '2026-10-31',
+  materials: [
+    { id: 1, name: 'Lona frontlit 13 oz', active: true },
+    { id: 2, name: 'Vinilo adhesivo', active: true },
+    { id: 3, name: 'Lona mesh', active: true },
+    { id: 4, name: 'Backlight', active: true },
+    { id: 5, name: 'Papel mural', active: false }
+  ],
+  items: [
+    { id: 'B-001', nombre: 'Valla Av. Providencia', tipo: 'Valla', dir: 'Av. Providencia 1234', comuna: 'Providencia', tarifa: 2800000, minimo: 2400000, prod: 450000, ilum: true, orient: 'Norte a Sur', ancho: 12, alto: 4, anchov: 11.6, altov: 3.6, material: 'Lona frontlit 13 oz', units: 1 },
+    { id: 'B-014', nombre: 'Unipole Ruta 68 km 12', tipo: 'Unipole', dir: 'Ruta 68 km 12', comuna: 'Pudahuel', tarifa: 3500000, minimo: 3000000, prod: 600000, ilum: true, orient: 'Este a Oeste', ancho: 14.8, alto: 3.8, anchov: 14.4, altov: 3.4, material: 'Lona mesh', units: 2 },
+    { id: 'B-027', nombre: 'Paradero Apoquindo', tipo: 'Mobiliario Urbano Impreso - Otros', dir: 'Av. Apoquindo 4500', comuna: 'Las Condes', tarifa: 450000, minimo: 380000, prod: 60000, ilum: false, orient: 'Sur a Norte', ancho: 1.2, alto: 1.8, anchov: 1.1, altov: 1.7, material: 'Vinilo adhesivo', units: 1 },
+    { id: 'B-033', nombre: 'Mall Plaza Vespucio', tipo: 'Centro Comercial - Otros', dir: 'Av. Vicuña Mackenna 7110', comuna: 'La Florida', tarifa: 900000, minimo: 750000, prod: 120000, ilum: true, orient: 'Norte a Sur', ancho: 6, alto: 3, anchov: 5.8, altov: 2.8, material: 'Lona premium importada', units: 1 },
+    { id: 'B-040', nombre: 'Costanera Center', tipo: 'Pantallas Digitales', dir: 'Av. Andrés Bello 2425', comuna: 'Providencia', tarifa: 5200000, minimo: 4500000, prod: 0, ilum: true, orient: 'Norte a Sur', ancho: null, alto: null, anchov: null, altov: null, material: '', units: 1 }
+  ],
+  camps: { 'C-188': { client: 'Cliente Demo S.A.', title: 'Campaña Primavera', user: 'Vendedor Demo' }, 'C-170': { client: 'Marca Ejemplo Ltda.', title: 'Lanzamiento Otoño', user: 'Vendedor Demo' } },
+  tasks: [
+    { id: 'T-2041', tipo: '02.Prueba de Color', item: 'B-001', odt: 'ODT-0310', camp: 'C-188', asig: 'Ignacio Rodríguez', limite: '2026-10-30', pub: '2026-10-19', closed: '', exec: '', blocker: '', comments: LOREM, files: ['arte-final-v2.png'] },
+    { id: 'T-2042', tipo: '03.Instalación', item: 'B-014', odt: 'ODT-0311', camp: 'C-188', asig: 'Juan Pérez', limite: '2026-10-15', pub: '2026-10-12', closed: '', exec: '', blocker: 'T-2050', comments: '', files: ['chi-chi-3242-e-02.png'] },
+    { id: 'T-2050', tipo: '04.Retiro', item: 'B-027', odt: 'ODT-0290', camp: 'C-170', asig: 'Equipo Sur', limite: '2026-10-14', pub: '2026-10-08', closed: '2026-10-14', exec: 'Marcos Rojas', blocker: '', comments: '', files: [] },
+    { id: 'T-2063', tipo: '03.Instalación', item: 'B-033', odt: 'ODT-0322', camp: 'C-188', asig: 'Equipo Norte', limite: '2026-10-18', pub: '2026-10-10', closed: '2026-10-16', exec: 'Ana Díaz', blocker: '', comments: '', files: [] },
+    { id: 'T-2070', tipo: '03.Instalación', item: 'B-040', odt: 'ODT-0330', camp: 'C-188', asig: 'Sin asignar', limite: '2026-11-04', pub: '2026-10-19', closed: '', exec: '', blocker: '', comments: '', files: [] }
+  ]
+};
+const itemOf = id => S.items.find(i => i.id === id);
+const taskOf = id => S.tasks.find(t => t.id === id);
+const countMat = name => S.items.filter(i => i.material === name).length;
+const dim = (w, h) => (w != null && h != null && w !== '' && h !== '') ? `${num(w)} x ${num(h)} m` : '<span class="text-muted">—</span>';
+const taskState = t => t.closed ? 'done' : (t.limite < T0 ? 'delayed' : 'pending');
+const taskBadge = t => ({ done: '<span class="badge badge-success">Finalizada</span>', delayed: '<span class="badge badge-danger">Atrasada</span>', pending: '<span class="badge badge-info">Pendiente</span>' })[taskState(t)];
+const matLabel = m => m ? esc(m) : '<span class="text-muted">—</span>';
+
+/* ===================== Banner de vistas ===================== */
+const VIEWS = [
+  { k: 'ficha', t: 'Ficha del soporte', s: 'Comercial', mod: 'Comercial' },
+  { k: 'form', t: 'Formulario del soporte', s: 'Comercial', mod: 'Comercial' },
+  { k: 'tarea', t: 'Tarjeta de tarea', s: 'Operaciones', mod: 'Operaciones' },
+  { k: 'rep', t: 'Reporte de tareas', s: 'Operaciones', mod: 'Operaciones' }
+];
+function drawChrome() {
+  const v = VIEWS.find(x => x.k === S.view);
+  $('#tabs').html(VIEWS.map(x => `<button class="${x.k === S.view ? 'active' : ''}" data-view="${x.k}">${x.t}<small>${x.s}</small></button>`).join(''));
+  $('#page-title').text(({ ficha: itemOf(S.cur).nombre, form: 'Editar soporte', tarea: S.task, rep: 'Reportes' })[S.view]); $('#module-chip').text(v.mod);
+  const com = v.mod === 'Comercial';
+  $('#avatar').text(com ? 'VD' : 'AO'); $('#user-name').text(com ? 'Vendedor Demo' : 'Admin Operaciones'); $('#user-role').text(com ? 'Ejecutivo comercial' : 'Administrador de operaciones');
+}
+$(document).on('click', '[data-view]', function (e) { e.preventDefault(); S.view = this.dataset.view; if (S.view === 'form') S.draft = null; render(); window.scrollTo(0, 0); });
+$('#opt-new').on('change', function () { document.body.classList.toggle('hide-new', !this.checked); });
+
+/* ===================== 1. Ficha del soporte (Comercial) ===================== */
+const itemPicker = () => `<select class="form-control form-control-sm d-inline-block" style="width:auto" data-pick="item">${S.items.map(i => `<option value="${i.id}" ${i.id === S.cur ? 'selected' : ''}>${i.id} — ${esc(i.nombre)}</option>`).join('')}</select>`;
+const protoPick = () => `<div class="proto-pick">${icon('settings')} Soporte de ejemplo: ${itemPicker()} <span class="ml-auto">(control del prototipo, no existe en la plataforma)</span></div>`;
+function viewFicha() {
+  const it = itemOf(S.cur);
+  const specs = [['Orientación', it.orient], ['Iluminación', it.ilum ? 'Sí' : 'No'], ['Dimensiones totales', dim(it.ancho, it.alto)],
+    ['Dimensiones visibles', dim(it.anchov, it.altov)], ['Especificación material', matLabel(it.material), 1],
+    ['Vista', 'Natural'], ['Propiedad del soporte', 'Propio'], ['Máximo de unidades', it.units]];
+  return protoPick() + `<div class="row"><div class="col-lg-5">
+    <div class="card"><div class="gallery-thumb" style="background:${TYPE_COLOR[it.tipo]};height:240px;border-radius:3px 3px 0 0"><span class="zmdi zmdi-${TYPE_ICON[it.tipo]}"></span></div><div class="card-body text-center"><span class="text-muted">Foto 1 de 3</span></div></div>
+    <div class="card"><div class="card-body p-2"><div class="map-ph" style="height:220px;min-height:220px">${icon('pin')}&nbsp;${esc(it.dir)}, ${it.comuna}</div></div></div></div>
+    <div class="col-lg-7"><div class="card card-border-color"><div class="card-header card-header-divider"><div class="tools"><a href="#" data-view="form">${icon('edit')}</a></div><h2 class="card-title">${esc(it.nombre)}</h2><span class="card-subtitle">Código: ${it.id}</span></div>
+      <div class="card-body">${kv([['Tipo de soporte', it.tipo], ['Precio mensual', clp(it.tarifa)], ['Precio producción', clp(it.prod)]])}</div></div>
+      <div class="card card-table"><div class="card-header card-header-divider">Especificaciones</div>${tbl([{ h: 'Especificación', f: r => r[0] + (r[2] ? NEW : '') }, { h: 'Valor', f: r => r[1] }], specs)}</div></div></div>`;
+}
+
+/* ===================== 2. Formulario del soporte (Comercial) — réplica de items/_form ===================== */
+function newDraft() {
+  const it = itemOf(S.cur), v = x => x == null ? '' : x;
+  S.draft = { id: it.id, nombre: it.nombre, material: it.material, ancho: v(it.ancho), alto: v(it.alto), anchov: v(it.anchov), altov: v(it.altov), orient: it.orient, ilum: it.ilum };
+}
+const inp = (name, val, o) => { o = o || {}; return `<input class="form-control form-control-sm ${o.cls || ''}" type="${o.type || 'text'}" name="${name}" value="${esc(val)}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.type === 'number' ? 'min="0" step="any"' : ''}>`; };
+const sel = (name, val, opts) => `<select class="form-control form-control-sm" name="${name}">${opts.map(x => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+function materialControl() {
+  const d = S.draft, legacy = d.material && !S.materials.some(m => m.name === d.material);
+  const opts = ['<option value="">Sin material</option>']
+    .concat(legacy ? [`<option value="${esc(d.material)}" selected>${esc(d.material)} (fuera de catálogo)</option>`] : [])
+    .concat(S.materials.filter(m => m.active || m.name === d.material).map(m => `<option value="${esc(m.name)}" ${m.name === d.material ? 'selected' : ''}>${esc(m.name)}${m.active ? '' : ' (inactivo)'}</option>`));
+  return `<div class="input-group input-group-sm"><select class="form-control form-control-sm" name="material">${opts.join('')}</select>
+    <div class="input-group-append"><button type="button" class="btn btn-secondary px-2" data-act="mat-admin" title="Administrar materiales" aria-label="Administrar materiales">${icon('plus')}</button></div></div>
+    ${legacy ? '<small class="form-text text-warning">Este valor no está en el catálogo. Elige uno de la lista o déjalo como está.</small>' : ''}`;
+}
+function specRow(spec, d) {
+  const dims = (a, b) => `<div class="input-group">${inp(a, d[a], { type: 'number', ph: 'Ancho (mts)' })}${inp(b, d[b], { type: 'number', ph: 'Alto (mts)' })}</div>`;
+  const text = n => inp(n, '');
+  const R = {
+    subtype: ['Sub-formato', () => text('subtype')],
+    partial_size: ['Dimensiones (visible) ' + tip('Ingresa las medidas en metros. Es el área visible, sin marcos ni bordes.'), () => dims('anchov', 'altov')],
+    full_size: ['Dimensiones (total) ' + tip('Ingresa las medidas en metros. Es el tamaño total del soporte, incluido el marco.'), () => dims('ancho', 'alto')],
+    illumination: ['Iluminación', () => `<div class="btn-group btn-group-justified btn-group-toggle d-flex" data-toggle="buttons">${[['true', 'Sí', d.ilum === true], ['false', 'No', d.ilum === false]].map(o => `<label class="btn btn-secondary btn-sm flex-fill ${o[2] ? 'active' : ''}"><input type="radio" name="ilum" value="${o[0]}" ${o[2] ? 'checked' : ''}>${o[1]}</label>`).join('')}</div>`],
+    orientation: ['Orientación', () => sel('orient', d.orient, ['Norte a Sur', 'Sur a Norte', 'Este a Oeste', 'Oeste a Este'])],
+    route_id: ['Ruta', () => sel('route', '', [['', 'Sin ruta'], ['1', 'Ruta 68'], ['2', 'Costanera Norte']])],
+    km: ['Kilómetro', () => text('km')], daily_flips: ['Pasadas diarias', () => inp('flips', '', { type: 'number' })], pixel_pitch: ['Pixel pitch', () => text('pitch')],
+    resolution: ['Resolución', () => text('resol')], store_name: ['Nombre establecimiento', () => text('store_name')], store_brand: ['Tipo de concesión', () => text('store_brand')],
+    working_hours: ['Horario de funcionamiento', () => text('working_hours')],
+    material_specs: ['Especificación material' + NEW, materialControl],
+    shipping_format: ['Formato de envío', () => text('shipping_format')], shipping_deadline: ['Fecha envío original', () => text('shipping_deadline')],
+    annual_people_average: ['Tráfico diario media anual (personas)', () => inp('people', '', { type: 'number' })], annual_cars_average: ['Tráfico diario media anual (vehículos)', () => inp('cars', '', { type: 'number' })],
+    level: ['Nivel', () => text('level')], display: ['Vista', () => sel('display', '', [['', 'Sin vista'], ['natural', 'Natural'], ['cross', 'Cruzada']])],
+    misc_expenses: ['Otros costos', () => inp('misc', '', { ph: '$' })]
+  }[spec];
+  return `<div class="form-row mb-3"><div class="col-md-5 text-md-right"><label>${R[0]}</label></div><div class="col-md-7">${R[1]()}</div></div>`;
+}
+const SPEC_ORDER = ['subtype', 'partial_size', 'full_size', 'illumination', 'orientation', 'route_id', 'km', 'daily_flips', 'pixel_pitch', 'resolution', 'store_name', 'store_brand', 'working_hours', 'material_specs', 'shipping_format', 'shipping_deadline', 'annual_people_average', 'annual_cars_average', 'level', 'display', 'misc_expenses'];
+function viewForm() {
+  if (!S.draft || S.draft.id !== S.cur) newDraft();
+  const d = S.draft, it = itemOf(S.cur), half = Math.ceil(SPEC_ORDER.length / 2);
+  const sec = (id, title, body) => `<div class="card card-border-color" id="sec-${id}"><div class="card-header card-header-divider"><h2 class="card-title">${title}</h2></div><div class="card-body">${body}</div></div>`;
+  const nav = [['info', 'Información General'], ['sales', 'Precios'], ['services', 'Servicios adicionales'], ['loc', 'Ubicación'], ['specs', 'Especificaciones'], ['photos', 'Fotos'], ['links', 'Enlaces']];
+  return protoPick() + `<div class="row"><div class="col-lg-2 d-none d-lg-block"><div class="card side-sticky"><div class="card-header card-header-divider"><h2 class="card-title" style="font-size:1.1rem">Navegación</h2></div><div class="side-nav py-2">${nav.map(n => `<a href="#" data-scroll="sec-${n[0]}">${n[1]}</a>`).join('')}</div></div></div>
+  <div class="col-lg-10"><form id="f-item" novalidate autocomplete="off">
+    ${sec('info', 'Información General', `
+      <div class="form-row"><div class="col-md-3"><div class="form-group"><label>Código</label>${inp('serial', d.id)}</div></div><div class="col-md"><div class="form-group"><label>Nombre</label>${inp('nombre', d.nombre)}</div></div></div>
+      <div class="form-row"><div class="col-xl-8 col-lg-6"><div class="form-group mb-xl-0"><label>Tipo de soporte</label>${sel('tipo', it.tipo, Object.keys(TYPE_COLOR))}</div></div>
+        <div class="col-xl-4 col-lg-6"><div class="form-group m-xl-0"><label class="pr-1">Máximo de unidades</label> ${tip('No es posible disminuir el número de unidades. Valores válidos entre 1 y 50 unidades.')}
+          <div class="input-group input-group-sm"><input class="form-control text-center" type="number" value="${it.units}" readonly>
+            <div class="input-group-append"><div class="input-group-text"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="unl" disabled><label class="custom-control-label" for="unl"></label></div><small class="font-weight-bold text-secondary">Ilimitado</small></div></div>
+            <div class="input-group-append" title="Editar capacidad"><button type="button" class="btn btn-secondary px-2">${icon('edit')}</button></div>
+            <div class="input-group-append" title="Ver historial de capacidad"><button type="button" class="btn btn-secondary px-2">${icon('time')}</button></div></div></div></div></div>
+      <div class="form-row pt-3"><div class="col-lg-6"><div class="form-group d-flex flex-column m-lg-0"><label>Más información</label><textarea class="form-control form-control-sm" rows="5"></textarea></div></div>
+        <div class="col-lg-6"><div class="form-group d-flex flex-column m-lg-0"><label>Comentarios soporte (uso interno)</label><textarea class="form-control form-control-sm" rows="5"></textarea></div></div></div>
+      <div class="form-row pt-3"><div class="col-12"><div class="form-group m-lg-0"><label class="d-block">Opciones</label><div class="custom-control custom-checkbox custom-control-inline"><input class="custom-control-input" type="checkbox" id="nopdf"><label class="custom-control-label" for="nopdf">No mostrar ficha en PDF cotización</label></div></div></div></div>`)}
+    ${sec('sales', 'Precios', `
+      <div class="form-row"><div class="col-xl-4"><div class="form-group"><label>Precio mensual</label>${inp('tarifa', clp(it.tarifa))}</div></div><div class="col-xl-4"><div class="form-group"><label>Precio mínimo</label>${inp('minimo', clp(it.minimo))}</div></div><div class="col-xl-4"><div class="form-group"><label>Precio producción</label>${inp('prod', clp(it.prod))}</div></div></div>
+      <div class="form-row mt-2"><div class="col-12"><label>Precio mensual por duración y/o unidades</label> ${icon('info-outline')}<div class="pb-3 pt-2"><a href="#" class="btn btn-secondary" data-noop>${icon('plus')} Añadir nuevo precio</a></div></div>
+      <div class="col-12"><label>Precios por temporada</label><div class="pb-3 pt-2"><a href="#" class="btn btn-secondary" data-noop>${icon('plus')} Añadir nuevo precio</a></div>${onlySave}</div></div>`)}
+    ${sec('services', 'Servicios adicionales', `<div class="pb-3"><a href="#" class="btn btn-secondary" data-noop>${icon('plus')} Añadir servicio adicional</a></div>${onlySave}`)}
+    ${sec('loc', 'Ubicación', `<div class="row"><div class="col">
+      <div class="form-group"><div class="row"><div class="col pr-1"><label>Latitud</label></div><div class="col pl-0"><label>Longitud</label></div></div><div class="input-group input-group-sm mb-2"><input class="form-control" value="-33.4263"><input class="form-control" value="-70.6154"></div>
+        <div class="custom-control custom-checkbox custom-control-inline"><input class="custom-control-input" type="checkbox" id="hid"><label class="custom-control-label" for="hid">No mostrar en mapas</label></div></div>
+      <div class="form-group"><label>Dirección</label><div class="input-group"><input class="form-control form-control-sm" value="${esc(it.dir)}" placeholder="Ingresa una ubicación"><div class="input-group-append"><button type="button" class="btn btn-dark" title="Ver en StreetView">${icon('pin-drop')}</button></div></div></div>
+      <div class="form-group"><label>Región</label>${sel('region', 'RM', [['', ''], ['RM', 'Región Metropolitana']])}</div>
+      <div class="form-group"><label>Localidad</label>${sel('loc', it.comuna, ['Providencia', 'Pudahuel', 'Las Condes', 'La Florida'])}</div>
+      <div class="form-group"><a href="#" class="btn btn-secondary" data-noop>${icon('pin-drop')} Editar en Streetview</a></div></div>
+      <div class="col"><div class="map-ph">${icon('pin')}&nbsp;Aquí se muestra el mapa interactivo.</div></div></div>`)}
+    ${sec('specs', 'Especificaciones', `<div class="form-row">${[SPEC_ORDER.slice(0, half), SPEC_ORDER.slice(half)].map(g => `<div class="col-md">${g.map(s => specRow(s, d)).join('')}</div>`).join('')}</div>`)}
+    ${sec('photos', 'Fotos', `<div class="row">${[1, 2, 3].map(k => `<div class="col-sm-3"><div class="gallery-thumb img-thumbnail" style="background:${TYPE_COLOR[it.tipo]};height:120px"><span class="zmdi zmdi-${TYPE_ICON[it.tipo]}"></span></div><div class="form-group mb-0 mt-1"><span class="btn btn-secondary d-inline-block text-truncate" style="max-width:155px">${icon('upload')} <span>${k === 1 ? 'Reemplazar imagen' : 'Subir imagen'}</span></span></div></div>`).join('')}</div>
+      <div class="row"><div class="col-12"><span class="text-muted d-inline-block mt-3">${icon('alert-circle-o')} Tamaño máx. <b>5 MB</b>. Imagen idealmente en relación <b>3:2</b> (Ej: 900 x 600 px). Archivos permitidos: <b>.jpg, .jpeg, .png, .gif</b></span></div></div>`)}
+    ${sec('links', 'Enlaces', `<div class="mt-2"><a href="#" class="btn btn-secondary" data-noop>${icon('plus')} Agregar enlace</a></div><div class="mt-4">${onlySave}</div>`)}
+    <ul class="list-inline"><li class="list-inline-item"><button type="button" class="btn btn-primary btn-space btn-lg" data-act="item-save">Guardar cambios</button></li>
+      <li class="list-inline-item"><a href="#" class="btn btn-secondary btn-space btn-lg" data-view="ficha">Ver soporte</a></li>
+      <li class="list-inline-item"><a href="#" class="btn btn-secondary btn-space btn-lg" data-noop>${icon('delete')} Eliminar soporte</a></li></ul>
+  </form></div></div>`;
+}
+$(document).on('input change', '#f-item [name]', function () {
+  if (!S.draft) return;
+  S.draft[this.name === 'ilum' ? 'ilum' : this.name] = this.name === 'ilum' ? this.value === 'true' : this.value;
+});
+$(document).on('click', '[data-scroll]', function (e) { e.preventDefault(); const el = document.getElementById(this.dataset.scroll); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 140, behavior: 'smooth' }); });
+$(document).on('click', '[data-noop]', e => e.preventDefault());
+
+/* ----- Modal Materiales (se abre con el botón +) ----- */
+function matBody() {
+  const rows = S.materials.map(m => {
+    const editing = S.editMat === m.id, n = countMat(m.name);
+    const name = editing
+      ? `<div class="input-group input-group-sm"><input class="form-control" id="mat-edit" value="${esc(m.name)}" maxlength="60"><div class="input-group-append"><button class="btn btn-primary" data-act="mat-save" data-id="${m.id}" title="Guardar nombre">${icon('check')}</button><button class="btn btn-secondary" data-act="mat-cancel" title="Cancelar">${icon('close')}</button></div></div>${n ? `<small class="text-muted">Se actualizará en ${n} soporte(s).</small>` : ''}`
+      : esc(m.name);
+    return `<tr><td style="min-width:260px">${name}</td><td class="number">${n}</td><td>${m.active ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>'}</td>
+      <td class="actions text-nowrap">${btn('', { cls: 'secondary', size: 'sm', ic: 'edit', act: 'mat-edit', id: m.id, title: 'Renombrar' })} ${btn('', { cls: 'secondary', size: 'sm', ic: m.active ? 'block' : 'check-circle', act: 'mat-toggle', id: m.id, title: m.active ? 'Desactivar' : 'Activar' })}</td></tr>`;
+  }).join('');
+  return `<div class="input-group input-group-sm mb-3"><input class="form-control" id="mat-new" placeholder="Nombre del nuevo material (ej. Lona backlit 18 oz)" maxlength="60"><div class="input-group-append"><button class="btn btn-primary" data-act="mat-add">${icon('plus')} Añadir</button></div></div>
+    <div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Material</th><th class="number">Soportes</th><th>Estado</th><th class="actions"></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="small text-muted mt-2">${icon('info-outline')} Renombrar un material lo actualiza en todos los soportes que lo usan. Desactivarlo lo quita del selector, pero los soportes que ya lo tienen lo conservan.</div>`;
+}
+const refreshMat = () => $('#modal-host .modal-body').html(matBody());
+const ACT = {
+  'mat-admin'() {
+    const $m = modal({ title: 'Materiales <small class="d-block text-muted">Lista de especificaciones de material disponibles para los soportes</small>', size: 'modal-lg', body: matBody(), footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+    $m.on('hidden.bs.modal', () => { S.editMat = null; if (S.view === 'form') render(); });
+  },
+  'mat-add'() {
+    const v = $('#mat-new').val().trim(); if (!v) return;
+    if (S.materials.some(m => m.name.toLowerCase() === v.toLowerCase())) { notify('Ya existe un material con ese nombre.', 'warning'); return; }
+    S.materials.push({ id: Date.now(), name: v, active: true }); notify('Material añadido.'); refreshMat();
+  },
+  'mat-edit'(id) { S.editMat = +id; refreshMat(); $('#mat-edit').focus().select(); },
+  'mat-cancel'() { S.editMat = null; refreshMat(); },
+  'mat-save'(id) {
+    const m = S.materials.find(x => x.id === +id), v = $('#mat-edit').val().trim();
+    if (!v) return;
+    if (v === m.name) { S.editMat = null; refreshMat(); return; }
+    if (S.materials.some(x => x.id !== m.id && x.name.toLowerCase() === v.toLowerCase())) { notify('Ya existe un material con ese nombre.', 'warning'); return; }
+    const n = countMat(m.name);
+    S.items.forEach(i => { if (i.material === m.name) i.material = v; });
+    if (S.draft && S.draft.material === m.name) S.draft.material = v;
+    m.name = v; S.editMat = null; notify(`Material renombrado. Se actualizó en ${n} soporte(s).`); refreshMat();
+  },
+  'mat-toggle'(id) { const m = S.materials.find(x => x.id === +id); m.active = !m.active; notify(m.active ? 'Material activado.' : 'Material desactivado. Los soportes que lo tienen lo conservan.'); refreshMat(); },
+  'item-save'() {
+    const it = itemOf(S.cur), d = S.draft, p = v => (v === '' || v == null) ? null : parseFloat(v);
+    it.nombre = d.nombre; it.material = d.material; it.ancho = p(d.ancho); it.alto = p(d.alto); it.anchov = p(d.anchov); it.altov = p(d.altov); it.orient = d.orient; it.ilum = d.ilum;
+    S.draft = null; notify('El soporte fue guardado.'); S.view = 'ficha'; render(); window.scrollTo(0, 0);
+  }
+};
+$(document).on('click', '[data-act]', function (e) { e.preventDefault(); const f = ACT[this.dataset.act]; if (f) f(this.dataset.id); });
+$(document).on('keydown', '#mat-new', function (e) { if (e.key === 'Enter') { e.preventDefault(); ACT['mat-add'](); } });
+$(document).on('keydown', '#mat-edit', function (e) { if (e.key === 'Enter') { e.preventDefault(); ACT['mat-save'](S.editMat); } if (e.key === 'Escape') { e.stopPropagation(); ACT['mat-cancel'](); } });
+
+/* ===================== 3. Tarjeta de tarea (Operaciones) — réplica de ops/tasks/show ===================== */
+function viewTarea() {
+  const t = taskOf(S.task), it = itemOf(t.item), c = S.camps[t.camp], done = !!t.closed, bl = t.blocker ? taskOf(t.blocker) : null;
+  const picker = `<select class="form-control form-control-sm d-inline-block" style="width:auto" data-pick="task">${S.tasks.map(x => `<option value="${x.id}" ${x.id === S.task ? 'selected' : ''}>${x.id} · ${esc(x.tipo)} · ${x.item}</option>`).join('')}</select>`;
+  const info = kv([['Soporte', `<span class="text-primary">${icon('info-outline')}</span> <b>${it.id}</b> — ${esc(it.nombre)}`], ['Estado', taskBadge(t)], ['Responsable', esc(t.asig) + (t.asig === 'Sin asignar' ? '' : ' (Personal)')]]
+    .concat(done ? [['Ejecutada por', esc(t.exec)]] : [])
+    .concat([['Fecha creación', fslash(t.pub) + ' 18:13'], ['Fecha límite', fslash(t.limite)], ['ODT', `${t.odt} <a href="#" data-noop>${icon('open-in-new')}</a>`],
+      ['Dependencia de tarea', bl ? `<span class="badge ${bl.closed ? 'badge-success' : 'badge-danger'}">${bl.closed ? 'Habilitada' : 'Bloqueada'}</span> por ${bl.id} <a href="#" data-noop>${icon('open-in-new')}</a>` : 'Sin dependencias']]))
+    + (t.comments ? `<hr><table class="info-table"><tr><th class="pr-3 align-baseline text-nowrap">Comentarios Tarea:</th><td>${esc(t.comments)}</td></tr></table>` : '');
+  return protoPick().replace(/Soporte de ejemplo: .*? <span/, `Tarea de ejemplo: ${picker} <span`) +
+    `<nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="#" data-noop>${icon('home')}</a></li><li class="breadcrumb-item"><a href="#" data-noop>Tareas</a></li><li class="breadcrumb-item active">${t.id}</li></ol></nav>
+    <div class="row"><div class="col-12 col-md-6">
+      <div class="card card-border-color"><div class="card-header card-header-divider"><h2 class="card-title">Información tarea — ${esc(t.tipo)}</h2></div><div class="card-body">${info}</div></div>
+      <div class="card"><div class="card-header card-header-divider"><h2 class="card-title">Especificaciones${NEW}</h2></div><div class="card-body">${kv([['Especificación material', matLabel(it.material)], ['Dimensiones (total)', `<b>${dim(it.ancho, it.alto)}</b>`], ['Dimensiones (visible)', dim(it.anchov, it.altov)]])}</div></div>
+      <div class="card"><div class="card-header card-header-divider"><div class="tools"><a href="#" data-noop>${icon('open-in-new')}</a></div><h2 class="card-title">Información campaña</h2></div><div class="card-body">${kv([['Anunciante', c.client], ['Campaña', t.camp], ['Nombre campaña', esc(c.title)], ['Ejecutivo/a', c.user]])}</div></div>
+      <div class="card card-table"><div class="card-header"><h2 class="card-title">Adjuntos</h2><div class="card-subtitle">${t.files.length} archivo(s)</div></div>${t.files.length ? `<table class="table table-sm table-striped">${t.files.map(f => `<tr><td class="no-fill" style="width:1%"><a href="#" data-noop>${icon('download')}</a></td><td>${esc(f)}</td></tr>`).join('')}</table>` : ''}</div>
+    </div><div class="col-12 col-md-6 d-none d-md-block"><div class="photo-big"><span class="zmdi zmdi-${TYPE_ICON[it.tipo]}"></span></div></div></div>`;
+}
+
+/* ===================== 4. Reporte de tareas (Operaciones): 2 tabs, el reporte se ve de inmediato ===================== */
+function repTable(open) {
+  const n = k => t => { const v = itemOf(t.item)[k]; return v == null ? '' : num(v); };
+  let rows = S.tasks.filter(t => open ? !t.closed : (!!t.closed && (!S.repFrom || t.closed >= S.repFrom) && (!S.repTo || t.closed <= S.repTo)));
+  const cols = [
+    { h: 'Código', f: t => `<b>${t.id}</b>` }, { h: 'Tipo de tarea', f: t => esc(t.tipo) }, { h: 'Soporte', f: t => t.item }, { h: 'ODT', f: t => t.odt }, { h: 'Campaña', f: t => t.camp },
+    { h: 'Asignado', f: t => esc(t.asig) }, { h: 'Fecha límite', f: t => fdate(t.limite) }, { h: 'Publicada', f: t => fdate(t.pub) },
+    { h: 'Especificación material', cls: 'col-new', f: t => esc(itemOf(t.item).material) },
+    { h: 'Ancho total (m)', cls: 'col-new number', f: n('ancho') }, { h: 'Alto total (m)', cls: 'col-new number', f: n('alto') },
+    { h: 'Ancho visible (m)', cls: 'col-new number', f: n('anchov') }, { h: 'Alto visible (m)', cls: 'col-new number', f: n('altov') }
+  ].concat(open ? [{ h: 'Estado', f: t => taskBadge(t) }] : [{ h: 'Fecha cierre', f: t => fdate(t.closed) }, { h: 'Ejecutor', f: t => esc(t.exec) }]);
+  return { html: tbl(cols, rows), n: rows.length };
+}
+function viewRep() {
+  const open = S.repTab === 'open', r = repTable(open);
+  return head('Reportes') + `<div class="card card-border-color"><ul class="nav nav-tabs">
+      <li class="nav-item"><a class="nav-link ${open ? 'active' : ''}" data-rtab="open">Tareas pendientes</a></li>
+      <li class="nav-item"><a class="nav-link ${open ? '' : 'active'}" data-rtab="done">Tareas finalizadas</a></li></ul>
+    <div class="card-body">
+      <p class="text-muted mb-3">${open ? 'Tareas pendientes y atrasadas, con responsable y fecha límite.' : 'Tareas cerradas dentro de un periodo.'} Incluye la especificación de material y las medidas del soporte.${NEW}</p>
+      ${open ? '' : `<div class="form-row mb-3" style="max-width:420px"><div class="col-6"><label>Desde</label><input type="date" class="form-control form-control-sm" data-rf="repFrom" value="${S.repFrom}"></div><div class="col-6"><label>Hasta</label><input type="date" class="form-control form-control-sm" data-rf="repTo" value="${S.repTo}"></div></div>`}
+      <div class="small text-muted mb-2">Mostrando ${r.n} tarea(s)</div>
+      <div class="card card-table mb-0" style="box-shadow:none;border:1px solid #eee">${r.html}</div>
+    </div></div>`;
+}
+$(document).on('click', '[data-rtab]', function (e) { e.preventDefault(); S.repTab = this.dataset.rtab; render(); });
+$(document).on('change', '[data-rf]', function () { S[this.dataset.rf] = this.value; render(); });
+
+/* ===================== Render ===================== */
+$(document).on('change', '[data-pick]', function () { if (this.dataset.pick === 'item') { S.cur = this.value; S.draft = null; } else S.task = this.value; render(); });
+function render() {
+  $('.tooltip').remove();
+  drawChrome();
+  $('#content').html({ ficha: viewFicha, form: viewForm, tarea: viewTarea, rep: viewRep }[S.view]());
+  $('[data-toggle="tooltip"]').tooltip();
+}
+render();
+})();
+</script>
+</body>
+</html>
