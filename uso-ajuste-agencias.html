@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de uso · Ajuste de precios de agencias</title>
+  <!-- Manual interactivo con demostraciones animadas. Incluye Soportes (lectura), Cotizaciones y Agencias con el ajuste de precios por agencia. Los datos son de ejemplo. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234285f4'/%3E%3Ctext x='16' y='22.5' font-size='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EO%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+  <style>
+    /* ---------- Base ---------- */
+    html { font-size: 15px; }
+    body { font-family: 'Roboto', -apple-system, 'Segoe UI', Arial, sans-serif; background: #f4f6fa; color: #3c4858; -webkit-font-smoothing: antialiased; }
+    a { color: #2f6fe0; } a:hover { color: #1f56c0; }
+    h1, h2, h3, h4, h5, h6 { color: #1f2d3d; }
+    .text-bold { font-weight: 600; }
+    .text-primary { color: #4285f4 !important; } .bg-primary { background: #4285f4 !important; }
+    .text-success { color: #2e9a4d !important; } .text-warning { color: #c98a00 !important; } .text-danger { color: #d93025 !important; }
+    code { color: #c2185b; background: #fdf0f5; padding: .1rem .3rem; border-radius: 4px; }
+    .icon { display: inline-block; vertical-align: middle; font-size: 1.2em; line-height: 1; }
+    .btn .icon { margin-right: 2px; margin-top: -2px; }
+    .dropdown-item .icon { margin-right: 8px; color: #7b8798; }
+
+    /* ---------- Botones ---------- */
+    .btn { border-radius: 6px; font-weight: 500; }
+    .btn-primary { background: #4285f4; border-color: #4285f4; } .btn-primary:hover, .btn-primary:focus { background: #2f6fe0; border-color: #2f6fe0; }
+    .btn-success { background: #34a853; border-color: #34a853; } .btn-success:hover { background: #2a8c45; border-color: #2a8c45; }
+    .btn-danger { background: #ea4335; border-color: #ea4335; } .btn-danger:hover { background: #cf3326; border-color: #cf3326; }
+    .btn-warning { background: #f5b301; border-color: #f5b301; color: #3a2c00; }
+    .btn-secondary { background: #eef1f5; border-color: #dde2e8; color: #3c4858; }
+    .btn-secondary:hover, .btn-secondary:focus, .btn-secondary.active, .show > .btn-secondary.dropdown-toggle { background: #dfe5ec; border-color: #cdd5de; color: #1f2d3d; }
+    .btn-secondary.disabled, .btn-secondary:disabled { background: #f3f5f8; color: #9aa5b3; }
+    .btn-xl { padding: .75rem 1rem; font-size: 1rem; }
+    .btn-outline-secondary { border-color: #cdd5de; color: #5f6b7a; }
+
+    /* ---------- Insignias y progreso ---------- */
+    .badge { font-weight: 500; padding: .35em .6em; border-radius: 5px; }
+    .badge-primary { background: #4285f4; } .badge-success { background: #34a853; } .badge-danger { background: #ea4335; }
+    .badge-warning { background: #fbbc05; color: #3a2c00; } .badge-info { background: #25a5c4; } .badge-secondary { background: #8d99a8; } .badge-dark { background: #3c4858; } .badge-light { background: #e3e8ef; color: #3c4858; }
+    .progress { background: #e8ecf1; border-radius: 6px; }
+    .progress-bar { background: #4285f4; }
+    .progress-bar.bg-success { background: #34a853 !important; }
+
+    /* ---------- Marco general ---------- */
+    .be-wrapper { min-height: 100vh; }
+    .be-top-header { background: #fff; height: 60px; padding: 0; box-shadow: 0 1px 3px rgba(20, 30, 60, .08); z-index: 1030; }
+    .be-top-header > .container-fluid { height: 60px; display: flex; align-items: center; padding: 0 12px 0 0; }
+    .be-navbar-header { width: 240px; height: 60px; display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; }
+    .navbar-brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 1.1rem; color: #1f2d3d; padding: 0; margin: 0; }
+    .navbar-brand:hover { color: #1f2d3d; text-decoration: none; }
+    .brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #4285f4, #6fa3ff); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: .95rem; }
+    .brand-lockup { display: inline-flex; align-items: center; gap: 9px; font-size: 1.35rem; font-weight: 700; color: #1f2d3d; }
+    .menu-toggle { border: 0; background: transparent; font-size: 1.6rem; color: #5f6b7a; padding: 0 12px 0 0; line-height: 1; cursor: pointer; }
+    .page-title { flex: 1; min-width: 0; margin-left: 8px; font-size: 1.15rem; font-weight: 500; color: #1f2d3d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .be-right-navbar { margin-left: auto; display: flex; align-items: center; }
+    .be-right-navbar .nav { flex-direction: row; align-items: center; margin: 0; padding: 0; list-style: none; }
+    .be-user-nav .nav-link { display: flex; align-items: center; color: #3c4858; padding: .25rem .5rem; }
+    .be-user-nav .user-name { font-weight: 500; font-size: .9rem; }
+    .be-icons-nav .nav-link { color: #5f6b7a; font-size: 1.45rem; padding: .3rem .7rem; line-height: 1; }
+    .be-icons-nav .nav-link:hover { color: #4285f4; }
+    .be-icons-nav .dropdown-toggle::after, .be-user-nav .dropdown-toggle::after { display: none; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #e8f0fe; color: #2f6fe0; display: inline-grid; place-items: center; font-size: .8rem; font-weight: 600; margin-right: 9px; }
+    .dropdown-menu { border: 1px solid #e8ecf1; border-radius: 8px; box-shadow: 0 8px 24px rgba(20, 30, 60, .12); font-size: .9rem; }
+    .dropdown-item { padding: .45rem 1.1rem; } .dropdown-item.active, .dropdown-item:active { background: #eaf1ff; color: #2f6fe0; }
+    .dropdown-header { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #98a2b3; }
+    .user-info { padding: .5rem 1.1rem .7rem; border-bottom: 1px solid #eef0f4; margin-bottom: .3rem; }
+    .user-info .user-name { font-weight: 600; color: #1f2d3d; }
+    .user-position { font-size: .8rem; color: #6c757d; }
+    .user-position.online::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34a853; margin-right: 6px; }
+
+    /* ---------- Menú lateral ---------- */
+    .be-left-sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 240px; background: #fff; border-right: 1px solid #e8ecf1; overflow-y: auto; z-index: 1020; transition: transform .2s ease; }
+    .left-sidebar-content { padding: 8px 0 40px; }
+    .sidebar-elements, .sidebar-elements ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-elements .divider { padding: 14px 20px 6px; font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: #98a2b3; font-weight: 500; }
+    .sidebar-elements li > a { display: flex; align-items: center; gap: 12px; padding: 9px 18px 9px 17px; color: #3c4858; text-decoration: none; font-size: .92rem; border-left: 3px solid transparent; }
+    .sidebar-elements li > a .icon { font-size: 1.3rem; color: #7b8798; width: 22px; text-align: center; }
+    .sidebar-elements li > a:hover { background: #f4f7fc; color: #1f2d3d; }
+    .sidebar-elements li.active > a { color: #2f6fe0; font-weight: 500; }
+    .sidebar-elements li.active > a .icon { color: #4285f4; }
+    .sidebar-elements li:not(.parent).active > a { background: #eaf1ff; border-left-color: #4285f4; }
+    .sidebar-elements li.parent > a::after { content: ''; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid #a3adbb; border-bottom: 2px solid #a3adbb; transform: rotate(45deg); transition: transform .15s; }
+    .sidebar-elements li.parent.open > a::after { transform: rotate(-135deg); }
+    .sidebar-elements .sub-menu { display: none; background: #fafbfd; }
+    .sidebar-elements li.open > .sub-menu { display: block; }
+    .sidebar-elements .sub-menu li > a { padding-left: 54px; font-size: .88rem; }
+    .sidebar-elements .sub-menu .sub-menu li > a { padding-left: 72px; }
+
+    /* ---------- Contenido ---------- */
+    .be-content { margin-left: 240px; padding-top: 60px; min-height: 100vh; }
+    .main-content { padding: 24px; }
+    @media (max-width: 991.98px) {
+      .be-left-sidebar { transform: translateX(-100%); }
+      body.menu-open .be-left-sidebar { transform: none; box-shadow: 8px 0 24px rgba(20, 30, 60, .18); }
+      body.menu-open::after { content: ''; position: fixed; top: 60px; right: 0; bottom: 0; left: 240px; background: rgba(15, 23, 42, .3); z-index: 1010; }
+      .be-content { margin-left: 0; }
+      .be-navbar-header { width: auto; padding: 0 8px 0 12px; }
+      .brand-text, .be-user-nav .user-name { display: none; }
+      .main-content { padding: 16px 12px; }
+    }
+
+    /* ---------- Tarjetas ---------- */
+    .card { border: 0; border-radius: 10px; box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06); margin-bottom: 20px; }
+    .card-header { background: #fff; border-bottom: 0; padding: 15px 20px; border-radius: 10px 10px 0 0; font-size: 1.05rem; font-weight: 500; color: #1f2d3d; }
+    .card-header-divider { border-bottom: 1px solid #eef1f5; }
+    .card-header .tools { float: right; display: flex; align-items: center; gap: 6px; margin-left: 12px; }
+    .card-header .tools .icon { font-size: 1.25rem; color: #7b8798; }
+    .card-title { font-size: 1.1rem; font-weight: 500; margin: 0; }
+    .card-subtitle { font-size: .82rem; color: #7b8798; margin-top: 2px; font-weight: 400; }
+    .card-border-color { border-top: 3px solid #4285f4; }
+    .card-border { border: 1px solid #e8ecf1; box-shadow: none; }
+    .card-footer { background: #fafbfd; border-top: 1px solid #eef1f5; padding: 12px 20px; }
+    .card-table > .card-body { padding: 0; }
+    .card-table .table { margin-bottom: 0; }
+    .card-table .table th:first-child, .card-table .table td:first-child { padding-left: 20px; }
+    .card-table .table th:last-child, .card-table .table td:last-child { padding-right: 20px; }
+    .tab-container .nav-tabs { padding: 0 20px; border-bottom: 1px solid #e8ecf1; }
+    .tab-container .tab-content { padding: 20px; }
+    .nav-tabs .nav-link { border: 0; border-bottom: 2px solid transparent; color: #5f6b7a; padding: .7rem 1rem; margin-bottom: -1px; }
+    .nav-tabs .nav-link:hover { color: #2f6fe0; border-color: transparent transparent #cfe0ff; }
+    .nav-tabs .nav-link.active { color: #2f6fe0; background: transparent; border-color: transparent transparent #4285f4; font-weight: 500; }
+    .card > .card-body > .nav-tabs { margin-bottom: 0; }
+
+    /* ---------- Tablas y filtros ---------- */
+    .table th { font-size: .78rem; color: #6b7788; font-weight: 500; border-top: 0; border-bottom: 1px solid #e8ecf1; white-space: nowrap; background: #fff; }
+    .table td { vertical-align: middle; border-top: 1px solid #f0f2f6; }
+    .table-striped tbody tr:nth-of-type(odd) { background: #fafbfd; }
+    .table-hover tbody tr:hover { background: #f1f6ff; }
+    .table td.number, .table th.number { text-align: right; }
+    td.actions, th.actions { width: 1%; white-space: nowrap; text-align: right; }
+    .no-fill { width: 1%; white-space: nowrap; }
+    .table-borderless td, .table-borderless th { border: 0; }
+    .row.table-filters-container { margin: 0; padding: 14px 20px 4px; background: #fcfdff; border-bottom: 1px solid #eef1f5; }
+    .table-filters-container .table-filters { margin-bottom: 10px; }
+    .table-filter-title { font-size: .7rem; color: #7b8798; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+
+    /* ---------- Formularios ---------- */
+    .form-group label, label { font-size: .85rem; font-weight: 500; color: #4a5568; margin-bottom: .25rem; }
+    .form-control { border-color: #d5dbe3; border-radius: 6px; }
+    .form-control:focus { border-color: #4285f4; box-shadow: 0 0 0 .18rem rgba(66, 133, 244, .18); }
+    .custom-control-label { font-weight: 400; }
+    .custom-control-input:checked ~ .custom-control-label::before { background-color: #4285f4; border-color: #4285f4; }
+    .custom-file-label { border-radius: 6px; }
+    .custom-control-inline { margin-right: 1rem; }
+    .switch-button { position: relative; display: inline-block; width: 46px; height: 22px; flex-shrink: 0; }
+    .switch-button input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; z-index: 2; cursor: pointer; }
+    .switch-button > span { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #cfd6df; border-radius: 22px; transition: .2s; }
+    .switch-button > span label { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; margin: 0; transition: .2s; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+    .switch-button input:checked + span { background: #4285f4; } .switch-button input:checked + span label { left: 26px; }
+    .switch-button-yesno > span::after { content: 'OFF'; position: absolute; right: 7px; top: 4px; font-size: .58rem; color: #fff; font-weight: 700; }
+    .switch-button-yesno input:checked + span::after { content: 'ON'; left: 7px; right: auto; }
+
+    /* ---------- Alertas (formato con ícono) ---------- */
+    .alert { border: 0; border-radius: 8px; display: flex; align-items: stretch; padding: 0; overflow: hidden; }
+    .alert .icon { display: flex; align-items: center; justify-content: center; width: 48px; font-size: 1.5rem; flex-shrink: 0; }
+    .alert .message { padding: .8rem 1rem; flex: 1; }
+    .alert .close { position: static; padding: .8rem 1rem; }
+    .alert-success { background: #e7f6ec; color: #1e6b3a; } .alert-success .icon { background: #34a853; color: #fff; }
+    .alert-info { background: #e3f4f9; color: #146176; } .alert-info .icon { background: #25a5c4; color: #fff; }
+    .alert-warning { background: #fff6dc; color: #7a5a00; } .alert-warning .icon { background: #fbbc05; color: #3a2c00; }
+    .alert-danger { background: #fde8e6; color: #9a2a20; } .alert-danger .icon { background: #ea4335; color: #fff; }
+    .alert-primary { background: #e6efff; color: #214d9c; } .alert-primary .icon { background: #4285f4; color: #fff; }
+
+    /* ---------- Línea de tiempo ---------- */
+    .user-timeline { list-style: none; padding-left: 0; margin: 0 0 0 6px; border-left: 2px solid #e3e8ef; }
+    .user-timeline li { position: relative; padding: 0 0 14px 18px; }
+    .user-timeline li::before { content: ''; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #4285f4; border: 2px solid #fff; }
+    .user-timeline-date { font-size: .75rem; color: #8d99a8; } .user-timeline-title { font-weight: 500; color: #1f2d3d; } .user-timeline-description { font-size: .85rem; color: #6b7788; }
+
+    /* ---------- Modales ---------- */
+    .modal-content { border: 0; border-radius: 10px; box-shadow: 0 12px 40px rgba(20, 30, 60, .2); }
+    .modal-header { border-bottom: 1px solid #eef1f5; } .modal-footer { border-top: 1px solid #eef1f5; }
+  </style>
+
+<!-- ▶ [AJ-01] ESTILOS · CSS propio de este prototipo -->
+  <style>
+    .toast-host { position:fixed; top:80px; right:20px; z-index:2000; width:340px; }
+    .tbl-actions .btn { margin-right:2px; }
+    .cursor-pointer { cursor:pointer; }
+    .sticky-sub { font-size:.78rem; color:#6c757d; }
+    .info-table th { font-weight:500; color:#6b7788; }
+    .btn-xs { padding:.1rem .35rem; font-size:.75rem; }
+    .no-fill { width:1%; white-space:nowrap; }
+    .role-bar { position:sticky; top:60px; z-index:1015; background:#fff; border-bottom:1px solid #e8ecf1; padding:.45rem 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .role-bar .lbl { font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:#7b8798; }
+    .role-bar .btn.active { background:#4285f4; border-color:#4285f4; color:#fff; }
+    .tooltip-inner { max-width:300px; text-align:left; }
+    .adj-up { color:#3a5a8c; } .adj-down { color:#9a4242; }
+    #adj-panel:not(:empty) { margin:-.25rem 0 1rem; display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
+    #adj-panel .adj-chips { display:contents; }
+    .adj-title { font-size:.8rem; font-weight:500; color:#4a5568; white-space:nowrap; }
+    .adj-chips { display:flex; flex-wrap:wrap; gap:4px; }
+    .adj-chip { font-weight:500; font-size:.72rem; padding:.3em .55em; border:1px solid transparent; white-space:nowrap; }
+    .adj-desc { background:#f1d8d8; color:#8f3f3f; border-color:#e5c0c0; }
+    .adj-rec { background:#d9e4f3; color:#35527f; border-color:#c3d3ea; }
+    .adj-zero { background:#eef0f3; color:#7b8798; border-color:#e1e5ea; }
+    .adj-table td { vertical-align:middle; }
+    .alert table th { color:inherit; background:transparent; }
+    .alert table td { border-color:rgba(0,0,0,.08); }
+    .alert .message a.alert-link { font-weight:500; }
+    /* Manual: demostraciones animadas */
+    .role-bar .demos { margin-left:auto; display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
+    .role-bar .demos .btn { font-size:.75rem; }
+    #demo-shield { position:fixed; top:0; right:0; bottom:0; left:0; z-index:2500; background:rgba(15,23,42,.08); cursor:progress; }
+    #demo-cursor { position:fixed; left:0; top:0; width:26px; height:26px; z-index:2600; pointer-events:none; transition:transform .85s cubic-bezier(.4,0,.2,1); }
+    #demo-cursor svg { filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+    #demo-cursor.click::after { content:''; position:absolute; left:-12px; top:-12px; width:30px; height:30px; border-radius:50%; background:rgba(66,133,244,.4); animation:dpulse .3s ease-out; }
+    @keyframes dpulse { from { transform:scale(.3); opacity:1; } to { transform:scale(1.5); opacity:0; } }
+    .demo-hl { outline:3px solid #ff9800 !important; outline-offset:3px; border-radius:6px; animation:dhl 1s ease-in-out infinite; position:relative; }
+    @keyframes dhl { 50% { outline-color:rgba(255,152,0,.3); } }
+    #demo-coach { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); width:min(700px, calc(100% - 24px)); z-index:2700; background:#1f2d3d; color:#fff; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,.35); padding:14px 18px; }
+    #demo-coach .dc-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px; }
+    #demo-coach .dc-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; color:#9fb3c8; }
+    #demo-coach .dc-text { font-size:1rem; line-height:1.45; min-height:2.9em; }
+    #demo-coach .progress { height:5px; margin-top:10px; background:#34475b; } #demo-coach .progress-bar { transition:width .5s; }
+    .xl-tabs { display:flex; gap:2px; border-bottom:2px solid #217346; margin-bottom:10px; flex-wrap:wrap; }
+    .xl-tab { border:1px solid #cfd6df; border-bottom:0; background:#eef1f5; padding:4px 14px; font-size:.82rem; border-radius:6px 6px 0 0; cursor:pointer; }
+    .xl-tab.active { background:#217346; color:#fff; border-color:#217346; }
+    .xl-table { border-collapse:collapse; font-family:Calibri, Arial, sans-serif; font-size:.8rem; }
+    .xl-table th, .xl-table td { border:1px solid #cfd6df; padding:3px 9px; white-space:nowrap; }
+    .xl-table thead th { background:#e8f2ec; color:#1e5c3a; font-weight:600; }
+    .xl-table .xl-rn { background:#f3f5f8; color:#8d99a8; text-align:center; width:34px; }
+    .howto { margin-bottom:1rem; }
+    /* Sin menú lateral: la navegación es por las demostraciones y los enlaces del manual */
+    .be-left-sidebar, #menu-toggle { display:none !important; } .be-content { margin-left:0 !important; } .be-navbar-header { width:auto !important; padding:0 12px 0 16px; }
+    body:not(.demo-on) #content :is(input, select, textarea, .custom-control-label, .btn:not([data-act=demo])) { cursor:default; }
+    .demo-frame { position:fixed; z-index:2550; pointer-events:none; border:3px solid #ff9800; border-radius:10px; background:rgba(255,152,0,.07); box-shadow:0 0 0 4px rgba(255,152,0,.25); animation:dframe 1.2s ease-in-out infinite; }
+    @keyframes dframe { 50% { box-shadow:0 0 0 9px rgba(255,152,0,.08); } }
+    #demo-coach .dc-foot { display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; }
+    #demo-coach .dc-count { font-size:.8rem; color:#9fb3c8; } #demo-coach .dc-nav .btn { margin-left:6px; min-width:104px; }
+    #demo-coach .dc-end-note { margin-top:8px; padding-top:8px; border-top:1px solid #34475b; font-size:.9rem; color:#cfe0f3; }
+    #demo-coach .btn:disabled { opacity:.4; }
+    body.demo-on .main-content { padding-bottom:280px; }
+    /* Banner de demostraciones */
+    .role-bar { display:block; padding:0; }
+    .role-bar .rb-row { padding:.45rem 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .demo-banner { background:linear-gradient(100deg,#1546b8 0%,#4285f4 60%,#5b9bff 100%); color:#fff; padding:.8rem 24px; display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; box-shadow:0 2px 6px rgba(20,50,120,.25); }
+    .demo-banner .db-title { font-weight:700; font-size:1.02rem; display:flex; align-items:center; gap:8px; margin-right:6px; }
+    .demo-banner .db-title .zmdi { font-size:1.5rem; animation:dbpulse 1.6s ease-in-out infinite; }
+    @keyframes dbpulse { 50% { transform:scale(1.18); } }
+    .demo-banner .db-sub { font-size:.8rem; opacity:.9; flex-basis:100%; margin-top:-4px; }
+    .demo-banner .btn { background:#fff; color:#1546b8; border:0; border-radius:20px; font-weight:600; font-size:.82rem; padding:.3rem .95rem; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+    .demo-banner .btn:hover { background:#ffe9bf; color:#7a4a00; }
+    td .adj-chips { display:grid; grid-template-columns:repeat(2, minmax(150px, 1fr)); gap:4px; }
+    td .adj-chip { text-align:center; padding:.35em .5em; }
+  </style>
+</head>
+<body>
+<!-- ▶ [AJ-02] ESTRUCTURA · marco general de la página -->
+<div class="be-wrapper be-fixed-sidebar">
+  <nav class="navbar navbar-expand fixed-top be-top-header">
+    <div class="container-fluid">
+      <div class="be-navbar-header"><button class="menu-toggle d-lg-none" id="menu-toggle" type="button" aria-label="Menú"><span class="icon zmdi zmdi-menu"></span></button><a class="navbar-brand" href="#/inicio"><span class="brand-mark">O</span><span class="brand-text">OOH Manager</span></a></div>
+      <div class="page-title"><span>Manual de uso</span></div>
+      <div class="be-right-navbar">
+        <ul class="nav navbar-nav float-right be-user-nav">
+          <li class="nav-item"><a class="nav-link" href="#"><span class="avatar">VD</span><span class="user-name">Vendedor Demo</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="be-left-sidebar">
+    <div class="left-sidebar-wrapper"><div class="left-sidebar-spacer"><div class="left-sidebar-scroll"><div class="left-sidebar-content"><ul class="sidebar-elements" id="menu"></ul></div></div></div></div>
+  </div>
+  <div class="be-content"><div class="demo-banner" id="demo-banner"></div><div class="role-bar" id="role-bar"></div><div class="main-content container-fluid" id="content"></div></div>
+</div>
+<div id="modal-host"></div>
+<div class="toast-host" id="toast-host"></div>
+<div id="demo-shield" hidden></div>
+<div id="demo-cursor" hidden><svg width="26" height="26" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.4L20.5 11z" fill="#fff" stroke="#1f2d3d" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+<div id="demo-coach" hidden>
+  <div class="dc-head"><span class="dc-title"></span><button type="button" class="btn btn-sm btn-light" id="demo-stop">Cerrar demostración</button></div>
+  <div class="dc-text"></div>
+  <div class="progress"><div class="progress-bar" style="width:0"></div></div>
+  <div class="dc-foot"><span class="dc-count"></span><span class="dc-nav"><button type="button" class="btn btn-sm btn-secondary" id="demo-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="demo-next">Siguiente ▶</button></span></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// Comportamiento del marco: submenús y menú móvil
+(function () {
+  $(document).on('click', '.sidebar-elements li.parent > a', function (e) { e.preventDefault(); $(this).parent().toggleClass('open'); });
+  $(document).on('click', '#menu-toggle', function () { $('body').toggleClass('menu-open'); });
+  $(document).on('click', function (e) { if ($('body').hasClass('menu-open') && !$(e.target).closest('.be-left-sidebar, #menu-toggle').length) $('body').removeClass('menu-open'); });
+  $(window).on('hashchange', function () { $('body').removeClass('menu-open'); });
+})();
+</script>
+
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+   ▶ [AJ-03] UTILIDADES · formato de fechas, dinero y helpers (de COM-07)
+   ===================================================================== */
+const $c = () => document.getElementById('content');
+const clp = n => '$' + Math.round(n || 0).toLocaleString('es-CL');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sum = a => a.reduce((x, y) => x + y, 0);
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const TODAY = new Date(2026, 9, 19);
+const addDays = (n, base) => { const d = new Date(base || TODAY); d.setDate(d.getDate() + n); return d; };
+const fdate = s => { if (!s) return '—'; const [y, m, d] = s.split('-'); return d + '-' + m + '-' + y; };
+const icon = n => `<span class="icon zmdi zmdi-${n}"></span>`;
+const badge = (t, c) => `<span class="badge badge-${c}">${t}</span>`;
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const match = (txt, q) => !q || norm(txt).includes(norm(q));
+
+/* =====================================================================
+   ▶ [AJ-04] DATOS DE EJEMPLO · soportes, anunciantes, agencias (con ajuste) y servicios (de COM-08)
+   ===================================================================== */
+const TOD = iso(TODAY);
+const USERS = ['María Rojas', 'Juan Soto', 'Andrea Pérez', 'Camilo Díaz'];
+const TYPES = ['Pantallas Digitales', 'Valla', 'Caminero', 'Unipole', 'Monumental', 'Mobiliario Urbano Impreso - Otros', 'Centro Comercial - Otros', 'Aeropuerto - Otros', 'Bus - Luneta'];
+
+const DB = {
+  items: [
+    { id: 'B-001', nombre: 'B-001 - Soporte - Pantalla Digital - Otros', tipo: 'Pantallas Digitales', comuna: 'Macul', dir: 'Coord. -33.5009, -70.6156', tarifa: 1785844, minimo: 1250091, prod: 250018, ilum: true, orient: 'Sur a Norte', ancho: 1.75, alto: 1.5, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.5009, lng: -70.6156 },
+    { id: 'B-002', nombre: 'B-002 - Soporte - Centro Comercial - Otros', tipo: 'Centro Comercial - Otros', comuna: 'Las Condes', dir: 'ALTO LAS CONDES', tarifa: 2794323, minimo: 1956026, prod: 391205, ilum: true, orient: 'Sur a Norte', ancho: 5, alto: 4, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.390666, lng: -70.544511 },
+    { id: 'B-003', nombre: 'B-003 - Soporte - Valla', tipo: 'Valla', comuna: 'Providencia', dir: 'Coord. -33.4403, -70.621', tarifa: 1173395, minimo: 821377, prod: 164275, ilum: true, orient: 'Sur a Norte', ancho: 1.5, alto: 1.25, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4403, lng: -70.621 },
+    { id: 'B-004', nombre: 'B-004 - Soporte - Caminero', tipo: 'Caminero', comuna: 'Vitacura', dir: 'UNIMARC LAS TRANQUERAS', tarifa: 1326186, minimo: 928330, prod: 185666, ilum: true, orient: 'Sur a Norte', ancho: 4, alto: 4, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.3847, lng: -70.5539 },
+    { id: 'B-005', nombre: 'B-005 - Soporte - Caminero', tipo: 'Caminero', comuna: 'Peñaflor', dir: 'Coord. -33.6195, -70.8577', tarifa: 1851758, minimo: 1296231, prod: 259246, ilum: true, orient: 'Norte a Sur', ancho: 12, alto: 4, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.6195, lng: -70.8577 },
+    { id: 'B-006', nombre: 'B-006 - Soporte - Unipole', tipo: 'Unipole', comuna: 'Puerto Montt', dir: 'Coord. -41.5262, -73.1089', tarifa: 1317814, minimo: 922470, prod: 184494, ilum: true, orient: 'Sur a Norte', ancho: 12, alto: 4, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -41.5262, lng: -73.1089 },
+    { id: 'B-007', nombre: 'B-007 - Soporte - Mobiliario Urbano Impreso - Otros', tipo: 'Mobiliario Urbano Impreso - Otros', comuna: 'Santiago', dir: 'Coord. -33.4432, -70.6491', tarifa: 2064181, minimo: 1444927, prod: 288985, ilum: true, orient: 'Norte a Sur', ancho: 1.75, alto: 1.5, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4432, lng: -70.6491 },
+    { id: 'B-008', nombre: 'B-008 - Soporte - Valla', tipo: 'Valla', comuna: 'Pudahuel', dir: 'Coord. -33.4357, -70.7581', tarifa: 2606071, minimo: 1824250, prod: 364850, ilum: true, orient: 'Sur a Norte', ancho: 3, alto: 2, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4357, lng: -70.7581 },
+    { id: 'B-009', nombre: 'B-009 - Soporte - Monumental', tipo: 'Monumental', comuna: 'Rinconada', dir: 'Coord. -32.9219, -70.6744', tarifa: 1120712, minimo: 784498, prod: 156900, ilum: true, orient: 'Sur a Norte', ancho: 12, alto: 10, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -32.9219, lng: -70.6744 },
+    { id: 'B-010', nombre: 'B-010 - Soporte - Mobiliario Urbano Impreso - Otros', tipo: 'Mobiliario Urbano Impreso - Otros', comuna: 'Algarrobo', dir: 'Coord. -33.3624, -71.671', tarifa: 1676805, minimo: 1173764, prod: 234753, ilum: true, orient: 'Sur a Norte', ancho: 1.5, alto: 1.25, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.3624, lng: -71.671 },
+    { id: 'B-011', nombre: 'B-011 - Soporte - Aeropuerto - Otros', tipo: 'Aeropuerto - Otros', comuna: 'Pudahuel', dir: 'Aeropuerto Internacional Arturo Merino Benítez', tarifa: 2165804, minimo: 1516063, prod: 303213, ilum: true, orient: 'Oeste a Este', ancho: 8, alto: 4, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.3946, lng: -70.7937 },
+    { id: 'B-012', nombre: 'B-012 - Soporte - Caminero', tipo: 'Caminero', comuna: 'Providencia', dir: 'Coord. -33.4139, -70.6076', tarifa: 2691852, minimo: 1884296, prod: 376859, ilum: true, orient: 'Oeste a Este', ancho: 1.5, alto: 1.25, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4139, lng: -70.6076 },
+    { id: 'B-013', nombre: 'B-013 - Soporte - Caminero', tipo: 'Caminero', comuna: 'Las Condes', dir: 'Coord. -33.3876, -70.539', tarifa: 2542526, minimo: 1779768, prod: 355954, ilum: true, orient: 'Oeste a Este', ancho: 1.5, alto: 1.25, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.3876, lng: -70.539 },
+    { id: 'B-014', nombre: 'B-014 - Soporte - Monumental', tipo: 'Monumental', comuna: 'La Reina', dir: 'Coord. -33.4442, -70.562', tarifa: 1916122, minimo: 1341285, prod: 268257, ilum: true, orient: 'Oeste a Este', ancho: 1.5, alto: 1.25, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4442, lng: -70.562 },
+    { id: 'B-015', nombre: 'B-015 - Soporte - Monumental', tipo: 'Monumental', comuna: 'Macul', dir: 'Coord. -33.4746, -70.614', tarifa: 1165734, minimo: 816014, prod: 163203, ilum: true, orient: 'Oeste a Este', ancho: 1.75, alto: 1.5, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.4746, lng: -70.614 },
+    { id: 'B-016', nombre: 'B-016 - Soporte - Monumental', tipo: 'Monumental', comuna: 'Curicó', dir: 'Coord. -34.9922, -71.2435', tarifa: 1040526, minimo: 598000, prod: 145674, ilum: true, orient: 'Oeste a Este', ancho: 12, alto: 10, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -34.9922, lng: -71.2435 },
+    { id: 'B-017', nombre: 'B-017 - Soporte - Bus - Luneta', tipo: 'Bus - Luneta', comuna: 'Santiago', dir: 'Coord. -33.4662, -70.6383', tarifa: 1591408, minimo: 1113986, prod: 222797, ilum: true, orient: 'Oeste a Este', ancho: 2, alto: 1, unidades: 1, habilitado: true, tercero: false, prov: '', lat: -33.466225, lng: -70.638256 },
+    { id: 'B-018', nombre: 'B-018 - Soporte - Pantallas Digitales', tipo: 'Pantallas Digitales', comuna: 'San Bernardo', dir: 'Coord. -33.5882, -70.7115', tarifa: 1558175, minimo: 1090723, prod: 218145, ilum: false, orient: 'Oeste a Este', ancho: 4, alto: 3, unidades: 7, habilitado: true, tercero: false, prov: '', lat: -33.5882, lng: -70.7115 },
+    { id: 'B-019', nombre: 'B-019 - Soporte - Pantallas Digitales', tipo: 'Pantallas Digitales', comuna: 'San Joaquín', dir: 'Coord. -33.4847, -70.6291', tarifa: 2684996, minimo: 1879497, prod: 375899, ilum: false, orient: 'Oeste a Este', ancho: 4, alto: 3, unidades: 3, habilitado: true, tercero: false, prov: '', lat: -33.4847, lng: -70.6291 },
+    { id: 'B-020', nombre: 'B-020 - Soporte - Pantallas Digitales', tipo: 'Pantallas Digitales', comuna: 'San Joaquín', dir: 'Coord. -33.4847, -70.6291', tarifa: 2078148, minimo: 1454704, prod: 290941, ilum: false, orient: 'Oeste a Este', ancho: 4, alto: 3, unidades: 5, habilitado: true, tercero: false, prov: '', lat: -33.4847, lng: -70.6291 }
+  ],
+  clients: [
+    { id: 'C1', nombre: 'Automotriz Andes', razon: 'Automotriz Andes SpA', rut: '76.100.200-1', giro: 'Venta de vehículos', email: 'facturas@andes.example', dir: 'Av. Kennedy 5600, Vitacura', cat: 'Automotriz', agency: 'A1', ejecutivo: 'María Rojas', contacts: [{ tipo: 'Comercial', nombre: 'Daniela Ruiz', email: 'druiz@andes.example', tel: '+56 9 5555 1001' }, { tipo: 'Financiero', nombre: 'Pablo Soto', email: 'psoto@andes.example', tel: '+56 9 5555 1101' }] },
+    { id: 'C2', nombre: 'Retail Norte', razon: 'Retail Norte S.A.', rut: '76.200.300-2', giro: 'Comercio minorista', email: 'cobranza@retailnorte.example', dir: 'Av. Libertador 900, Santiago', cat: 'Retail', agency: 'A2', ejecutivo: 'Juan Soto', contacts: [{ tipo: 'Comercial', nombre: 'Marcelo Pino', email: 'mpino@retailnorte.example', tel: '+56 9 5555 1002' }] },
+    { id: 'C3', nombre: 'Banco Central Sur', razon: 'Banco Central Sur S.A.', rut: '97.300.400-3', giro: 'Servicios financieros', email: 'proveedores@bcsur.example', dir: 'Huérfanos 1100, Santiago', cat: 'Financiero', agency: 'A3', ejecutivo: 'María Rojas', contacts: [{ tipo: 'Comercial', nombre: 'Patricia León', email: 'pleon@bcsur.example', tel: '+56 9 5555 1003' }, { tipo: 'Financiero', nombre: 'Luis Parra', email: 'lparra@bcsur.example', tel: '+56 9 5555 1103' }] },
+    { id: 'C4', nombre: 'Cadena Food Sur', razon: 'Cadena Food Sur Ltda.', rut: '76.400.500-4', giro: 'Restaurantes', email: 'pagos@foodsur.example', dir: 'Av. Matta 300, Santiago', cat: 'Alimentos y bebidas', agency: 'A4', ejecutivo: 'Andrea Pérez', contacts: [{ tipo: 'Comercial', nombre: 'Rodrigo Mora', email: 'rmora@foodsur.example', tel: '+56 9 5555 1004' }] },
+    { id: 'C5', nombre: 'Inmobiliaria Cordillera', razon: 'Inmobiliaria Cordillera SpA', rut: '76.500.600-5', giro: 'Desarrollo inmobiliario', email: 'finanzas@cordillera.example', dir: 'El Bosque Norte 500, Las Condes', cat: 'Inmobiliario', agency: '', ejecutivo: 'Juan Soto', contacts: [{ tipo: 'Comercial', nombre: 'Valentina Cruz', email: 'vcruz@cordillera.example', tel: '+56 9 5555 1005' }] },
+    { id: 'C6', nombre: 'Telecom Pacífico', razon: 'Telecom Pacífico S.A.', rut: '96.600.700-6', giro: 'Telecomunicaciones', email: 'ap@telepacifico.example', dir: 'Av. Apoquindo 3000, Las Condes', cat: 'Telecomunicaciones', agency: 'A1', ejecutivo: 'Camilo Díaz', contacts: [{ tipo: 'Comercial', nombre: 'Hernán Salas', email: 'hsalas@telepacifico.example', tel: '+56 9 5555 1006' }] },
+    { id: 'C7', nombre: 'Salud Vida Plena', razon: 'Clínica Vida Plena SpA', rut: '76.700.800-7', giro: 'Servicios de salud', email: 'tesoreria@vidaplena.example', dir: 'Av. Salvador 1200, Providencia', cat: 'Salud', agency: '', ejecutivo: 'Andrea Pérez', contacts: [] },
+    { id: 'C8', nombre: 'Bebidas del Valle', razon: 'Bebidas del Valle S.A.', rut: '76.800.900-8', giro: 'Bebidas', email: 'facturacion@bdv.example', dir: 'Camino Lo Boza 800, Pudahuel', cat: 'Alimentos y bebidas', agency: 'A1', ejecutivo: '', contacts: [{ tipo: 'Comercial', nombre: 'Tomás Rivas', email: 'trivas@bdv.example', tel: '+56 9 5555 1008' }] }
+  ],
+  /* adj: ajuste de precios de la agencia. t = '' (sin ajuste) | 'desc' (descuento) | 'rec' (recargo); p = porcentaje. Un solo tipo por precio. */
+  agencies: [
+    { id: 'A1', nombre: 'MediaPlan Chile', razon: 'MediaPlan Chile SpA', rut: '76.910.111-1', giro: 'Agencia de medios', email: 'admin@mediaplan.example', dir: 'Av. Providencia 2000, of. 41',
+      adj: { tarifa: { t: 'desc', p: 10 }, minimo: { t: 'desc', p: 5 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 15 } } },
+    { id: 'A2', nombre: 'Vía Pública Group', razon: 'Vía Pública Group S.A.', rut: '76.920.222-2', giro: 'Agencia de medios', email: 'admin@vpgroup.example', dir: 'Av. Apoquindo 4500, of. 12',
+      adj: { tarifa: { t: 'rec', p: 8 }, minimo: { t: 'rec', p: 8 }, prod: { t: 'rec', p: 5 }, serv: { t: '', p: 0 } } },
+    { id: 'A3', nombre: 'Estrategia 360', razon: 'Estrategia 360 Ltda.', rut: '76.930.333-3', giro: 'Publicidad', email: 'admin@estrategia360.example', dir: 'Huérfanos 835, Santiago',
+      adj: { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: 'desc', p: 10 }, serv: { t: 'rec', p: 3 } } },
+    { id: 'A4', nombre: 'Cuenta Directa', razon: 'Cuenta Directa Ltda.', rut: '76.940.444-4', giro: 'Publicidad', email: 'admin@cdirecta.example', dir: 'Los Leones 1200, Providencia',
+      adj: { tarifa: { t: '', p: 0 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: '', p: 0 } } }
+  ],
+  services: [
+    { id: 'V1', serial: 'SV-001', nombre: 'Impresión de lona', desc: 'Impresión y entrega de lona según medidas del soporte.', def: false },
+    { id: 'V2', serial: 'SV-002', nombre: 'Instalación', desc: 'Instalación del material en el soporte.', def: false },
+    { id: 'V3', serial: 'SV-003', nombre: 'Producción creativa digital', desc: 'Adaptación del arte para pantallas digitales.', def: false },
+    { id: 'V4', serial: 'SV-004', nombre: 'Desinstalación', desc: '', def: false },
+    { id: 'V5', serial: 'SV-005', nombre: 'Reporte fotográfico de exhibición', desc: 'Fotografías de la exhibición durante la campaña.', def: false }
+  ],
+  serviceItems: [
+    { service: 'V1', item: 'B-003', price: 180000 }, { service: 'V1', item: 'B-008', price: 210000 }, { service: 'V1', item: 'B-014', price: 170000 },
+    { service: 'V2', item: 'B-003', price: 120000 }, { service: 'V2', item: 'B-008', price: 140000 }, { service: 'V2', item: 'B-014', price: 110000 },
+    { service: 'V3', item: 'B-018', price: 450000 }, { service: 'V3', item: 'B-019', price: 380000 }, { service: 'V3', item: 'B-020', price: 420000 },
+    { service: 'V4', item: 'B-003', price: 90000 }, { service: 'V4', item: 'B-008', price: 100000 },
+    { service: 'V5', item: 'B-003', price: 60000 }, { service: 'V5', item: 'B-018', price: 60000 }, { service: 'V5', item: 'B-019', price: 60000 }, { service: 'V5', item: 'B-011', price: 40000 }, { service: 'V5', item: 'B-020', price: 60000 }
+  ],
+  deals: []
+};
+
+/* Grupo (agencia matriz) y contactos de cada agencia (como en el modelo real: máx. 2 contactos, uno financiero y uno comercial). */
+const AG_EXTRA = {
+  A1: { parent: '', contacts: [{ id: 'K1', category: 'commercial', name: 'Fernanda Lagos', email: 'flagos@mediaplan.example', phone: '+56 2 2666 0101' }, { id: 'K2', category: 'financial', name: 'Pablo Reyes', email: 'preyes@mediaplan.example', phone: '+56 2 2666 0111' }] },
+  A2: { parent: '', contacts: [{ id: 'K3', category: 'commercial', name: 'Nicolás Araya', email: 'naraya@vpgroup.example', phone: '+56 2 2666 0202' }] },
+  A3: { parent: 'A2', contacts: [] }, A4: { parent: 'A2', contacts: [] }
+};
+DB.agencies.forEach(a => Object.assign(a, AG_EXTRA[a.id]));
+const by = (arr, id) => arr.find(x => x.id === id);
+const clientOf = id => by(DB.clients, id);
+const clientName = id => (clientOf(id) || {}).nombre || '—';
+const agencyOf = id => by(DB.agencies, id);
+const agencyName = id => id ? ((agencyOf(id) || {}).nombre || '—') : '';
+const itemOf = id => by(DB.items, id) || { id, nombre: id, tipo: '', tarifa: 0, minimo: 0, prod: 0, comuna: '' };
+const serviceOf = id => by(DB.services, id) || { id, nombre: id, serial: '' };
+const dealOf = id => by(DB.deals, id);
+const nextId = (p, arr) => p + (Math.max(0, ...arr.map(x => parseInt(String(x.id).replace(/\D/g, ''), 10) || 0)) + 1);
+const nextSerial = () => 'CA-' + String(Math.max(...DB.deals.map(d => +d.serial.slice(3))) + 1).padStart(4, '0');
+
+/* =====================================================================
+   ▶ [AJ-05] PRECIOS · cálculo base de la cotización (de COM-08) y AJUSTE POR AGENCIA (nuevo)
+   Precio arriendo de un soporte = precio individual × unidades × duración (1 mes = 30 días).
+   ===================================================================== */
+function bidNet(b) { return Math.round((+b.unit || 0) * (+b.qty || 0) * (b.measure === 'month' ? (+b.durQty || 0) : (+b.durQty || 0) / 30)); }
+const svcPrice = (service, item) => ((DB.serviceItems.find(s => s.service === service && s.item === item)) || {}).price || 0;
+const svcLease = d => sum(d.services.filter(s => s.pricing === 'lease').map(s => s.price));
+const svcProd = d => sum(d.services.filter(s => s.pricing === 'production').map(s => s.price));
+const dealLease = d => sum(d.bids.map(b => b.net)) + svcLease(d);
+const dealProd = d => sum(d.bids.map(b => +b.prod || 0)) + svcProd(d);
+const dealTotal = d => dealLease(d) + dealProd(d);
+
+/* Los cuatro precios que admiten ajuste. Cada uno tiene UNA sola regla: sin ajuste, descuento o recargo. */
+const PKEYS = [['minimo', 'Precio mínimo'], ['tarifa', 'Precio mensual'], ['prod', 'Precio producción'], ['serv', 'Servicios adicionales']];
+const emptyRules = () => ({ tarifa: { t: '', p: 0 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: '', p: 0 } });
+const normRules = r => { const o = emptyRules(); PKEYS.forEach(([k]) => { const x = (r || {})[k] || {}; if ((x.t === 'desc' || x.t === 'rec') && +x.p > 0) o[k] = { t: x.t, p: +x.p }; }); return o; };
+const hasRules = r => !!r && PKEYS.some(([k]) => r[k] && r[k].t);
+const rulesKey = r => hasRules(r) ? JSON.stringify(normRules(r)) : '';
+const realAgency = id => id && id !== 'placeholder' ? agencyOf(id) : null;
+const agencyRules = id => { const a = realAgency(id); return a ? normRules(a.adj) : emptyRules(); };
+const adjVal = (rule, v) => (!rule || !rule.t) ? v : Math.max(0, Math.round(v * (rule.t === 'desc' ? 1 - rule.p / 100 : 1 + rule.p / 100)));
+const pctNum = p => String(+p).replace('.', ',');
+const pctTxt = rule => rule && rule.t ? (rule.t === 'desc' ? '−' : '+') + pctNum(rule.p) + ' %' : '';
+const ruleWord = rule => rule && rule.t ? (rule.t === 'desc' ? 'Descuento ' : 'Recargo ') + pctNum(rule.p) + ' %' : 'Sin ajuste';
+/* Etiqueta de un precio: rojo = descuento, azul = recargo, gris = sin ajuste (±0 %). Siempre se muestran los cuatro, en el mismo orden. */
+const chipCls = rule => rule && rule.t === 'desc' ? 'adj-desc' : rule && rule.t === 'rec' ? 'adj-rec' : 'adj-zero';
+const chipTxt = rule => rule && rule.t ? pctTxt(rule) : '±0 %';
+const rulesChips = r => `<span class="adj-chips">${PKEYS.map(([k, l]) => `<span class="badge adj-chip ${chipCls(r[k])}">${l} ${chipTxt(r[k])}</span>`).join('')}</span>`;
+const adjBadge = rule => `<span class="badge adj-chip ${chipCls(rule)}">${rule && rule.t ? ruleWord(rule) : 'Sin ajuste'}</span>`;
+/* Perfil del usuario (solo para el prototipo): el administrador puede ver los % de ajuste; el ejecutivo nunca. */
+let ROLE = 'admin'; try { ROLE = sessionStorage.getItem('aj-role') || 'admin'; } catch (_) {}
+const isAdmin = () => ROLE === 'admin';
+const rulesLines = r => PKEYS.map(([k, l]) => `${l}: ${ruleWord(r[k])}`).join('<br>');
+
+/* Reglas con las que quedaron valorizados los precios de una cotización (foto al momento de ajustar). */
+const dealRules = d => normRules((d.adjApplied || {}).rules);
+const minOf = (d, it) => adjVal(dealRules(d).minimo, it.minimo);
+
+/* Recalcula los precios de la cotización desde el Precio mensual, aplicando las reglas de la agencia (o las indicadas).
+   Sobrescribe lo que haya en precio individual, producción y servicios. Sin agencia o sin reglas = Precio mensual. */
+function repriceDeal(d, rules) {
+  rules = normRules(rules || agencyRules(d.agency));
+  d.bids.forEach(b => { const it = itemOf(b.item); b.unit = adjVal(rules.tarifa, it.tarifa); b.prod = adjVal(rules.prod, it.prod); b.net = bidNet(b); });
+  d.services.forEach(s => { s.price = adjVal(rules.serv, svcPrice(s.service, s.item)); });
+  d.adjApplied = { agency: d.agency, rules };
+}
+
+/* Semilla de cotizaciones */
+let _bn = 0, _sn = 0;
+function mkBid(item, o) { const it = itemOf(item); const b = Object.assign({ id: 'B' + (++_bn), item, qty: 1, unit: it.tarifa, durQty: 1, measure: 'month', prod: it.prod }, o || {}); b.net = bidNet(b); return b; }
+function mkSvc(service, item, o) { return Object.assign({ id: 'SB' + (++_sn), service, item, notes: '', start: '', end: '', pricing: 'lease', price: svcPrice(service, item) }, o || {}); }
+function addDeal(o) {
+  const d = Object.assign({ id: 'D' + (DB.deals.length + 41), serial: '', client: '', clientTemp: '', agency: '', agencyTemp: '', title: '', description: '', user: USERS[0], bids: [], services: [], created: '2026-10-01', updated: '2026-10-01' }, o);
+  DB.deals.push(d); return d;
+}
+(function seed() {
+  let d;
+  d = addDeal({ serial: 'CA-0041', client: 'C1', agency: 'A1', title: 'Lanzamiento SUV Primavera', user: 'María Rojas', created: '2026-10-02', updated: '2026-10-16' });
+  d.bids.push(mkBid('B-003', { durQty: 2 }), mkBid('B-018', { qty: 2 }), mkBid('B-020', { durQty: 2 })); d.services.push(mkSvc('V1', 'B-003'), mkSvc('V2', 'B-003', { pricing: 'production' }));
+  /* Esta cotización se valorizó cuando MediaPlan tenía otro perfil: conserva esos precios aunque el perfil actual sea distinto. */
+  repriceDeal(d, { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 10 } });
+  d = addDeal({ serial: 'CA-0042', client: 'C2', agency: 'A2', title: 'Black Friday 2026', user: 'Juan Soto', created: '2026-10-08', updated: '2026-10-12' });
+  d.bids.push(mkBid('B-008', { durQty: 15, measure: 'day' }), mkBid('B-014', { durQty: 15, measure: 'day' })); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0043', client: 'C3', agency: 'A3', title: 'Campaña Crédito Hipotecario', user: 'María Rojas', created: '2026-09-28', updated: '2026-10-17' });
+  d.bids.push(mkBid('B-002'), mkBid('B-004'), mkBid('B-018')); d.services.push(mkSvc('V3', 'B-018', { pricing: 'production' })); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0044', client: 'C2', agency: 'A2', title: 'Navidad Retail', user: 'Juan Soto', created: '2026-09-20', updated: '2026-10-18' });
+  d.bids.push(mkBid('B-019')); d.services.push(mkSvc('V5', 'B-019')); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0045', client: 'C7', agency: '', title: 'Prevención Invierno', user: 'Andrea Pérez', created: '2026-10-14', updated: '2026-10-14' });
+  d.bids.push(mkBid('B-004')); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0046', client: 'C8', agency: 'A1', title: 'Verano 2027', user: 'Camilo Díaz', created: '2026-10-05', updated: '2026-10-15' });
+  d.bids.push(mkBid('B-011'), mkBid('B-007')); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0047', client: 'C5', agency: '', title: 'Proyecto Las Condes', user: 'Juan Soto', created: '2026-10-09', updated: '2026-10-18' });
+  d.bids.push(mkBid('B-003'), mkBid('B-002')); repriceDeal(d);
+  d = addDeal({ serial: 'CA-0048', client: 'C4', agency: 'A4', title: 'Aniversario Cadena', user: 'Andrea Pérez', created: '2026-10-17', updated: '2026-10-17' });
+  d.bids.push(mkBid('B-020')); repriceDeal(d);
+})();
+
+const submitBtn = (label, ic) => btn(label || 'Guardar', { ic: ic || 'check', extra: 'mr-2' }).replace('type="button"', 'type="submit"');
+const kv = rows => `<table class="info-table"><tbody>${rows.map(r => `<tr><th class="pr-3 align-top text-nowrap">${r[0]}:</th><td class="pb-1">${r[1]}</td></tr>`).join('')}</tbody></table>`;
+const pager = (shown, noun) => `<div class="px-3 py-2 d-flex justify-content-between text-muted small"><span>Mostrando ${shown} ${noun}</span><span>Página 1 de 1</span></div>`;
+const notFoundPage = t => ({ title: t, html: head(t + ' no encontrada') + card('No encontrada', '<p class="mb-0">El registro que buscas no existe o fue eliminado.</p>') });
+
+/* =====================================================================
+   ▶ [AJ-06] COMPONENTES DE UI · notificaciones, modales, formularios, tablas y filtros (de COM-09/10/11)
+   ===================================================================== */
+function notify(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'alert alert-' + (type || 'success') + ' alert-dismissible shadow-sm';
+  el.innerHTML = `<div class="icon"><span class="zmdi zmdi-check"></span></div><div class="message">${msg}</div><button class="close" data-dismiss="alert" type="button"><span>&times;</span></button>`;
+  document.getElementById('toast-host').appendChild(el);
+  setTimeout(() => el.remove(), 4800);
+}
+function modal(o) {
+  $('.modal').modal('hide'); $('.modal-backdrop').remove(); $('body').removeClass('modal-open');
+  const id = 'm' + Date.now();
+  document.getElementById('modal-host').innerHTML =
+    `<div class="modal fade" id="${id}" tabindex="-1" role="dialog"><div class="modal-dialog ${o.size || ''}" role="document"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">${o.title}</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+      <div class="modal-body">${o.body}</div>${o.footer ? `<div class="modal-footer">${o.footer}</div>` : ''}
+    </div></div></div>`;
+  const $m = $('#' + id); $m.modal('show'); return $m;
+}
+const closeModal = () => { $('.modal').modal('hide'); };
+function confirmDlg(msg, okLabel, cb, danger) {
+  const $m = modal({ title: 'Confirmar', size: 'modal-sm', body: `<p class="mb-0">${msg}</p>`, footer: `<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-${danger ? 'danger' : 'primary'}" id="ok-btn">${okLabel}</button>` });
+  $m.find('#ok-btn').on('click', () => { closeModal(); cb(); });
+}
+function fld(label, name, val, o) {
+  o = o || {}; val = val == null ? '' : val; const t = o.type || 'text'; let ctl;
+  if (t === 'select') {
+    ctl = `<select class="form-control form-control-sm" name="${name}" ${o.req ? 'required' : ''}>${(o.opts || []).map(x => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+  } else if (t === 'textarea') {
+    ctl = `<textarea class="form-control form-control-sm" name="${name}" rows="${o.rows || 4}">${esc(val)}</textarea>`;
+  } else {
+    ctl = `<input class="form-control form-control-sm" type="${t}" name="${name}" value="${esc(val)}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.req ? 'required' : ''} ${o.min != null ? `min="${o.min}"` : ''} ${o.step ? `step="${o.step}"` : ''}>`;
+  }
+  return `<div class="form-group ${o.cls || ''}"><label>${label}${o.req ? ' <span class="text-danger">*</span>' : ''}</label>${ctl}${o.help ? `<small class="form-text text-muted">${o.help}</small>` : ''}</div>`;
+}
+function card(title, body, tools) { return `<div class="card card-border-color card-border-color-primary"><div class="card-header card-header-divider">${tools ? `<div class="tools">${tools}</div>` : ''}${title}</div><div class="card-body">${body}</div></div>`; }
+function head(title, actions) { return `<div class="d-flex flex-wrap justify-content-between align-items-center mb-3"><h3 class="mb-0" style="font-weight:400">${title}</h3><div class="mt-2 mt-sm-0">${actions || ''}</div></div>`; }
+function btn(label, o) {
+  o = o || {};
+  return `<${o.href ? 'a href="' + o.href + '"' : 'button type="button"'} class="btn btn-${o.cls || 'primary'} ${o.size ? 'btn-' + o.size : ''} ${o.extra || ''}" ${o.act ? `data-act="${o.act}" data-id="${o.id || ''}"` : ''}>${o.ic ? icon(o.ic) + ' ' : ''}${label}</${o.href ? 'a' : 'button'}>`;
+}
+const icBtn = (ic, title, o) => btn('', Object.assign({ cls: 'secondary', size: 'sm', ic }, o || {})).replace('class="btn', `title="${title}" class="btn`);
+function tbl(cols, rows, opts) {
+  opts = opts || {};
+  if (!rows.length) return '<div class="text-center text-muted p-5">Sin resultados para los filtros aplicados.</div>';
+  return `<div class="table-responsive"><table class="table table-sm table-striped table-hover ${opts.cls || ''}"><thead><tr>${cols.map(c => `<th class="${c.cls || ''}">${c.h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${cols.map(c => `<td class="${c.cls || ''}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const FS = {};
+let CUR = { refresh: null };
+function filterBar(key, defs) {
+  const f = FS[key] = FS[key] || {};
+  const html = defs.map(d => {
+    let ctl;
+    if (d.type === 'select') ctl = `<select class="form-control form-control-sm" data-f="${d.n}">${d.opts.map(o => { const v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] : o; return `<option value="${esc(v)}" ${f[d.n] === v ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+    else ctl = `<input class="form-control form-control-sm" type="${d.type || 'text'}" data-f="${d.n}" value="${esc(f[d.n] || '')}" placeholder="${esc(d.ph || '')}">`;
+    return `<div class="table-filters ${d.col || 'col-sm'} py-0"><span class="text-truncate table-filter-title mb-1 d-block">${d.label}</span><div class="filter-container">${ctl}</div></div>`;
+  });
+  return `<div class="row table-filters-container pt-2" data-fkey="${key}"><div class="col-12"><div class="form-row">${html.join('')}</div></div></div>`;
+}
+document.addEventListener('input', e => { const el = e.target.closest('[data-f]'); if (el) onFilter(el); });
+document.addEventListener('change', e => { const el = e.target.closest('[data-f]'); if (el && el.tagName === 'SELECT') onFilter(el); });
+function onFilter(el) { const k = el.closest('[data-fkey]').dataset.fkey; FS[k][el.dataset.f] = el.value; if (CUR.refresh) CUR.refresh(); }
+const F = k => FS[k] = FS[k] || {};
+function listCard(key, defs, body) { return `<div class="card card-table card-border-color card-border-color-primary">${defs ? filterBar(key, defs) : ''}<div class="card-body" id="results">${body}</div></div>`; }
+const setResults = html => { const r = document.getElementById('results'); if (r) r.innerHTML = html; };
+const ACT = {};
+document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && ACT[b.dataset.act]) { e.preventDefault(); ACT[b.dataset.act](b.dataset.id, b); } });
+
+/* =====================================================================
+   ▶ [AJ-07] MENÚ LATERAL Y ROUTER (de COM-12/13, reducidos)
+   ===================================================================== */
+const menuDef = () => [
+  { t: 'Manual', i: 'book', h: '/inicio' },
+  { t: 'Soportes', i: 'widgets', h: '/soportes' },
+  { t: 'Cotizaciones', i: 'assignment', ch: [{ t: 'Ver cotizaciones', h: '/cotizaciones' }, { t: 'Crear cotización', h: '/cotizaciones/nueva' }] },
+  { t: 'Agencias', i: 'city', ch: [{ t: 'Ver agencias', h: '/agencias' }, { t: 'Crear agencia', h: '/agencias/nueva' }].concat(isAdmin() ? [{ t: 'Importar agencias', h: '/importar/agencias' }] : []) }
+];
+function paintMenu() { document.getElementById('menu').innerHTML = '<li class="divider">Comercial</li>' + menuHtml(menuDef()); }
+function menuHtml(items) {
+  return items.map(m => m.ch
+    ? `<li class="parent"><a href="#"><i class="icon zmdi zmdi-${m.i}"></i><span>${m.t}</span></a><ul class="sub-menu">${m.ch.map(c => `<li><a href="#${c.h}">${c.t}</a></li>`).join('')}</ul></li>`
+    : `<li><a href="#${m.h}"><i class="icon zmdi zmdi-${m.i}"></i><span>${m.t}</span></a></li>`).join('');
+}
+function setMenuActive(path) {
+  const links = Array.from(document.querySelectorAll('#menu a[href^="#/"]'));
+  document.querySelectorAll('#menu li.active').forEach(li => li.classList.remove('active'));
+  let best = null;
+  links.forEach(a => { const h = a.getAttribute('href').slice(1); if ((path === h || path.startsWith(h + '/')) && (!best || h.length > best.h.length)) best = { a, h }; });
+  if (!best) return;
+  const li = best.a.closest('li'); li.classList.add('active');
+  const p = li.parentElement.closest('li.parent'); if (p) p.classList.add('open', 'active');
+}
+const routes = [];
+const route = (re, fn) => routes.push([re, fn]);
+function render() {
+  CUR = { refresh: null }; paintRole();
+  const path = (location.hash.replace(/^#/, '') || '/inicio').split('?')[0];
+  for (const [re, fn] of routes) {
+    const m = path.match(re);
+    if (m) {
+      const out = fn.apply(null, m.slice(1));
+      document.querySelector('.be-top-header .page-title span').textContent = out.title;
+      document.title = out.title === 'Manual de uso' ? 'Manual de uso · Ajuste de precios de agencias' : out.title + ' · Manual de uso';
+      $c().innerHTML = out.html; setMenuActive(path);
+      if (out.after) out.after();
+      window.scrollTo(0, 0); return;
+    }
+  }
+  $c().innerHTML = head('Página no encontrada') + card('404', '<p>Esta pantalla no existe en el prototipo.</p>' + btn('Ir a agencias', { href: '#/agencias' }));
+}
+const go = h => { location.hash = h; };
+function paintRole() {
+  document.getElementById('role-bar').innerHTML = `<div class="rb-row"><span class="lbl">Instrucciones para el perfil</span><div class="btn-group btn-group-sm" role="group"><button type="button" class="btn btn-secondary ${isAdmin() ? 'active' : ''}" data-act="role" data-id="admin">${icon('shield-security')} Administrador</button><button type="button" class="btn btn-secondary ${isAdmin() ? '' : 'active'}" data-act="role" data-id="ejecutivo">${icon('account')} Ejecutivo</button></div><span class="small text-muted">${isAdmin() ? 'Ves y configuras los ajustes de precios de las agencias. Las pantallas son de referencia.' : 'No ves los ajustes de precios de las agencias. Las pantallas son de referencia.'}</span></div>`;
+  document.getElementById('demo-banner').innerHTML = `<span class="db-title">${icon('play-circle-outline')} Aprende con demostraciones guiadas</span>${demoKeys().map(k => `<button type="button" class="btn" data-act="demo" data-id="${k}" title="${esc(DEMOS[k].desc)}">▶ ${DEMOS[k].short}</button>`).join('')}<span class="db-sub">${isAdmin() ? 'Perfil administrador: 4 demostraciones disponibles.' : 'Perfil ejecutivo: 2 demostraciones disponibles, mostradas con la vista del ejecutivo.'} Avanza a tu ritmo con «Siguiente» y «Anterior».</span>`;
+}
+ACT.role = r => { ROLE = r; try { sessionStorage.setItem('aj-role', r); } catch (_) {} $('[data-toggle=tooltip]').tooltip('dispose'); paintMenu(); render(); };
+window.addEventListener('hashchange', render);
+
+/* =====================================================================
+   ▶ [AJ-08] SOPORTES · catálogo en solo lectura (Precio mensual, de COM-15)
+   ===================================================================== */
+route(/^\/soportes$/, () => {
+  const f = F('items');
+  const rows = () => DB.items.filter(i => match(i.id + i.nombre + i.comuna, f.q) && (!f.tipo || i.tipo === f.tipo));
+  const res = () => { const r = rows(); return tbl([{ h: 'Código', f: i => `<b>${i.id}</b>` }, { h: 'Tipo de soporte', f: i => i.tipo }, { h: 'Nombre', f: i => esc(i.nombre) }, { h: 'Localidad', f: i => i.comuna },
+    { h: 'Precio mensual', cls: 'number', f: i => clp(i.tarifa) }, { h: 'Precio mínimo', cls: 'number', f: i => clp(i.minimo) }, { h: 'Precio producción', cls: 'number', f: i => clp(i.prod) }], r) + pager(r.length, 'soportes'); };
+  CUR.refresh = () => setResults(res());
+  return { title: 'Soportes', html: head('Soportes') + `<div class="alert alert-info"><div class="icon"><span class="zmdi zmdi-info-outline"></span></div><div class="message">Estos son los precios sin ajuste de cada soporte, partiendo por el <b>Precio mensual</b>. Cuando la cotización tiene una agencia con ajuste, los precios se calculan a partir de estos valores.</div></div>` + listCard('items', [{ n: 'q', label: 'Búsqueda', col: 'col-sm-6', ph: 'Código, nombre o localidad' }, { n: 'tipo', label: 'Tipo de soporte', type: 'select', opts: [['', 'Todos los soportes']].concat(TYPES) }], res()) };
+});
+
+/* =====================================================================
+   ▶ [AJ-09] AGENCIAS · listado, formulario con AJUSTE DE PRECIOS y ficha (de COM-43/44/45)
+   ===================================================================== */
+const agencyDeals = id => DB.deals.filter(d => d.agency === id);
+route(/^\/agencias$/, () => {
+  const f = F('age');
+  const rows = () => DB.agencies.filter(a => match(a.nombre + a.razon, f.q) && match(a.rut, f.rut));
+  const res = () => { const r = rows(); return tbl([{ h: 'Nombre', f: a => `<a href="#/agencias/${a.id}"><b>${esc(a.nombre)}</b></a>` }, { h: 'Razón social', f: a => esc(a.razon) }, { h: 'RUT', cls: 'text-nowrap', f: a => a.rut },
+    ].concat(isAdmin() ? [{ h: 'Ajuste de precios', f: a => rulesChips(normRules(a.adj)) }] : []).concat([
+    { h: '', cls: 'text-right tbl-actions text-nowrap', f: a => icBtn('eye', 'Ver', { href: '#/agencias/' + a.id }) + icBtn('edit', 'Editar', { href: '#/agencias/' + a.id + '/editar' }) + icBtn('delete', 'Eliminar', { act: 'ag-del', id: a.id }) }]), r) + pager(r.length, 'agencias'); };
+  CUR.refresh = () => setResults(res());
+  return { title: 'Agencias', html: head('Agencias',(isAdmin() ? btn('Importar', { cls: 'secondary', href: '#/importar/agencias', extra: 'mr-2' }) : '') + btn('Crear agencia', { ic: 'plus', href: '#/agencias/nueva' })) + (isAdmin() ? howto('Cada agencia muestra su <b>ajuste de precios</b> con una etiqueta por precio: <b>rojo = descuento</b>, <b>azul = recargo</b>, gris = sin ajuste. Entra con el lápiz para editarlo.', 'config') : howto('Como ejecutivo no ves los ajustes de precios de las agencias; solo los precios ya ajustados al cotizar.')) + listCard('age', [{ n: 'q', label: 'Nombre o razón social', ph: 'Buscar…' }, { n: 'rut', label: 'RUT' }], res()) };
+});
+ACT['ag-del'] = id => { const a = agencyOf(id), n = agencyDeals(id).length;
+  if (n) { notify(`No se puede eliminar «${esc(a.nombre)}»: tiene ${n} cotizaciones asociadas.`, 'warning'); return; }
+  confirmDlg(`¿Eliminar la agencia «${esc(a.nombre)}»? Esta acción es irreversible.`, 'Eliminar', () => { DB.agencies = DB.agencies.filter(x => x.id !== id); notify('Registro eliminado.'); go('/agencias'); }, true); };
+
+const validRut = r => /^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$/.test(r);
+const ADJ_REF = { minimo: 1000, tarifa: 1000, prod: 500, serv: 100 };   /* valor de referencia para el ejemplo en vivo */
+function agencyForm(o) {
+  const n = !o; const src = o || { nombre: '', razon: '', rut: '', giro: '', email: '', dir: '', adj: emptyRules() };
+  const r = normRules(src.adj);
+  const adjRow = ([k, l]) => `<tr><td class="no-fill"><div class="custom-control custom-checkbox"><input class="custom-control-input adj-chk" type="checkbox" id="ac-${k}" value="${k}"><label class="custom-control-label" for="ac-${k}"></label></div></td><td class="text-bold">${l}</td>
+    <td style="width:190px"><select class="form-control form-control-sm" data-adj-t="${k}"><option value="">Sin ajuste</option><option value="desc" ${r[k].t === 'desc' ? 'selected' : ''}>Descuento</option><option value="rec" ${r[k].t === 'rec' ? 'selected' : ''}>Recargo</option></select></td>
+    <td style="width:150px"><div class="input-group input-group-sm"><input type="number" class="form-control text-right" min="0" step="0.01" data-adj-p="${k}" value="${r[k].t ? r[k].p : ''}" ${r[k].t ? '' : 'disabled'} placeholder="0"><div class="input-group-append"><span class="input-group-text">%</span></div></div></td>
+    <td class="small text-muted" data-adj-ex="${k}"></td></tr>`;
+  const html = `<div class="row"><div class="col-lg-9">${head(n ? 'Crear agencia' : 'Editar agencia')}${isAdmin() ? howto('En <b>Ajuste de precios</b> elige, para cada precio, <b>Descuento</b>, <b>Recargo</b> o <b>Sin ajuste</b> y el porcentaje. Usa la aplicación masiva para repetir el mismo ajuste en varios precios.', 'config') : ''}<form id="f-agency" novalidate>
+    ${card('Datos generales', `<div class="form-row">${fld('Nombre', 'nombre', src.nombre, { req: 1, cls: 'col-md-6' })}${fld('Razón social', 'razon', src.razon, { req: 1, cls: 'col-md-6' })}</div>
+      <div class="form-row">${fld('Número identificador nacional (RUT)', 'rut', src.rut, { req: 1, ph: '76.123.456-7', cls: 'col-md-6' })}${fld('Giro', 'giro', src.giro, { cls: 'col-md-6' })}</div>
+      <div class="form-row">${fld('Email de facturación', 'email', src.email, { type: 'email', cls: 'col-md-6' })}${fld('Dirección', 'dir', src.dir, { cls: 'col-md-6' })}</div>
+      <div class="form-row">${fld('Grupo (agencia matriz)', 'parent', src.parent || '', { type: 'select', cls: 'col-md-6', opts: [['', 'Sin grupo']].concat(DB.agencies.filter(a => a !== o).map(a => [a.id, a.nombre])) })}</div>`)}
+    ${!isAdmin() ? '' : card('Ajuste de precios', `<p class="text-muted small">Ejemplos solo de referencia. Aquí no se modifica el Precio mensual de los soportes ni las cotizaciones.</p>
+      <div class="adj-box mb-3"><div class="small text-bold mb-2">${icon('flash')} Aplicar el mismo ajuste de forma masiva</div>
+        <div class="form-row align-items-end"><div class="col-md-3 form-group mb-1"><label class="small mb-0">Tipo de ajuste</label><select class="form-control form-control-sm" data-bulk-t><option value="desc">Descuento</option><option value="rec">Recargo</option><option value="">Sin ajuste (quitar)</option></select></div>
+          <div class="col-md-3 form-group mb-1"><label class="small mb-0">Porcentaje</label><div class="input-group input-group-sm"><input type="number" class="form-control text-right" min="0" step="0.01" data-bulk-p placeholder="0"><div class="input-group-append"><span class="input-group-text">%</span></div></div></div>
+          <div class="col-md-6 form-group mb-1"><button type="button" class="btn btn-primary btn-sm mr-2" data-act="adj-bulk-sel">Aplicar a los seleccionados <span class="badge badge-light" id="adj-sel-n">0</span></button><button type="button" class="btn btn-secondary btn-sm" data-act="adj-bulk-all">Aplicar a todos los precios</button></div></div>
+        <div class="small text-muted">Marca uno o más precios en la tabla (o usa «Aplicar a todos los precios»). Después puedes ajustar cada fila por separado.</div></div>
+      <div class="table-responsive"><table class="table table-sm adj-table mb-2"><thead><tr><th class="no-fill"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="ac-all"><label class="custom-control-label" for="ac-all" title="Seleccionar todos"></label></div></th><th>Precio</th><th>Tipo de ajuste</th><th>Porcentaje</th><th>Ejemplo</th></tr></thead><tbody>${PKEYS.map(adjRow).join('')}</tbody></table></div>
+      <div class="small text-muted">Guarda los cambios para confirmar estos ajustes. Afectan a las cotizaciones nuevas; las existentes se actualizan con el botón «Actualizar» dentro de cada cotización.</div>`)}
+    <div class="mb-4">${submitBtn(n ? 'Crear agencia' : 'Guardar cambios')}${btn('Cancelar', { cls: 'secondary', href: n ? '#/agencias' : '#/agencias/' + src.id })}</div></form></div></div>`;
+  return { title: n ? 'Crear agencia' : 'Editar agencia', html, after() {
+    const f = document.getElementById('f-agency');
+    const adm = isAdmin();
+    const readRule = k => { const t = f.querySelector(`[data-adj-t=${k}]`).value, p = +f.querySelector(`[data-adj-p=${k}]`).value || 0; return { t, p }; };
+    const paint = () => adm && PKEYS.forEach(([k]) => {
+      const sel = f.querySelector(`[data-adj-t=${k}]`), pi = f.querySelector(`[data-adj-p=${k}]`), ex = f.querySelector(`[data-adj-ex=${k}]`);
+      pi.disabled = !sel.value; if (!sel.value) pi.value = '';
+      const rule = readRule(k);
+      ex.innerHTML = `Referencia: ${clp(ADJ_REF[k])}<b class="d-block ${rule.t === 'desc' ? 'adj-down' : rule.t === 'rec' ? 'adj-up' : ''}">${rule.t && rule.p > 0 ? clp(adjVal(rule, ADJ_REF[k])) : clp(ADJ_REF[k]) + ' (sin cambio)'}</b>`;
+    });
+    f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
+    /* Aplicación masiva: el mismo tipo y % a los precios seleccionados o a todos. */
+    const chks = () => Array.from(f.querySelectorAll('.adj-chk'));
+    const selCount = () => { const n = chks().filter(c => c.checked).length; const b = document.getElementById('adj-sel-n'); if (b) b.textContent = n; const all = document.getElementById('ac-all'); if (all) all.checked = n === chks().length; };
+    if (adm) {
+      document.getElementById('ac-all').addEventListener('change', e => { chks().forEach(c => { c.checked = e.target.checked; }); selCount(); });
+      f.addEventListener('change', e => { if (e.target.classList.contains('adj-chk')) selCount(); });
+      const bulk = keys => {
+        const t = f.querySelector('[data-bulk-t]').value, p = +f.querySelector('[data-bulk-p]').value || 0;
+        if (!keys.length) { notify('Selecciona al menos un precio de la tabla.', 'warning'); return; }
+        if (t && !(p > 0)) { notify('Ingresa un porcentaje mayor a 0 para aplicar el ajuste.', 'warning'); return; }
+        if (t === 'desc' && p > 100) { notify('Un descuento no puede superar el 100%.', 'warning'); return; }
+        keys.forEach(k => { f.querySelector(`[data-adj-t=${k}]`).value = t; f.querySelector(`[data-adj-p=${k}]`).value = t ? p : ''; });
+        paint(); notify('Campos actualizados. Guarda los cambios para confirmar.', 'info');
+      };
+      ACT['adj-bulk-sel'] = () => bulk(chks().filter(c => c.checked).map(c => c.value));
+      ACT['adj-bulk-all'] = () => bulk(PKEYS.map(x => x[0]));
+      f.querySelector('[data-bulk-p]').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ACT['adj-bulk-sel'](); } });
+    }
+    f.addEventListener('submit', e => {
+      e.preventDefault(); const errs = [];
+      if (!f.nombre.value.trim()) errs.push('El nombre es obligatorio.'); if (!f.razon.value.trim()) errs.push('La razón social es obligatoria.');
+      if (!validRut(f.rut.value.trim())) errs.push('El RUT no tiene un formato válido (ej: 76.123.456-7).');
+      else if (DB.agencies.some(x => x !== o && x.rut === f.rut.value.trim())) errs.push('Ya existe una agencia con ese RUT.');
+      /* El ejecutivo no ve ni modifica los ajustes: se conservan los de la agencia. */
+      const adj = adm ? emptyRules() : normRules(src.adj);
+      adm && PKEYS.forEach(([k, l]) => { const rule = readRule(k); if (!rule.t) return;
+        if (!(rule.p > 0)) errs.push(`${l}: ingresa un porcentaje mayor a 0 (o elige «Sin ajuste»).`);
+        else if (rule.t === 'desc' && rule.p > 100) errs.push(`${l}: un descuento no puede superar el 100%.`);
+        else if (Math.round(rule.p * 100) / 100 !== rule.p) errs.push(`${l}: ingresa un porcentaje con hasta dos decimales.`);
+        else adj[k] = rule; });
+      if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+      const v = { nombre: f.nombre.value.trim(), razon: f.razon.value.trim(), rut: f.rut.value.trim(), giro: f.giro.value, email: f.email.value, dir: f.dir.value, parent: f.parent.value, adj };
+      if (n) v.contacts = [];
+      let target = o; if (n) { v.id = nextId('A', DB.agencies); DB.agencies.push(v); target = v; } else Object.assign(o, v);
+      notify(n ? 'La agencia ha sido creada.' : 'Los cambios fueron guardados.');
+      go('/agencias/' + target.id);
+    });
+  } };
+}
+route(/^\/agencias\/nueva$/, () => agencyForm(null));
+route(/^\/agencias\/([^/]+)\/editar$/, id => agencyOf(id) ? agencyForm(agencyOf(id)) : notFoundPage('Agencia'));
+route(/^\/agencias\/(?!nueva$)([^/]+)$/, id => {
+  const o = agencyOf(id); if (!o) return notFoundPage('Agencia');
+  const r = normRules(o.adj);
+  return { title: o.nombre, html: head(esc(o.nombre), btn('Editar', { ic: 'edit', href: '#/agencias/' + o.id + '/editar' })) + `<div class="row"><div class="col-lg-6">
+    ${card('Datos', kv([['Razón social', esc(o.razon)], ['RUT', o.rut], ['Giro', esc(o.giro) || '—'], ['Email de facturación', esc(o.email) || '—'], ['Dirección', esc(o.dir) || '—'], ['Grupo', o.parent && agencyOf(o.parent) ? `<a href="#/agencias/${o.parent}">${esc(agencyName(o.parent))}</a>` : 'Sin grupo']]))}
+    ${card('Contactos', (o.contacts || []).length ? tbl([{ h: 'Tipo', f: c => CAT_ES[c.category] }, { h: 'Nombre', f: c => esc(c.name) }, { h: 'E-mail', f: c => esc(c.email) }, { h: 'Teléfono', f: c => esc(c.phone) }], o.contacts) : '<p class="text-muted mb-0">Sin contactos registrados.</p>')}
+    </div>
+    <div class="col-lg-6">${!isAdmin() ? '' : card('Ajuste de precios', adjDetails(r))}</div></div>` };
+});
+/* =====================================================================
+   ▶ [AJ-09b] IMPORTADOR DE AGENCIAS · hojas Agencias, Contactos y Ajustes de precios
+   Replica el flujo real: archivo Excel con las hojas «Agencias», «Contactos» y, opcional, «Ajustes de precios» (tercera);
+   la hoja «Referencias» es solo informativa. Los ajustes se vinculan por ID a una fila actualizable de Agencias.
+   Validación previa: cualquier observación aborta la importación completa. Resultados por correo (simulado).
+   ===================================================================== */
+const IMP_OPS = [[0, 'Solo crear agencias'], [1, 'Actualizar agencias (por ID)'], [2, 'Crear y actualizar agencias (por ID)']];
+const IMP_MAX_ROWS = 2000;
+const ADJ_SHEET = 'Ajustes de precios', REF_SHEET = 'Referencias';
+const IMP_HDR_AG = ['ID', 'Nombre', 'Razón social', 'Número identificador nacional', 'Giro', 'Dirección', 'E-mail', 'Grupo'];
+const IMP_HDR_CO = ['ID', 'Tipo de contacto', 'Nombre', 'E-mail', 'Teléfono', 'Agencia (ID)'];
+const IMP_HDR_AJ = ['ID', 'Nombre'].concat(PKEYS.reduce((o, a) => o.concat([a[1], 'Porcentaje %']), []));
+/* Códigos fijos del Excel: 0 = Sin ajuste, 1 = Recargo, 2 = Descuento */
+const ADJ_CODES = { 0: '', 1: 'rec', 2: 'desc' };
+const ADJ_CODE_OF = { '': 0, rec: 1, desc: 2 };
+const impKey = h => norm(h).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+const CAT_ES = { financial: 'Financiero', commercial: 'Comercial' };
+const emailOk = e => !e || /^\S+@\S+\.\S+$/.test(e);
+const allContacts = () => DB.agencies.reduce((o, a) => o.concat((a.contacts || []).map(c => Object.assign({ agency: a.id }, c))), []);
+const IMP_DEMO = { wb: null };   /* libro en memoria que usan las demostraciones en lugar de un archivo real */
+let IMP_LAST = [];
+
+/* Lee una hoja y devuelve filas { n: nº de fila en el archivo, v: valores por encabezado }, los encabezados que faltan y las columnas presentes */
+function impSheet(ws, headers) {
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+  if (!aoa.length) return { missing: headers, keys: [] };
+  const want = headers.map(impKey), keys = (aoa[0] || []).map(impKey);
+  const missing = headers.filter((h, i) => !keys.includes(want[i]));
+  if (missing.length) return { missing, keys };
+  if (aoa.length - 1 > IMP_MAX_ROWS) return { tooMany: true, keys };
+  const rows = aoa.slice(1).map((r, i) => ({ n: i + 2, v: want.reduce((o, k) => { const c = r[keys.indexOf(k)]; o[k] = String(c == null ? '' : c).trim(); return o; }, {}) })).filter(r => Object.values(r.v).some(x => x !== ''));
+  return { rows, keys };
+}
+const gv = (r, h) => r.v[impKey(h)] || '';
+/* Columnas de ajustes que NO pueden venir dentro de la hoja Agencias */
+const isAdjHeader = k => PKEYS.some(p => k === impKey(p[1]) || k.indexOf(impKey(p[1]) + '_') === 0);
+
+/* Hoja «Ajustes de precios»: los diez encabezados deben estar en este orden (el porcentaje se repite, por eso se lee por posición). */
+function impSheetAdj(ws) {
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+  const head = (aoa[0] || []).map(x => String(x == null ? '' : x).trim());
+  const want = IMP_HDR_AJ.map(impKey);
+  if (!aoa.length || head.filter(Boolean).length !== want.length || want.some((k, i) => impKey(head[i]) !== k)) return { badHeaders: true };
+  if (aoa.length - 1 > IMP_MAX_ROWS) return { tooMany: true };
+  const cell = (r, c) => String(r[c] == null ? '' : r[c]).trim();
+  const rows = aoa.slice(1).map((r, i) => ({ n: i + 2, id: cell(r, 0), vals: PKEYS.map((p, j) => ({ k: p[0], l: p[1], code: cell(r, 2 + j * 2), pct: cell(r, 3 + j * 2) })) }))
+    .filter(r => r.id || r.vals.some(v => v.code || v.pct));
+  return { rows };
+}
+
+/* Etapa 1 · validación previa de todo el archivo. Cualquier observación aborta la importación completa. */
+function impStage1(rows, sheet, noun, existing, op, withName) {
+  const skipped = [], ids = new Set(existing.map(x => String(x.id)));
+  const dup = h => { const c = {}; rows.forEach(r => { const x = gv(r, h); if (x) c[x] = (c[x] || 0) + 1; }); return new Set(Object.keys(c).filter(k => c[k] > 1)); };
+  const dupId = dup('ID'), dupName = withName ? dup('Nombre') : new Set();
+  const plan = rows.map(r => {
+    const id = gv(r, 'ID'), add = reason => skipped.push({ sheet, row: r.n, reason }); let fn;
+    if (id && dupId.has(id)) add(`ID duplicado: ${id}.`);
+    if (withName && gv(r, 'Nombre') && dupName.has(gv(r, 'Nombre'))) add(`Nombre duplicado: ${gv(r, 'Nombre')}.`);
+    if (withName && !validRut(gv(r, 'Número identificador nacional'))) add(`Formato incorrecto para Número identificador nacional "${gv(r, 'Número identificador nacional')}"`);
+    if (op === 0) { if (ids.has(id)) { add(`Solo crear no admite un ID existente: ${id}.`); fn = 'skip'; } else fn = 'create'; }
+    else if (op === 1) { if (ids.has(id)) fn = 'update'; else { add(`El ID debe identificar un registro existente autorizado: ${id || '(vacío)'}.`); fn = 'skip'; } }
+    else fn = ids.has(id) ? 'update' : 'create';
+    return { r, fn };
+  });
+  return { plan, skipped };
+}
+
+/* Etapa 1 de la hoja de ajustes: cada fila vincula por ID con una fila ACTUALIZABLE de Agencias del mismo archivo.
+   Fila explícita = reemplaza las cuatro reglas (0 o vacío con porcentaje vacío elimina la regla). Sin hoja o sin fila = se conservan. */
+function impStage1Adj(rows, agPlan, op) {
+  const skipped = [], rules = {}, seen = {};
+  rows.forEach(r => {
+    const add = reason => skipped.push({ sheet: ADJ_SHEET, row: r.n, reason });
+    if (op === 0) { add('Solo crear no admite filas de datos de ajustes.'); return; }
+    if (r.id && seen[r.id]) add(`ID duplicado: ${r.id}.`);
+    seen[r.id] = 1;
+    if (!agPlan.some(p => p.fn === 'update' && gv(p.r, 'ID') === r.id)) { add(`El ID de ajustes debe coincidir con una fila actualizable de Agencias en este archivo: ${r.id || '(vacío)'}.`); return; }
+    const out = emptyRules(); let bad = false;
+    r.vals.forEach(v => {
+      if (!['', '0', '1', '2'].includes(v.code)) { add(`Valor inválido para ${v.l}: ${v.code}.`); bad = true; return; }
+      const praw = v.pct.replace('%', '').replace(',', '.').trim();
+      if (v.code === '' || v.code === '0') {
+        if (praw) { add(v.code === '0' ? `${v.l}: 0 no admite ningún porcentaje.` : 'Un porcentaje requiere Descuento o Recargo.'); bad = true; }
+        return;
+      }
+      const t = ADJ_CODES[v.code], p = +praw;
+      if (!praw || !isFinite(p) || !(p > 0) || Math.round(p * 100) / 100 !== p) { add(`Valor inválido para ${v.l} - Porcentaje %: ${v.pct || '(vacío)'}. Debe ser mayor que cero y con hasta dos decimales.`); bad = true; return; }
+      if (t === 'desc' && p > 100) { add(`${v.l}: el descuento no puede superar 100.`); bad = true; return; }
+      out[v.k] = { t, p };
+    });
+    if (!bad) rules[r.id] = out;
+  });
+  return { skipped, rules };
+}
+
+/* Etapa 2 · importación: cada fila se valida como modelo; las fallidas se informan en el correo y el resto se importa. */
+function impAgency(r, fn, res, adjRules) {
+  const errs = [], ex = fn === 'update' ? by(DB.agencies, gv(r, 'ID')) : null, grupo = gv(r, 'Grupo');
+  if (!gv(r, 'Nombre')) errs.push('Nombre no puede estar en blanco');
+  if (!emailOk(gv(r, 'E-mail'))) errs.push('E-mail no es válido');
+  if (grupo) { const p = by(DB.agencies, grupo);
+    if (!p) errs.push(`El grupo debe identificar una agencia existente autorizada: ${grupo}.`); else if (ex && p.id === ex.id) errs.push('No se puede asignar una agencia a sí misma');
+    else if (p.parent) errs.push('El grupo elegido ya pertenece a otro grupo'); else if (ex && DB.agencies.some(a => a.parent === ex.id)) errs.push('Una agencia con subagencias no puede pertenecer a un grupo'); }
+  if (errs.length) { res.skipped.push({ sheet: 'Agencias', row: r.n, reason: errs.join('; ') + (adjRules ? '. No se pudo guardar la agencia y sus ajustes de precios. No se aplicaron cambios.' : '') }); return; }
+  const v = { nombre: gv(r, 'Nombre'), razon: gv(r, 'Razón social'), rut: gv(r, 'Número identificador nacional').toUpperCase(), giro: gv(r, 'Giro'), dir: gv(r, 'Dirección'), email: gv(r, 'E-mail').toLowerCase(), parent: grupo };
+  if (!ex) { DB.agencies.push(Object.assign({ id: nextId('A', DB.agencies), contacts: [], adj: emptyRules() }, v)); res.created.ag++; return; }
+  if (adjRules) { v.adj = adjRules; res.updated.aj++; }   /* sin fila de ajustes se conservan las reglas actuales */
+  Object.assign(ex, v); res.updated.ag++;
+}
+function impContact(r, fn, res) {
+  const errs = [], cat = { financiero: 'financial', comercial: 'commercial' }[norm(gv(r, 'Tipo de contacto'))], comp = by(DB.agencies, gv(r, 'Agencia (ID)'));
+  const cur = fn === 'update' ? allContacts().find(c => String(c.id) === gv(r, 'ID')) : null;
+  if (!gv(r, 'Nombre')) errs.push('Nombre no puede estar en blanco');
+  if (!cat) errs.push('Tipo de contacto no es válido (usa Financiero o Comercial)');
+  if (!emailOk(gv(r, 'E-mail'))) errs.push('E-mail no es válido');
+  if (!comp) errs.push(`El contacto debe pertenecer a una agencia existente autorizada: ${gv(r, 'Agencia (ID)')}.`);
+  else if (cat && (comp.contacts || []).some(c => c.category === cat && (!cur || c.id !== cur.id))) errs.push('Solo se permite un contacto por tipo y un máximo de dos por agencia.');
+  if (errs.length) { res.skipped.push({ sheet: 'Contactos', row: r.n, reason: errs.join('; ') }); return; }
+  const v = { category: cat, name: gv(r, 'Nombre'), email: gv(r, 'E-mail').toLowerCase(), phone: gv(r, 'Teléfono') };
+  if (!cur) { comp.contacts = comp.contacts || []; comp.contacts.push(Object.assign({ id: 'K' + (allContacts().length + 1 + Math.floor(Math.random() * 1000)) }, v)); res.created.co++; return; }
+  const old = by(DB.agencies, cur.agency); old.contacts = old.contacts.filter(c => c.id !== cur.id); comp.contacts = comp.contacts || []; comp.contacts.push(Object.assign({ id: cur.id }, v)); res.updated.co++;
+}
+
+/* Proceso completo sobre un libro ya leído (archivo real o libro de la demostración). Devuelve una promesa que termina con el «correo». */
+function runImport(wb, isCsv, op, alert_, box) {
+  const agName = isCsv ? wb.SheetNames[0] : 'Agencias';
+  if (!wb.Sheets[agName]) { alert_('danger', "El archivo no tiene una hoja llamada 'Agencias'"); return Promise.resolve(false); }
+  if (!isCsv && !wb.Sheets['Contactos']) { alert_('danger', "El archivo no tiene una hoja llamada 'Contactos'"); return Promise.resolve(false); }
+  const hasAdj = !isCsv && !!wb.Sheets[ADJ_SHEET];
+  if (hasAdj && !isAdmin()) { alert_('danger', 'Los ajustes de precios no están disponibles para esta importación.'); return Promise.resolve(false); }
+  const ag = impSheet(wb.Sheets[agName], IMP_HDR_AG);
+  if ((ag.keys || []).some(isAdjHeader)) { alert_('danger', 'Las columnas de ajustes deben estar en Ajustes de precios, no en Agencias.'); return Promise.resolve(false); }
+  const co = isCsv ? { rows: [] } : impSheet(wb.Sheets['Contactos'], IMP_HDR_CO);
+  const aj = hasAdj ? impSheetAdj(wb.Sheets[ADJ_SHEET]) : { rows: [] };
+  const bad = [ag, co, aj].find(x => x.missing || x.tooMany || x.badHeaders);
+  if (bad) {
+    alert_('danger', bad.tooMany ? `El archivo cargado supera la cantidad de filas permitida (Máximo: ${IMP_MAX_ROWS}).`
+      : bad.badHeaders ? 'Los encabezados de «Ajustes de precios» deben contener exactamente, y en este orden: ' + IMP_HDR_AJ.map(h => '«' + h + '»').join(', ') + '.'
+      : `No se encontraron los encabezados: ${bad.missing.map(h => '«' + h + '»').join(', ')}.`);
+    return Promise.resolve(false);
+  }
+  const s1a = impStage1(ag.rows, 'Agencias', 'Agencia', DB.agencies, op, true), s1c = impStage1(co.rows, 'Contactos', 'Contacto', allContacts(), op, false), s1j = impStage1Adj(aj.rows, s1a.plan, op);
+  const skipped = s1a.skipped.concat(s1c.skipped, s1j.skipped);
+  if (skipped.length) { IMP_LAST = skipped; alert_('warning', `El archivo tiene observaciones en ${new Set(skipped.map(s => s.sheet + s.row)).size} fila(s). <b>No se importó ningún registro.</b> <a href="#" class="alert-link" data-act="imp-skipped">Ver detalles</a>`); return Promise.resolve(false); }
+  alert_('success', 'Importación en curso. Una vez terminada recibirás un correo con los resultados.');
+  const res = { created: { ag: 0, co: 0 }, updated: { ag: 0, co: 0, aj: 0 }, skipped: [] };
+  return new Promise(done => setTimeout(() => {
+    s1a.plan.forEach(p => impAgency(p.r, p.fn, res, p.fn === 'update' ? s1j.rules[gv(p.r, 'ID')] : null)); s1c.plan.forEach(p => impContact(p.r, p.fn, res));
+    const n = res.skipped.length;
+    box.innerHTML = card(`${icon('email')} Correo de resultados (simulado)`, `<p class="mb-1"><b>Importación de agencias finalizada.</b></p><p><span class="badge badge-success mr-1">${res.created.ag} agencias creadas</span><span class="badge badge-info mr-1">${res.updated.ag} agencias actualizadas</span><span class="badge badge-info mr-1">${res.updated.aj} ajustes de precios actualizados</span><span class="badge badge-success mr-1">${res.created.co} contactos creados</span><span class="badge badge-info mr-1">${res.updated.co} contactos actualizados</span><span class="badge badge-${n ? 'danger' : 'secondary'}">${n} filas no importadas</span></p>
+      ${n ? tbl([{ h: 'Hoja', cls: 'no-fill', f: x => x.sheet }, { h: 'Nro. de Fila', cls: 'no-fill', f: x => x.row }, { h: 'Razón', f: x => esc(x.reason) }], res.skipped) : '<p class="text-success mb-0">Todas las filas se importaron correctamente.</p>'}
+      <p class="small text-muted mt-2 mb-0">Importar ajustes no recalcula las cotizaciones existentes.</p>`);
+    done(true);
+  }, 900));
+}
+
+route(/^\/importar\/agencias$/, () => {
+  if (!isAdmin()) return { title: 'Importar agencias', html: head('Importar agencias') + `<div class="alert alert-warning"><div class="icon"><span class="zmdi zmdi-lock"></span></div><div class="message">El importador de agencias, que incluye los ajustes de precios, solo está disponible para el perfil <b>Administrador</b>.</div></div>` };
+  const adm = true;
+  const instr = adm
+    ? `<p class="mb-2">Excel: Agencias, Contactos y la hoja opcional <b>${ADJ_SHEET}</b> en tercer lugar. Referencias tiene dos tablas lado a lado: Grupo/ID y Tipo de ajuste/Valor. Es solo informativa y se ignora al importar.</p>
+       <ul class="pl-3 mb-2"><li>Vincula los ajustes por el <b>ID original</b> de la agencia, con su fila en Agencias en el mismo archivo. Conserva los IDs; no son números de fila. <i>Nombre</i> en Ajustes de precios es solo informativo: puede quedar vacío o editarse, pero nunca identifica ni renombra una agencia. Conserva los diez encabezados y su orden.</li>
+       <li>Usa los códigos fijos <b>0 = Sin ajuste, 1 = Recargo, 2 = Descuento</b>. Sin hoja o fila de ajustes se conservan las reglas. En una fila explícita, 0 o tipo vacío con porcentaje vacío elimina esa regla. 0 no admite ningún porcentaje; 1 y 2 requieren un porcentaje positivo con hasta dos decimales, y Descuento no puede superar 100.</li>
+       <li>Solo crear no admite filas de ajustes. Para agencias nuevas: crea sin ID ni ajustes, exporta para obtener el ID y actualiza los ajustes en una segunda carga.</li></ul>
+       <p class="mb-2">Importar ajustes no recalcula cotizaciones existentes.</p>`
+    : `<p class="mb-2">Excel: Agencias y Contactos. Puedes importar y exportar ambas hojas. Referencias contiene la tabla Grupo/ID; es solo informativa y se ignora al importar.</p>`;
+  const html = head('Importar agencias') + `<div id="imp-alert"></div><div class="row"><div class="col-lg-6">${card('Importar agencias', `<form id="f-imp">${fld('¿Qué información de agencias quieres cargar?', 'operation', 0, { type: 'select', opts: IMP_OPS })}
+    <div class="form-group"><label>Carga un archivo</label><div class="custom-file"><input type="file" class="custom-file-input" id="imp-file" accept=".xlsx,.xlsm,.csv"><label class="custom-file-label" for="imp-file">Elige un archivo desde tu disco</label></div><small class="form-text text-muted">${icon('alert-circle-o')} Formatos .xlsx, .xlsm y .csv. Tamaño máx. 10 MB.</small></div>
+    <p><a href="#" data-act="imp-tpl">${icon('download')} Descargar plantilla de importación</a> · <a href="#" data-act="imp-help">Ver instrucciones</a> · <a href="#" data-act="xl-open">Ver un archivo de ejemplo</a></p>
+    <div class="text-muted small mb-3" id="agency-excel-instructions">${instr}<p class="mb-0">Estas instrucciones son para Excel. CSV conserva el flujo anterior; no admite estas instrucciones de varias hojas.</p></div>
+    <button class="btn btn-primary btn-lg" type="submit">Importar</button></form>`)}</div>
+    <div class="col-lg-6">${card('Exportar agencias', `<p class="text-muted">Descarga todas las agencias, con sus contactos${adm ? ' y ajustes de precios' : ''}, en el mismo formato de la plantilla. Puedes modificarlas y volver a importarlas con «Actualizar agencias (por ID)».</p><div class="text-center"><button class="btn btn-secondary" data-act="imp-export">${icon('download')} Descargar todo</button></div>`)}</div></div><div id="imp-result"></div>`;
+  return { title: 'Importar agencias', html: howto(adm ? 'Aquí cargas agencias, contactos y <b>ajustes de precios</b> desde Excel. Los ajustes van en su propia hoja y se vinculan por ID. Importar no cambia las cotizaciones ya creadas.' : 'Como ejecutivo puedes importar agencias y contactos. La hoja de ajustes de precios solo está disponible para administradores.', 'import') + html, after() {
+    const fi = document.getElementById('imp-file'), al = document.getElementById('imp-alert'), box = document.getElementById('imp-result');
+    const alert_ = (type, msg) => { al.innerHTML = `<div class="alert alert-${type}"><div class="icon"><span class="zmdi zmdi-${type === 'success' ? 'check' : type === 'warning' ? 'alert-triangle' : 'alert-circle'}"></span></div><div class="message">${msg}</div></div>`; };
+    fi.addEventListener('change', e => { e.target.nextElementSibling.textContent = e.target.files[0] ? e.target.files[0].name : 'Elige un archivo desde tu disco'; });
+    document.getElementById('f-imp').addEventListener('submit', e => {
+      e.preventDefault(); al.innerHTML = ''; box.innerHTML = ''; const file = fi.files[0], op = +e.target.operation.value;
+      if (!file && IMP_DEMO.wb) { runImport(IMP_DEMO.wb, false, op, alert_, box); return; }
+      if (!file) { alert_('danger', 'No se encontró un archivo para cargar.'); return; }
+      const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+      if (!['.csv', '.xlsx', '.xlsm'].includes(ext)) { alert_('danger', `Formato inválido: ${ext.slice(1).toUpperCase()}`); return; }
+      if (file.size > 10 * 1024 * 1024) { alert_('danger', 'El archivo supera los 10 MB.'); return; }
+      const fr = new FileReader();
+      fr.onload = () => {
+        let wb; try { wb = XLSX.read(new Uint8Array(fr.result), { type: 'array', codepage: 65001 }); } catch (err) { alert_('danger', 'Error: el archivo está dañado o su contenido no se puede leer.'); return; }
+        runImport(wb, ext === '.csv', op, alert_, box);
+      };
+      fr.readAsArrayBuffer(file);
+    });
+  } };
+});
+ACT['imp-skipped'] = () => modal({ title: 'Agencias con observaciones', size: 'modal-lg', body: tbl([{ h: 'Hoja', cls: 'no-fill', f: x => x.sheet }, { h: 'Nro. de Fila', cls: 'no-fill', f: x => x.row }, { h: 'Razón', f: x => esc(x.reason) }], IMP_LAST.slice().sort((a, b) => a.row - b.row)), footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+
+/* Plantilla y exportación: mismo libro (Agencias, Contactos, Ajustes de precios solo administradores, y Referencias informativa) */
+const adjCells = (id, name, r) => [id, name].concat(PKEYS.reduce((o, p) => o.concat([ADJ_CODE_OF[r[p[0]].t], r[p[0]].t ? r[p[0]].p : '']), []));
+function refRows() {
+  const g = DB.agencies.map(a => [a.nombre, a.id]), k = [['Sin ajuste', 0], ['Recargo', 1], ['Descuento', 2]];
+  return Array.from({ length: Math.max(g.length, isAdmin() ? k.length : 0) }, (_, i) => (g[i] || ['', '']).concat(isAdmin() ? ['', (k[i] || ['', ''])[0], (k[i] || ['', ''])[1]] : []));
+}
+function impBook(agRows, coRows, ajRows) {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([IMP_HDR_AG].concat(agRows)), 'Agencias');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([IMP_HDR_CO].concat(coRows)), 'Contactos');
+  if (isAdmin() && ajRows) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([IMP_HDR_AJ].concat(ajRows)), ADJ_SHEET);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Grupo', 'ID'].concat(isAdmin() ? ['', 'Tipo de ajuste', 'Valor'] : [])].concat(refRows())), REF_SHEET);
+  return wb;
+}
+const agRow = a => [a.id, a.nombre, a.razon, a.rut, a.giro, a.dir, a.email, a.parent || ''];
+ACT['imp-tpl'] = () => {
+  const a = DB.agencies[0];
+  XLSX.writeFile(impBook([agRow(a)], [], [adjCells(a.id, a.nombre, normRules(a.adj))]), 'plantilla-agencias.xlsx');
+  notify('Plantilla descargada: plantilla-agencias.xlsx. La fila de ejemplo es solo ilustrativa.', 'info');
+};
+ACT['imp-export'] = () => {
+  const ag = DB.agencies.map(agRow), co = allContacts().map(c => [c.id, CAT_ES[c.category], c.name, c.email, c.phone, c.agency]);
+  XLSX.writeFile(impBook(ag, co, DB.agencies.map(a => adjCells(a.id, a.nombre, normRules(a.adj)))), 'agencias.xlsx'); notify('Exportación generada: agencias.xlsx', 'info');
+};
+ACT['imp-help'] = () => modal({ title: 'Instrucciones de importación de agencias', size: 'modal-lg', body: `<p>El archivo Excel tiene las hojas <b>Agencias</b> y <b>Contactos</b>${isAdmin() ? `, y la hoja opcional <b>${ADJ_SHEET}</b> en tercer lugar` : ''}. La hoja <b>Referencias</b> es solo informativa y se ignora al importar. La primera fila de cada hoja son los encabezados. Máximo ${IMP_MAX_ROWS} filas por hoja.</p>
+  <h6>Hoja «Agencias»</h6>${tbl([{ h: 'Columna', f: c => `<b>${c[0]}</b>` }, { h: 'Descripción', f: c => c[1] }], [['ID', 'Identificador de la agencia. Vacío al crear; obligatorio al actualizar.'], ['Nombre', 'Obligatorio. No puede repetirse dentro del archivo.'], ['Razón social · Giro · Dirección · E-mail', 'Datos de la agencia.'], ['Número identificador nacional', 'RUT con formato válido (76.123.456-7).'], ['Grupo', 'ID de la agencia matriz (opcional).']])}
+  ${isAdmin() ? `<h6 class="mt-3">Hoja «${ADJ_SHEET}»</h6>${tbl([{ h: 'Columna', f: c => `<b>${c[0]}</b>` }, { h: 'Descripción', f: c => c[1] }], [['ID', 'ID de una agencia que se actualiza en la hoja Agencias del mismo archivo.'], ['Nombre', 'Solo informativo; no identifica ni renombra la agencia.'], ['Precio mínimo · Precio mensual · Precio producción · Servicios adicionales', 'Tipo de ajuste con código fijo: <b>0</b> = Sin ajuste, <b>1</b> = Recargo, <b>2</b> = Descuento.'], ['Porcentaje % (a la derecha de cada tipo)', 'Número mayor que 0 con hasta dos decimales. Descuento hasta 100; el recargo no tiene tope.']])}
+    <ul class="small mt-2"><li>Conserva los <b>diez encabezados y su orden</b>.</li><li>Sin hoja o sin fila de ajustes se <b>conservan</b> las reglas actuales. En una fila explícita, 0 o tipo vacío con porcentaje vacío <b>elimina</b> esa regla.</li><li><b>Solo crear</b> no admite filas de ajustes: crea las agencias, exporta para obtener los ID y carga los ajustes en una segunda importación (Actualizar).</li><li>Los ajustes no pueden ir como columnas dentro de la hoja Agencias.</li></ul>` : ''}
+  <h6 class="mt-3">Hoja «Contactos»</h6><p class="small">Columnas: ${IMP_HDR_CO.join(', ')}. Tipo de contacto: Financiero o Comercial (uno de cada tipo por agencia, máximo dos).</p>
+  <ul class="small mb-0"><li>Si el archivo tiene observaciones de formato o de ID, <b>no se importa nada</b>. Las filas que fallen al guardar se informan en el correo de resultados y el resto se importa.</li><li>Importar ajustes <b>no recalcula</b> las cotizaciones existentes. Para llevarlas a las condiciones vigentes, usa «Actualizar» dentro de cada cotización.</li><li>CSV conserva el flujo anterior (solo la hoja Agencias, sin ajustes).</li></ul>`, footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+
+/* Archivo de ejemplo (vista tipo Excel) y libros en memoria para las demostraciones */
+const DEMO_AG = ['A4', 'Cuenta Directa', 'Cuenta Directa Ltda.', '76.940.444-4', 'Publicidad', 'Los Leones 1200, Providencia', 'admin@cdirecta.example', 'A2'];
+const DEMO_AJ = ['A4', 'Cuenta Directa', 2, 5, 2, 10, 0, '', 1, 3];
+function xlSheets() {
+  return [
+    { name: 'Agencias', head: IMP_HDR_AG, rows: [DEMO_AG] },
+    { name: 'Contactos', head: IMP_HDR_CO, rows: [] },
+    { name: ADJ_SHEET, head: IMP_HDR_AJ, rows: [DEMO_AJ], kinds: [2, 4, 6, 8] },
+    { name: REF_SHEET, head: ['Grupo', 'ID', '', 'Tipo de ajuste', 'Valor'], rows: refRows() }
+  ].filter(s => isAdmin() || s.name !== ADJ_SHEET);
+}
+function xlTable(i) {
+  const s = xlSheets()[i], kinds = s.kinds || [];
+  return `<div class="table-responsive"><table class="xl-table"><thead><tr><th class="xl-rn"></th>${s.head.map((h, c) => `<th data-col="${c}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${
+    s.rows.length ? s.rows.map((r, n) => `<tr><td class="xl-rn">${n + 2}</td>${s.head.map((h, c) => `<td data-col="${c}" ${kinds.includes(c) ? 'data-kind="1"' : ''}>${esc(r[c] == null ? '' : r[c])}</td>`).join('')}</tr>`).join('') : `<tr><td class="xl-rn">2</td><td colspan="${s.head.length}" class="text-muted">(sin filas)</td></tr>`}</tbody></table></div>`;
+}
+function xlOpen(i) {
+  modal({ title: `${icon('file')} agencias-ejemplo.xlsx`, size: 'modal-xl', body: `<div class="xl-tabs">${xlSheets().map((s, n) => `<button type="button" class="xl-tab ${n === (i || 0) ? 'active' : ''}" data-act="xl-tab" data-id="${n}">${s.name}</button>`).join('')}</div><div id="xl-body">${xlTable(i || 0)}</div>
+    <p class="small text-muted mt-3 mb-0">Archivo de ejemplo de este manual: actualiza la agencia «Cuenta Directa» (ID A4) y le asigna descuento 5 % en Precio mínimo, descuento 10 % en Precio mensual, recargo 3 % en Servicios adicionales y sin ajuste en Producción.</p>`, footer: '<button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>' });
+}
+ACT['xl-open'] = () => xlOpen(0);
+ACT['xl-tab'] = i => { document.querySelectorAll('.xl-tab').forEach((b, n) => b.classList.toggle('active', n === +i)); document.getElementById('xl-body').innerHTML = xlTable(+i); };
+const demoWbOk = () => impBook([DEMO_AG], [], [DEMO_AJ]);
+
+
+/* =====================================================================
+   ▶ [AJ-10] COTIZACIONES · listado (de COM-25)
+   ===================================================================== */
+route(/^\/cotizaciones$/, () => {
+  const f = F('deals');
+  const rows = () => DB.deals.filter(d => match(d.title + d.serial + clientLabel(d), f.q) && (!f.agency || d.agency === f.agency)).sort((a, b) => b.updated.localeCompare(a.updated));
+  const res = () => { const r = rows(); return tbl([{ h: 'Serie', f: d => `<b class="text-nowrap">${d.serial}</b>` }, { h: 'Anunciante', f: d => clientLabel(d) }, { h: 'Título', f: d => esc(d.title) },
+    { h: 'Agencia', f: d => realAgency(d.agency) ? esc(agencyName(d.agency)) : (d.agencyTemp ? `<em>${esc(d.agencyTemp)}</em>` : '<span class="text-muted">—</span>') },
+    { h: 'Precio total arriendo', cls: 'number', f: d => clp(dealLease(d)) }, { h: 'Precio total producción', cls: 'number', f: d => clp(dealProd(d)) },
+    { h: '', cls: 'text-right tbl-actions text-nowrap', f: d => icBtn('edit', 'Editar', { href: '#/cotizaciones/' + d.id + '/editar' }) }], r) + pager(r.length, 'cotizaciones'); };
+  CUR.refresh = () => setResults(res());
+  return { title: 'Cotizaciones', html: head('Cotizaciones', btn('Crear cotización', { ic: 'plus', href: '#/cotizaciones/nueva' })) + listCard('deals', [{ n: 'q', label: 'Buscar', col: 'col-sm-6', ph: 'Título, serie o anunciante' }, { n: 'agency', label: 'Agencia', type: 'select', opts: [['', 'Todas las agencias']].concat(DB.agencies.map(a => [a.id, a.nombre])) }], res()) };
+});
+const clientLabel = d => d.client ? clientName(d.client) : (d.clientTemp ? `<em>${esc(d.clientTemp)}</em>` : '—');
+
+/* =====================================================================
+   ▶ [AJ-11] COTIZACIONES · formulario crear/editar con precios ajustados por agencia (de COM-27)
+   ===================================================================== */
+let FORM = null;
+const cloneDeal = d => JSON.parse(JSON.stringify(d));
+function blankDeal() { return { id: '', serial: '', client: '', clientTemp: '', agency: '', agencyTemp: '', title: '', description: '', user: USERS[0], bids: [], services: [], created: TOD, updated: TOD }; }
+route(/^\/cotizaciones\/nueva$/, () => { FORM = { mode: 'new', data: blankDeal(), orig: null }; repriceDeal(FORM.data); return quoteFormPage(); });
+route(/^\/cotizaciones\/([^/]+)\/editar$/, id => { const o = dealOf(id); if (!o) return notFoundPage('Cotización'); FORM = { mode: 'edit', data: cloneDeal(o), orig: o }; return quoteFormPage(); });
+function newBid(item) {
+  const it = itemOf(item), r = dealRules(FORM.data);
+  const b = { id: 'N' + Date.now() + Math.floor(Math.random() * 1000), item, qty: 1, unit: adjVal(r.tarifa, it.tarifa), durQty: 1, measure: 'month', prod: adjVal(r.prod, it.prod) };
+  b.net = bidNet(b); return b;
+}
+
+function quoteFormPage() {
+  const d = FORM.data, n = FORM.mode === 'new';
+  const html = howto('Al elegir la <b>agencia</b>, el catálogo y los precios de la cotización se calculan con su ajuste. En una cotización ya guardada, el botón <b>↻ Actualizar</b> junto a la agencia la lleva a las condiciones vigentes (reemplaza los precios manuales y los mínimos).', 'cotizar') + `<form id="f-deal" novalidate autocomplete="off">
+    <div class="card card-border-color card-border-color-primary"><div class="card-header card-header-divider">Información General${n ? '' : ` <span class="text-muted">· ${d.serial}</span>`}</div><div class="card-body"><div class="form-row"><div class="col-md">
+        ${fld('Título', 'title', d.title, { req: 1 })}
+        ${fld('Información adicional Cotización', 'description', d.description, { type: 'textarea', rows: 4 })}
+        ${fld('Ejecutivo/a', 'user', d.user, { type: 'select', opts: USERS })}
+      </div><div class="col-md">
+        ${fld('Anunciante', 'client', d.client || 'placeholder', { type: 'select', opts: [['placeholder', 'Anunciante temporal (nombre de fantasía)']].concat(DB.clients.map(c => [c.id, c.nombre])) })}
+        <div class="form-group"><div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">${icon('edit')}</div></div><input class="form-control" name="clientTemp" value="${esc(d.clientTemp)}" placeholder="Nombre de fantasía (temporal)" ${d.client ? 'readonly' : ''}></div></div>
+        <div class="form-group mb-2"><div class="d-flex align-items-center mb-1"><label class="mb-0">Agencia</label><button type="button" class="btn btn-secondary btn-sm ml-2" id="btn-sync" data-act="pricing-sync" title="Actualizar los precios y ajustes vigentes de esta agencia en la cotización" aria-label="Actualizar" ${realAgency(d.agency) ? '' : 'disabled'}>${icon('refresh-sync')} Actualizar</button></div>
+          <select class="form-control form-control-sm" name="agency">${[['', 'Sin agencia'], ['placeholder', 'Agencia temporal (nombre de fantasía)']].concat(DB.agencies.map(a => [a.id, a.nombre])).map(x => `<option value="${esc(x[0])}" ${String(x[0]) === String(d.agency || (d.agencyTemp ? 'placeholder' : '')) ? 'selected' : ''}>${esc(x[1])}</option>`).join('')}</select></div>
+        <div id="adj-panel"></div>
+        <div class="form-group"><div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">${icon('edit')}</div></div><input class="form-control" name="agencyTemp" value="${esc(d.agencyTemp)}" placeholder="Nombre de fantasía (temporal)" ${d.agency === '' && d.agencyTemp ? '' : 'readonly'}></div></div>
+      </div></div></div></div>
+
+    <div class="card card-table card-border-color card-border-color-primary mb-4" id="bids-card">
+      <div class="card-header card-header-divider"><div class="tools"><button type="button" class="btn btn-secondary btn-sm" data-act="svc-add">${icon('plus')} Agregar servicio</button></div>Selección de soportes</div>
+      <div class="card-body" id="bids-content"></div>
+      <div class="card-footer pt-2">
+        <table class="table-sm"><thead><tr><th class="pb-0"><label class="text-bold mb-0">Precio total arriendo:</label></th><th></th><th class="pb-0"><label class="text-bold mb-0">Precio total producción:</label></th><th></th><th class="pb-0"><label class="text-bold mb-0">Precio total campaña</label></th></tr></thead>
+        <tbody><tr><td><input type="text" class="form-control form-control-sm text-bold text-right" id="t-lease" readonly></td><td class="text-muted text-center no-fill">${icon('plus')}</td><td><input type="text" class="form-control form-control-sm text-bold text-right" id="t-prod" readonly></td><td class="text-muted text-center no-fill">=</td><td><input type="text" class="form-control form-control-sm font-weight-bold text-right" id="t-total" readonly></td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div class="mb-3">${submitBtn(n ? 'Crear cotización' : 'Guardar cambios')}${btn('Volver al listado', { cls: 'secondary', href: '#/cotizaciones' })}</div>
+  </form>
+  <hr class="mb-4">
+  <div class="card card-table card-border-color card-border-color-primary mb-0">${filterBar('catq', [{ n: 'q', label: 'Catálogo de soportes', col: 'col-sm-6', ph: 'Código, nombre o localidad' }, { n: 'tipo', label: 'Tipo de soporte', type: 'select', opts: [['', 'Todos los soportes']].concat(TYPES) }])}<div class="card-body" id="cat-results"></div></div>`;
+  CUR.refresh = () => renderCatalog();
+  return { title: n ? 'Crear cotización' : 'Editar cotización', html, after() { refreshBids(); refreshAdj(); renderCatalog(); bindQuoteForm(); } };
+}
+
+/* Etiquetas con el ajuste vigente de la agencia (las mismas del listado de agencias). Solo administradores y solo con agencia elegida. */
+function refreshAdj() {
+  const sb = document.getElementById('btn-sync'); if (sb) sb.disabled = !realAgency(FORM.data.agency);
+  const p = document.getElementById('adj-panel'); if (!p) return;
+  p.innerHTML = realAgency(FORM.data.agency) && isAdmin() ? `<div class="adj-title">Ajuste de precios:</div>${rulesChips(agencyRules(FORM.data.agency))}` : '';
+}
+/* Tabla de soportes de la cotización */
+const minCell = b => { const d = FORM.data, it = itemOf(b.item), r = dealRules(d), min = minOf(d, it), under = b.unit < min; return clp(min) + (under ? ` <span class="zmdi zmdi-alert-triangle text-warning" title="Este soporte se está vendiendo bajo el precio mínimo: ${clp(min)}"></span>` : ''); };
+function bidRowHtml(b, i) {
+  const it = itemOf(b.item), r = dealRules(FORM.data);
+  return `<tr class="bid-row"><td class="no-fill text-center p-0">${i + 1}</td>
+    <td>${esc(it.nombre)}<div class="sticky-sub"><b>${it.id}</b> // ${it.tipo}</div></td>
+    <td class="number c-min">${minCell(b)}</td>
+    <td class="number" style="width:150px"><input class="form-control form-control-sm text-right" data-k="unit" data-i="${i}" value="${b.unit}" type="number" min="0"></td><td class="text-muted text-center no-fill">×</td>
+    <td class="text-center no-fill" style="width:70px"><input class="form-control form-control-sm" data-k="qty" data-i="${i}" value="${b.qty}" type="number" min="1" ${(it.unidades || 1) === 1 ? 'readonly tabindex="-1"' : `max="${it.unidades}"`}>${(it.unidades || 1) > 1 ? `<small class="text-muted">máx. ${it.unidades}</small>` : ''}</td><td class="text-muted text-center no-fill">×</td>
+    <td style="width:170px"><div class="input-group input-group-sm"><input class="form-control text-center" data-k="durQty" data-i="${i}" value="${b.durQty}" type="number" min="1"><select class="form-control" data-k="measure" data-i="${i}"><option value="month" ${b.measure === 'month' ? 'selected' : ''}>mes(es)</option><option value="day" ${b.measure === 'day' ? 'selected' : ''}>día(s)</option></select></div></td><td class="text-muted text-center no-fill">=</td>
+    <td style="width:130px"><input class="form-control form-control-sm text-right" data-k="net" data-i="${i}" value="${b.net}" type="number" min="0"></td>
+    <td style="width:150px"><input class="form-control form-control-sm text-right" data-k="prod" data-i="${i}" value="${b.prod}" type="number" min="0"></td>
+    <td class="actions text-nowrap text-center"><a href="#" class="mr-2" data-act="svc-add" data-id="${b.item}" title="Servicios adicionales de este soporte">${icon('collection-plus')}</a><a href="#" data-act="bid-rm" data-id="${i}" title="Quitar">${icon('delete')}</a></td></tr>`;
+}
+function svcRowHtml(s, i) {
+  const r = dealRules(FORM.data), base = svcPrice(s.service, s.item);
+  return `<tr class="table-active"><td class="no-fill text-center p-0">${icon('wrench')}</td><td colspan="2"><b>${esc(serviceOf(s.service).nombre)}</b><div class="sticky-sub">${serviceOf(s.service).serial} // Soporte: ${s.item} · ${s.pricing === 'lease' ? 'Arriendo' : 'Producción'}${s.start ? ' · ' + fdate(s.start) + ' → ' + fdate(s.end) : ''}</div></td><td colspan="6" class="text-muted">${esc(s.notes || '')}</td><td class="number">${s.pricing === 'lease' ? clp(s.price) : ''}</td><td class="number">${s.pricing === 'production' ? clp(s.price) : ''}</td><td class="actions text-center"><a href="#" data-act="svc-rm" data-id="${i}" title="Quitar servicio">${icon('delete')}</a></td></tr>`;
+}
+function refreshBids() {
+  const d = FORM.data, c = document.getElementById('bids-content'); if (!c) return;
+  c.innerHTML = `<div class="table-responsive"><table id="bids-table" class="table table-sm table-hover table-striped"><thead><tr>
+    <th class="no-fill">Nº</th><th>Soporte</th><th class="number">P. mínimo</th><th colspan="2">Precio individual</th><th colspan="2">Unidades</th><th colspan="2">Duración</th><th>P. arriendo</th><th>P. producción</th><th></th></tr></thead>
+    <tbody>${d.bids.length || d.services.length ? d.bids.map(bidRowHtml).join('') + d.services.map(svcRowHtml).join('') : '<tr><td colspan="12" class="text-center text-muted p-4">Aún no hay soportes. Selecciónalos en el catálogo que está más abajo.</td></tr>'}</tbody></table></div>`;
+  refreshTotals();
+}
+function refreshTotals() {
+  const d = FORM.data, L = document.getElementById('t-lease'); if (!L) return;
+  L.value = clp(dealLease(d)); document.getElementById('t-prod').value = clp(dealProd(d)); document.getElementById('t-total').value = clp(dealTotal(d));
+}
+function bindQuoteForm() {
+  const f = document.getElementById('f-deal'); const d = FORM.data;
+  f.querySelector('[name=client]').addEventListener('change', e => { const t = f.querySelector('[name=clientTemp]'); t.readOnly = e.target.value !== 'placeholder'; if (t.readOnly) t.value = ''; });
+  /* Al cambiar la agencia se recalculan TODOS los precios desde el Precio mensual con el ajuste de la nueva agencia. */
+  f.querySelector('[name=agency]').addEventListener('change', e => {
+    const t = f.querySelector('[name=agencyTemp]'); t.readOnly = e.target.value !== 'placeholder'; if (t.readOnly) t.value = '';
+    d.agency = e.target.value === 'placeholder' ? '' : e.target.value;
+    const had = d.bids.length || d.services.length; repriceDeal(d); refreshBids(); refreshAdj(); renderCatalog();
+    if (had) notify('Precios actualizados según la agencia seleccionada.', 'info');
+  });
+  f.addEventListener('submit', e => { e.preventDefault(); saveQuote(); });
+}
+document.addEventListener('input', e => {
+  const el = e.target; if (!FORM || !el.closest || !el.closest('#bids-table') || !el.dataset.k) return;
+  const b = FORM.data.bids[+el.dataset.i]; if (!b) return; const k = el.dataset.k;
+  if (k === 'measure') b.measure = el.value; else b[k] = +el.value || 0;
+  const row = el.closest('tr');
+  if (['unit', 'qty', 'durQty', 'measure'].includes(k)) { b.net = bidNet(b); row.querySelector('[data-k=net]').value = b.net; }
+  row.querySelector('.c-min').innerHTML = minCell(b);
+  refreshTotals();
+});
+/* Actualizar: reemplaza precios manuales y mínimos por los vigentes de la agencia. No cambia la agencia. */
+ACT['pricing-sync'] = () => {
+  if (!FORM || !realAgency(FORM.data.agency)) return;
+  const $m = modal({ title: 'Actualizar precios', size: '', body: '<p class="mb-0">Se reemplazarán los precios manuales de los soportes y servicios y sus mínimos por los precios y ajustes vigentes de esta agencia. En una cotización por paquete también se reemplazarán los importes globales y el total del paquete. La agencia y el modo de precios no cambiarán. Los cambios se guardarán cuando guardes la cotización.</p>', footer: '<button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-warning" id="ok-btn">Actualizar</button>' });
+  $m.find('#ok-btn').on('click', () => { closeModal(); repriceDeal(FORM.data); refreshBids(); refreshAdj(); renderCatalog(); notify('Precios actualizados según la agencia seleccionada.', 'info'); });
+};
+ACT['bid-rm'] = i => { const d = FORM.data, b = d.bids[+i]; d.bids.splice(+i, 1); d.services = d.services.filter(s => !s.item || d.bids.some(x => x.item === s.item)); refreshBids(); renderCatalog(); };
+ACT['svc-rm'] = i => { FORM.data.services.splice(+i, 1); refreshBids(); };
+ACT['svc-add'] = item => {
+  const d = FORM.data, items = d.bids.map(b => b.item);
+  if (!items.length) { notify('Agrega primero un soporte a la cotización.', 'warning'); return; }
+  const $m = modal({ title: 'Agregar servicio', body: `<form>${fld('Servicio', 'service', '', { type: 'select', req: 1, opts: DB.services.map(s => [s.id, s.nombre]) })}${fld('Soporte', 'item', item || items[0], { type: 'select', opts: items.map(i => [i, i + ' · ' + itemOf(i).nombre]) })}${fld('Notas', 'notes', '', { type: 'textarea', rows: 2 })}<div class="form-row">${fld('Fecha inicio', 'start', iso(addDays(14)), { type: 'date', req: 1, cls: 'col-6' })}${fld('Fecha fin', 'end', iso(addDays(44)), { type: 'date', req: 1, cls: 'col-6' })}</div>${fld('Valorización', 'pricing', 'lease', { type: 'select', opts: [['lease', 'Arriendo'], ['production', 'Producción']] })}</form>`, footer: '<button class="btn btn-primary" id="ok">Agregar</button>' });
+  $m.find('#ok').on('click', () => {
+    const v = k => $m.find('[name=' + k + ']').val();
+    if (v('end') < v('start')) { notify('La fecha fin debe ser posterior al inicio.', 'warning'); return; }
+    const base = svcPrice(v('service'), v('item'));
+    if (!base) notify('No hay un precio configurado para este servicio y soporte. El precio se mantiene en cero.', 'warning');
+    d.services.push({ id: 'SB' + Date.now(), service: v('service'), item: v('item'), notes: v('notes'), start: v('start'), end: v('end'), pricing: v('pricing'), price: adjVal(dealRules(d).serv, base) });
+    closeModal(); refreshBids();
+  });
+};
+
+/* Catálogo para agregar soportes: muestra los precios ya ajustados por la agencia elegida */
+function renderCatalog() {
+  const el = document.getElementById('cat-results'); if (!el) return;
+  const f = FS.catq || {}, r = DB.items.filter(i => match(i.id + i.nombre + i.comuna, f.q) && (!f.tipo || i.tipo === f.tipo)), added = FORM.data.bids.map(b => b.item), rules = dealRules(FORM.data);
+  const pc = (rule, v) => clp(adjVal(rule, v));
+  el.innerHTML = tbl([{ h: icon('assignment'), cls: 'no-fill text-center', f: i => `<span class="zmdi zmdi-${added.includes(i.id) ? 'check-circle text-success' : 'plus-circle-o text-muted'}" style="font-size:1.3rem"></span>` },
+    { h: 'Código', f: i => `<b class="text-nowrap">${i.id}</b>` }, { h: 'Tipo de soporte', f: i => i.tipo }, { h: 'Nombre', f: i => esc(i.nombre) }, { h: 'Localidad', f: i => i.comuna },
+    { h: 'Precio mínimo', cls: 'number', f: i => pc(rules.minimo, i.minimo) }, { h: 'Precio mensual', cls: 'number', f: i => pc(rules.tarifa, i.tarifa) }, { h: 'Precio producción', cls: 'number', f: i => pc(rules.prod, i.prod) }], r) + pager(r.length, 'soportes');
+  el.querySelectorAll('tbody tr').forEach((tr, i) => { tr.classList.add('cursor-pointer'); tr.title = 'Clic para agregar a la cotización'; tr.addEventListener('click', () => addItemToForm(r[i].id)); });
+}
+function addItemToForm(id) {
+  const d = FORM.data;
+  if (d.bids.some(b => b.item === id)) { notify(id + ' ya está en la cotización.', 'info'); return; }
+  d.bids.push(newBid(id)); refreshBids(); renderCatalog(); notify(id + ' agregado a la cotización.');
+}
+
+/* Guardar */
+function saveQuote() {
+  const f = document.getElementById('f-deal'), fd = new FormData(f), d = FORM.data, errs = [];
+  d.title = fd.get('title').trim(); d.description = fd.get('description'); d.user = fd.get('user');
+  d.client = fd.get('client') === 'placeholder' ? '' : fd.get('client'); d.clientTemp = d.client ? '' : fd.get('clientTemp').trim();
+  d.agency = fd.get('agency') === 'placeholder' ? '' : fd.get('agency'); d.agencyTemp = fd.get('agency') === 'placeholder' ? fd.get('agencyTemp').trim() : '';
+  if (!d.title) errs.push('El título es obligatorio.');
+  if (!d.client && !d.clientTemp) errs.push('Selecciona un anunciante o ingresa un nombre de fantasía temporal.');
+  if (errs.length) { notify(errs.join('<br>'), 'warning'); return; }
+  d.updated = TOD;
+  if (FORM.mode === 'new') { const t = Object.assign({}, d, { id: 'D' + (Math.max(...DB.deals.map(x => +x.id.slice(1))) + 1), serial: nextSerial(), created: TOD }); DB.deals.push(t); notify('La cotización ha sido creada exitosamente.'); go('/cotizaciones/' + t.id + '/editar'); return; }
+  Object.assign(FORM.orig, cloneDeal(d)); FORM.data = cloneDeal(FORM.orig); notify('Los cambios fueron guardados.'); refreshBids(); refreshAdj();
+}
+
+/* =====================================================================
+   ▶ [AJ-12] MANUAL · pantalla de inicio y demostraciones animadas
+   Cada demostración maneja la propia pantalla del prototipo (cursor, escritura y clics reales) mientras explica cada paso.
+   ===================================================================== */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const STOP = { stop: true };
+let RUN = 0;
+const q = s => typeof s === 'function' ? s() : document.querySelector(s);
+const rowOf = (scope, text) => () => Array.from(document.querySelectorAll(scope + ' tbody tr')).find(tr => tr.textContent.includes(text));
+
+/* Recuadro «Cómo funciona» de cada pantalla */
+function howto(text, demo) {
+  return `<div class="alert alert-primary howto"><div class="icon"><span class="zmdi zmdi-info-outline"></span></div><div class="message">${text}${demo ? ` <a href="#" data-act="demo" data-id="${demo}" class="alert-link text-nowrap">▶ Ver demostración</a>` : ''}</div></div>`;
+}
+/* Detalle de una agencia: descripción, referencia y resultado de ejemplo de cada precio */
+function adjDetails(r) {
+  return `<p class="text-muted small">Ejemplos solo de referencia. Aquí no se modifica el Precio mensual de los soportes ni las cotizaciones.</p>` + PKEYS.map(([k, l]) => {
+    const rule = r[k], cls = rule.t === 'desc' ? 'text-danger' : rule.t === 'rec' ? 'text-primary' : 'text-muted';
+    return `<div class="row py-2 border-bottom"><div class="col-sm-4 text-bold">${l}</div><div class="col-sm-8"><strong class="d-block ${cls}">${ruleWord(rule)}</strong><div class="text-muted small">Referencia: ${clp(ADJ_REF[k])}</div><div class="small">Resultado de ejemplo: ${clp(adjVal(rule, ADJ_REF[k]))}</div></div></div>`;
+  }).join('');
+}
+
+/* ---------- Motor de demostraciones · paso a paso (Anterior / Siguiente), nunca avanza solo ---------- */
+const DB0 = JSON.stringify(DB);   /* datos iniciales: cada demostración parte siempre del mismo estado */
+let DEMO = null;
+const clearFrames = () => document.querySelectorAll('.demo-frame').forEach(e => e.remove());
+function resetDemo() { Object.assign(DB, JSON.parse(DB0)); $('.modal').modal('hide'); IMP_DEMO.wb = null; clearFrames(); }
+
+/* Sube el elemento a la zona libre de la pantalla: bajo la barra superior y sobre el panel de pasos (que ocupa ~200 px abajo) */
+function bring(el) {
+  if (el.closest('.modal')) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  const r = el.getBoundingClientRect(), top = 125, free = innerHeight - top - 215;
+  const want = r.height < free ? top + (free - r.height) / 2 : top;
+  window.scrollBy({ top: r.top - want, behavior: 'smooth' });
+}
+/* fast = reconstruye el estado de pasos anteriores sin animación (para «Anterior») */
+function mkDriver(id, fast) {
+  const chk = () => { if (id !== RUN) throw STOP; };
+  const cur = () => document.getElementById('demo-cursor');
+  const nap = ms => fast ? (ms >= 1400 ? 1100 : Math.min(ms, 120)) : ms;
+  const D = {
+    wait: async ms => { await sleep(nap(ms)); chk(); },
+    role: async r => { if (ROLE !== r) { ACT.role(r); } await D.wait(500); },
+    go: async h => { if (location.hash === '#' + h) render(); else location.hash = h; await D.wait(600); },
+    point: async sel => {
+      clearFrames();
+      const el = q(sel); if (!el) throw new Error('Demostración: no se encontró ' + sel);
+      if (fast) return el;
+      bring(el); await D.wait(550);
+      const r = el.getBoundingClientRect(), c = cur(); c.hidden = false;
+      c.style.transform = `translate(${Math.round(r.left + Math.min(r.width * 0.5, 70))}px, ${Math.round(r.top + r.height / 2)}px)`;
+      await D.wait(900); return el;
+    },
+    click: async sel => { const el = await D.point(sel); if (!fast) { const c = cur(); c.classList.add('click'); await D.wait(280); c.classList.remove('click'); } el.click(); await D.wait(500); },
+    select: async (sel, v) => { const el = await D.point(sel); el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); await D.wait(700); },
+    type: async (sel, txt) => {
+      const el = await D.point(sel); el.focus(); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true }));
+      if (fast) el.value = String(txt), el.dispatchEvent(new Event('input', { bubbles: true }));
+      else for (const ch of String(txt)) { el.value += ch; el.dispatchEvent(new Event('input', { bubbles: true })); await D.wait(90); }
+      el.dispatchEvent(new Event('change', { bubbles: true })); await D.wait(400);
+    },
+    /* Un solo marco que rodea todos los elementos indicados; queda visible hasta que cambie el paso */
+    hl: async sel => {
+      if (fast) return;
+      const els = typeof sel === 'function' ? [].concat(sel() || []) : Array.from(document.querySelectorAll(sel));
+      if (!els.length) throw new Error('Demostración: no se encontró ' + sel);
+      clearFrames(); bring(els[0]); await D.wait(650);
+      const rs = els.map(e => e.getBoundingClientRect()), l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), rt = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom));
+      const f = document.createElement('div'); f.className = 'demo-frame';
+      f.style.cssText = `left:${l - 6}px;top:${t - 6}px;width:${rt - l + 12}px;height:${b - t + 12}px`; document.body.appendChild(f); await D.wait(300);
+    }
+  };
+  return D;
+}
+function demoUi(on) {
+  ['demo-shield', 'demo-coach'].forEach(i => { document.getElementById(i).hidden = !on; });
+  document.body.classList.toggle('demo-on', on);
+  if (!on) { document.getElementById('demo-cursor').hidden = true; clearFrames(); }
+}
+const stepText = (demo, i) => { const s = demo.steps[i][0]; return (typeof s === 'function' ? s() : s) + (i === demo.steps.length - 1 && demo.end ? `<div class="dc-end-note">${demo.end}</div>` : ''); };
+function paintCoach() {
+  const st = DEMO; if (!st) return; const n = DEMOS[st.key].steps.length, c = document.getElementById('demo-coach');
+  c.querySelector('.dc-count').textContent = `Paso ${st.cur + 1} de ${n}`;
+  c.querySelector('.progress-bar').style.width = Math.round(((st.cur + 1) / n) * 100) + '%';
+  document.getElementById('demo-prev').disabled = st.busy || st.idx <= 0;
+  const nx = document.getElementById('demo-next'); nx.disabled = st.busy;
+  nx.innerHTML = st.idx >= n - 1 ? 'Finalizar' : 'Siguiente ▶';
+  nx.classList.toggle('btn-success', st.idx >= n - 1); nx.classList.toggle('btn-primary', st.idx < n - 1);
+}
+async function gotoStep(target) {
+  const st = DEMO; if (!st || st.busy) return;
+  const demo = DEMOS[st.key], txt = document.querySelector('#demo-coach .dc-text'), id = ++RUN;
+  st.busy = true; st.cur = target; clearFrames(); paintCoach();
+  try {
+    if (target <= st.idx) {   /* volver: se rehace el estado de los pasos previos al instante y se anima solo el paso elegido */
+      txt.innerHTML = '<i>Volviendo al paso…</i>'; resetDemo(); const F = mkDriver(id, true); await F.role(st.role);
+      for (let i = 0; i < target; i++) await demo.steps[i][1](F);
+    }
+    clearFrames(); txt.innerHTML = stepText(demo, target);
+    await demo.steps[target][1](mkDriver(id, false));
+    st.idx = target;
+  } catch (e) {
+    if (e !== STOP) { console.error(e); txt.innerHTML = 'No pude mostrar este paso en esta pantalla. Cierra la demostración y vuélvela a abrir, o recarga la página.'; }
+  } finally {
+    if (DEMO === st && id === RUN) { st.busy = false; document.getElementById('demo-cursor').hidden = true; paintCoach(); }
+  }
+}
+async function startDemo(key) {
+  if (!DEMOS[key]) return;
+  ++RUN; $('.modal').modal('hide'); resetDemo();
+  DEMO = { key, role: ROLE, idx: -1, cur: 0, busy: false };
+  document.querySelector('#demo-coach .dc-title').textContent = DEMOS[key].title;
+  demoUi(true); await gotoStep(0);
+}
+ACT.demo = key => { startDemo(key); };
+const stopDemo = () => { RUN++; DEMO = null; demoUi(false); IMP_DEMO.wb = null; };
+document.addEventListener('click', e => {
+  if (e.target.closest('#demo-stop')) stopDemo();
+  else if (e.target.closest('#demo-prev')) { if (DEMO && !DEMO.busy && DEMO.idx > 0) gotoStep(DEMO.idx - 1); }
+  else if (e.target.closest('#demo-next')) { if (!DEMO || DEMO.busy) return; if (DEMO.idx >= DEMOS[DEMO.key].steps.length - 1) stopDemo(); else gotoStep(DEMO.idx + 1); }
+});
+document.addEventListener('keydown', e => {
+  if (!DEMO) return;
+  if (e.key === 'Escape') stopDemo();
+  else if (e.key === 'ArrowRight') document.getElementById('demo-next').click();
+  else if (e.key === 'ArrowLeft') document.getElementById('demo-prev').click();
+});
+
+/* Solo instrucciones: las pantallas son de referencia y la persona no puede operarlas. Las demostraciones usan eventos sintéticos (no confiables) y sí pueden. */
+const OK_USER = 'a[href^="#/"], [data-act="demo"], [data-act="xl-open"], [data-act="imp-help"], .calc-ok';
+['click', 'submit', 'input', 'change', 'keydown', 'keypress', 'beforeinput', 'mousedown'].forEach(type => document.addEventListener(type, e => {
+  if (!e.isTrusted || DEMO || !e.target.closest || !e.target.closest('#content') || e.target.closest(OK_USER)) return;
+  if (type === 'mousedown' && !e.target.closest('select, input, textarea')) return;
+  if (type === 'keydown' && !e.target.closest('input, select, textarea, button')) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true));
+/* ---------- Demostraciones ---------- */
+const SEED41 = { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 10 } };
+const A4tr = rowOf('#results', 'Cuenta Directa');
+const DEMOS = {
+  config: { roles: ['admin'], short: 'Configurar agencia', title: 'Configurar el ajuste de una agencia', desc: 'Elige descuento o recargo por precio, usa la aplicación masiva y guarda.',
+    end: 'Los cambios afectan a las cotizaciones nuevas. Las existentes se actualizan con el botón «Actualizar» (demostración 3).',
+    steps: [
+      ['Entra a <b>Agencias › Ver agencias</b>. Como administrador ves la columna <b>Ajuste de precios</b>.', async D => { await D.go('/agencias'); await D.hl('.table th:nth-child(4), .table td:nth-child(4)', 2400); }],
+      ['Cada etiqueta muestra un precio y su ajuste: <b>rojo = descuento</b>, <b>azul = recargo</b>, gris = sin ajuste (±0 %). «Cuenta Directa» todavía no tiene ajustes.', async D => { await D.hl(A4tr, 2800); }],
+      ['Presiona el lápiz para <b>editar</b> la agencia.', async D => { await D.click('a[href="#/agencias/A4/editar"]'); await D.wait(400); }],
+      ['En la tarjeta <b>Ajuste de precios</b> hay una fila por cada precio: mínimo, mensual, producción y servicios adicionales. Cada uno admite <b>solo un tipo</b>.', async D => { await D.hl('.adj-table', 2800); }],
+      ['Para el <b>Precio mensual</b> elige el tipo <b>Descuento</b>.', async D => { await D.select('[data-adj-t=tarifa]', 'desc'); }],
+      ['Escribe el porcentaje: <b>12</b>. Admite hasta dos decimales y el descuento no puede superar 100 %.', async D => { await D.type('[data-adj-p=tarifa]', '12'); }],
+      ['La columna <b>Ejemplo</b> muestra cómo quedaría un precio de referencia con ese ajuste.', async D => { await D.hl('[data-adj-ex=tarifa]', 2400); }],
+      ['Para aplicar el mismo ajuste a varios precios, márcalos: <b>Precio producción</b> y <b>Servicios adicionales</b>.', async D => { await D.click('label[for=ac-prod]'); await D.click('label[for=ac-serv]'); }],
+      ['En «Aplicar el mismo ajuste de forma masiva» elige <b>Recargo</b>, escribe <b>4</b> y presiona <b>Aplicar a los seleccionados</b>.', async D => { await D.select('[data-bulk-t]', 'rec'); await D.type('[data-bulk-p]', '4'); await D.click('[data-act=adj-bulk-sel]'); await D.wait(900); }],
+      ['Revisa la tabla y presiona <b>Guardar cambios</b>.', async D => { await D.click('#f-agency button[type="submit"]'); await D.wait(700); }],
+      ['En la ficha de la agencia, la sección <b>Ajuste de precios</b> muestra la descripción, la referencia y el resultado de ejemplo de cada precio.', async D => { await D.hl('.row > .col-lg-6:last-child .card', 3200); }]
+    ] },
+  cotizar: { roles: ['admin', 'ejecutivo'], short: 'Cotizar', title: 'Cotizar con una agencia', desc: 'Al elegir la agencia, el catálogo y la cotización muestran precios ya ajustados.',
+    end: 'Al cambiar la agencia, todos los precios se recalculan desde el Precio mensual. Después puedes negociar a mano.',
+    steps: [
+      ['Ve a <b>Cotizaciones › Crear cotización</b>.', async D => { await D.go('/cotizaciones/nueva'); }],
+      ['Escribe el título y elige el anunciante.', async D => { await D.type('[name=title]', 'Campaña de ejemplo'); await D.select('[name=client]', 'C1'); }],
+      [() => isAdmin() ? 'Elige la agencia <b>Vía Pública Group</b>, que tiene recargos. Aparecen <b>las etiquetas de su ajuste</b> (solo el administrador las ve).' : 'Elige la agencia <b>Vía Pública Group</b>. Como ejecutivo <b>no ves las etiquetas ni los porcentajes</b> de la agencia, pero los precios se ajustan igual.', async D => { await D.select('[name=agency]', 'A2'); await D.hl(isAdmin() ? '#adj-panel' : '[name=agency]', 2600); }],
+      ['El <b>catálogo</b> ya muestra los precios con el ajuste de la agencia aplicado.', async D => { await D.hl('#cat-results table', 2600); }],
+      ['Haz clic en un soporte del catálogo para agregarlo: <b>B-003</b> (Valla).', async D => { await D.click(rowOf('#cat-results', 'B-003')); }],
+      [() => `El <b>precio individual</b>, el <b>mínimo</b> y la <b>producción</b> vienen ajustados. El Precio mensual de B-003 es ${clp(itemOf('B-003').tarifa)} y en la cotización aparece como ${clp(adjVal({ t: 'rec', p: 8 }, itemOf('B-003').tarifa))}${isAdmin() ? ' (recargo de 8 %)' : ''}.`, async D => { await D.hl('#bids-table tbody tr', 3200); }],
+      ['Si cambias de agencia, <b>todos los precios se recalculan</b> desde el Precio mensual. Probemos con <b>MediaPlan Chile</b>.', async D => { await D.select('[name=agency]', 'A1'); await D.wait(900); await D.hl('#bids-table tbody tr', 2600); }],
+      ['Los precios siguen siendo editables. Si bajas del <b>precio mínimo</b>, aparece una alerta ⚠.', async D => { await D.type('[data-k=unit][data-i="0"]', '900000'); await D.hl('.c-min', 2600); }],
+      ['Guarda la cotización: conserva las condiciones con que fue valorizada.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
+    ] },
+  sync: { roles: ['admin', 'ejecutivo'], short: 'Actualizar cotización', title: 'Actualizar una cotización existente', desc: 'Lleva una cotización guardada a las condiciones vigentes de su agencia.',
+    end: 'Recuerda: se reemplazan los precios manuales y los mínimos de todas las líneas. Revisa antes de guardar.',
+    steps: [
+      [() => 'Abre una cotización ya guardada: <b>CA-0041</b>. Se valorizó cuando MediaPlan tenía otro perfil de precios' + (isAdmin() ? ' (5 % de descuento en el mensual).' : '.'), async D => { repriceDeal(dealOf('D41'), SEED41); await D.go('/cotizaciones/D41/editar'); await D.hl('#bids-table tbody tr:first-child', 2600); }],
+      ['Cambiar el porcentaje de una agencia <b>no modifica</b> las cotizaciones ya creadas. Para actualizarlas está el botón <b>↻ Actualizar</b>, junto al selector de agencia.', async D => { await D.hl('[data-act=pricing-sync]', 2800); }],
+      ['Antes, negociemos un precio a mano en la primera línea: <b>1.500.000</b>.', async D => { await D.type('[data-k=unit][data-i="0"]', '1500000'); }],
+      ['Presiona el botón de actualizar.', async D => { await D.click('[data-act=pricing-sync]'); await D.wait(700); }],
+      ['La confirmación avisa que se <b>reemplazan los precios manuales</b> y los mínimos por los vigentes, y que la agencia no cambia. Confirma con <b>Actualizar</b>.', async D => { await D.hl('.modal-body', 3200); await D.click('#ok-btn'); await D.wait(700); }],
+      [() => 'Los precios se recalcularon con el ajuste vigente de MediaPlan' + (isAdmin() ? ' (−10 % en el mensual)' : '') + '. El precio manual desapareció.', async D => { await D.hl('#bids-table', 3200); }],
+      ['Los cambios se guardan cuando presionas <b>Guardar cambios</b>.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
+    ] },
+  import: { roles: ['admin'], short: 'Importar con Excel', title: 'Importar ajustes con Excel', desc: 'Hoja Ajustes de precios, códigos 0/1/2 e importación inmediata.',
+    end: 'Importar ajustes no recalcula cotizaciones existentes: usa «Actualizar» en cada una.',
+    steps: [
+      ['Ve a <b>Agencias › Importar agencias</b>.', async D => { await D.go('/importar/agencias'); await D.hl('#f-imp', 2200); }],
+      ['El archivo Excel tiene hasta cuatro hojas. Veamos un archivo de ejemplo.', async D => { await D.click('[data-act=xl-open]'); await D.wait(900); }],
+      ['Hoja <b>Agencias</b>: datos de la agencia, <b>sin columnas de ajustes</b>. La columna <b>ID</b> vincula todo el archivo.', async D => { await D.hl('#xl-body th[data-col="0"], #xl-body td[data-col="0"]', 2600); }],
+      ['Hoja <b>Ajustes de precios</b>: por cada agencia, un par <b>tipo + porcentaje</b> para cada precio, en este orden y con los diez encabezados.', async D => { await D.click('.xl-tab[data-id="2"]'); await D.hl('#xl-body thead', 3000); }],
+      ['El tipo usa códigos fijos: <b>0</b> = Sin ajuste, <b>1</b> = Recargo, <b>2</b> = Descuento. El porcentaje va a su derecha.', async D => { await D.hl('#xl-body td[data-kind]', 3000); }],
+      ['La hoja <b>Referencias</b> es solo informativa: te recuerda los ID de las agencias y los códigos.', async D => { await D.click('.xl-tab[data-id="3"]'); await D.wait(1800); }],
+      ['Cierra el archivo, elige la operación <b>Actualizar agencias (por ID)</b>, carga tu archivo y presiona <b>Importar</b>.', async D => { $('.modal').modal('hide'); await D.wait(700); await D.select('[name=operation]', '1'); IMP_DEMO.wb = demoWbOk(); document.querySelector('.custom-file-label').textContent = 'agencias-ejemplo.xlsx'; await D.click('#f-imp button[type="submit"]'); await D.wait(1500); }],
+      ['Cuando termina, recibes un <b>correo con los resultados</b>: agencias y ajustes actualizados, y las filas no importadas.', async D => { await D.hl('#imp-result', 3200); IMP_DEMO.wb = null; }],
+      ['Comprobemos: «Cuenta Directa» ahora tiene sus ajustes.', async D => { await D.go('/agencias'); await D.hl(A4tr, 3000); }]
+    ] }
+};
+const demoKeys = () => Object.keys(DEMOS).filter(k => DEMOS[k].roles.includes(ROLE));
+
+/* ---------- Pantalla de inicio del manual ---------- */
+route(/^\/inicio$/, () => {
+  const html = head('Manual de uso · Ajuste de precios de agencias') +
+    `<div class="alert alert-info"><div class="icon"><span class="zmdi zmdi-info-outline"></span></div><div class="message">Este manual <b>solo explica</b> cómo funciona el ajuste de precios de agencias. Las pantallas son de referencia, con datos de ejemplo, y no se pueden modificar. Para ver cómo se usa cada función, sigue una <b>demostración animada</b>: el cursor hace el recorrido y tú avanzas paso a paso.</div></div>
+    <div class="row"><div class="col-lg-7">
+      ${card('¿Para qué sirve?', `<p>Cada agencia puede tener un <b>descuento</b> o un <b>recargo</b> sobre sus precios. Al elegir la agencia en una cotización, los precios se calculan solos a partir del Precio mensual.</p>
+        <p class="mb-2">Se pueden ajustar <b>cuatro precios</b>, cada uno con una sola regla (sin ajuste, descuento o recargo) y su propio porcentaje:</p>
+        <ul><li><b>Precio mínimo</b> · <b>Precio mensual</b> · <b>Precio producción</b> · <b>Servicios adicionales</b></li></ul>
+        <p class="mb-0 small text-muted">Descuento: precio × (1 − %). Recargo: precio × (1 + %). El descuento no puede superar 100 %; el porcentaje admite hasta dos decimales.</p>`)}
+      ${card('Pruébalo: calculadora de ejemplo', `<div class="calc-ok"><div class="form-row align-items-end"><div class="col-md-4 form-group"><label>Precio mensual</label><input class="form-control form-control-sm" type="number" id="calc-base" value="1000000" min="0"></div><div class="col-md-3 form-group"><label>Tipo de ajuste</label><select class="form-control form-control-sm" id="calc-t"><option value="desc">Descuento</option><option value="rec">Recargo</option><option value="">Sin ajuste</option></select></div><div class="col-md-2 form-group"><label>%</label><input class="form-control form-control-sm" type="number" id="calc-p" value="10" min="0" step="0.01"></div><div class="col-md-3 form-group"><label>Precio para la agencia</label><input class="form-control form-control-sm text-bold text-right" id="calc-r" readonly></div></div><p class="small text-muted mb-0">El mismo cálculo se aplica al Precio mínimo, al Precio producción y a los Servicios adicionales, cada uno con su propia regla.</p></div>`)}
+      ${card('Reglas importantes', `<ul class="mb-0">
+        <li>Los ajustes se <b>aplican al elegir o cambiar la agencia</b> en una cotización y al agregar soportes o servicios. Después los precios siguen siendo editables.</li>
+        <li><b>Cambiar el % de una agencia no modifica</b> las cotizaciones existentes. Para llevarlas a las condiciones vigentes usa <b>↻ Actualizar</b> (reemplaza los precios manuales y los mínimos).</li>
+        <li><b>Importar ajustes no recalcula</b> cotizaciones existentes.</li>
+        <li>Sin agencia, o con una agencia temporal, la cotización usa el <b>Precio mensual</b> sin ajuste.</li>
+        <li>Si un servicio no tiene precio configurado para un soporte, su precio queda en cero.</li></ul>`)}
+    </div><div class="col-lg-5">
+      ${card('Demostraciones animadas', `<p class="small text-muted">Presiona ▶ y mira cómo la pantalla se maneja sola, un paso a la vez. Tú decides cuándo avanzar con <b>Siguiente</b> y <b>Anterior</b> (también con las flechas del teclado); Esc la cierra.</p>${demoKeys().map(k => `<div class="d-flex align-items-start mb-3"><button class="btn btn-primary btn-sm mr-3 text-nowrap" type="button" data-act="demo" data-id="${k}">${icon('play')} Ver</button><div><b>${DEMOS[k].short.replace(/^\d · /, '')}</b><div class="small text-muted">${DEMOS[k].desc}</div></div></div>`).join('')}`)}
+      ${card('¿Quién ve qué?', `<table class="table table-sm mb-0"><thead><tr><th></th><th class="text-center">Administrador</th><th class="text-center">Ejecutivo</th></tr></thead><tbody>
+        ${[['Ver y editar los % en la agencia', 1, 0], ['Etiquetas de ajuste en la cotización', 1, 0], ['Importar ajustes con Excel', 1, 0], ['Precios ajustados al cotizar', 1, 1], ['Botón «Actualizar»', 1, 1]].map(r => `<tr><td>${r[0]}</td><td class="text-center">${r[1] ? '<span class="text-success">✔</span>' : '<span class="text-muted">—</span>'}</td><td class="text-center">${r[2] ? '<span class="text-success">✔</span>' : '<span class="text-muted">—</span>'}</td></tr>`).join('')}</tbody></table>`)}
+    </div></div>`;
+  return { title: 'Manual de uso', html, after() {
+    const f = () => { const b = +document.getElementById('calc-base').value || 0, t = document.getElementById('calc-t').value, p = +document.getElementById('calc-p').value || 0; document.getElementById('calc-r').value = clp(adjVal(t ? { t, p } : null, b)); };
+    ['calc-base', 'calc-t', 'calc-p'].forEach(i => document.getElementById(i).addEventListener('input', f)); f();
+  } };
+});
+
+/* =====================================================================
+   ▶ [AJ-12] ARRANQUE · carga inicial
+   ===================================================================== */
+paintMenu();
+$(document).ready(function () { render(); });
+})();
+</script>
+</body>
+</html>
