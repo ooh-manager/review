@@ -276,7 +276,7 @@
   <div class="dc-head"><span class="dc-title"></span><button type="button" class="btn btn-sm btn-light" id="demo-stop">Cerrar demostración</button></div>
   <div class="dc-text"></div>
   <div class="progress"><div class="progress-bar" style="width:0"></div></div>
-  <div class="dc-foot"><span class="dc-count"></span><span class="dc-nav"><button type="button" class="btn btn-sm btn-secondary" id="demo-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="demo-next">Siguiente ▶</button></span></div>
+  <div class="dc-foot"><span class="dc-count"></span><span class="dc-nav"><button type="button" class="btn btn-sm btn-success" id="demo-start" hidden>▶ Iniciar</button><button type="button" class="btn btn-sm btn-secondary" id="demo-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="demo-next">Siguiente ▶</button></span></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
@@ -1216,6 +1216,9 @@ function demoUi(on) {
 const stepText = (demo, i) => { const s = demo.steps[i][0]; return (typeof s === 'function' ? s() : s) + (i === demo.steps.length - 1 && demo.end ? `<div class="dc-end-note">${demo.end}</div>` : ''); };
 function paintCoach() {
   const st = DEMO; if (!st) return; const n = DEMOS[st.key].steps.length, c = document.getElementById('demo-coach');
+  const intro = st.cur < 0;   /* antes de iniciar: un solo botón «Iniciar» en lugar de Anterior / Siguiente */
+  document.getElementById('demo-start').hidden = !intro; document.getElementById('demo-prev').hidden = intro; document.getElementById('demo-next').hidden = intro;
+  if (intro) { c.querySelector('.dc-count').textContent = `${n} pasos`; c.querySelector('.progress-bar').style.width = '0'; return; }
   c.querySelector('.dc-count').textContent = `Paso ${st.cur + 1} de ${n}`;
   c.querySelector('.progress-bar').style.width = Math.round(((st.cur + 1) / n) * 100) + '%';
   document.getElementById('demo-prev').disabled = st.busy || st.idx <= 0;
@@ -1244,21 +1247,25 @@ async function gotoStep(target) {
 async function startDemo(key) {
   if (!DEMOS[key]) return;
   ++RUN; $('.modal').modal('hide'); resetDemo();
-  DEMO = { key, role: ROLE, idx: -1, cur: 0, busy: false };
+  DEMO = { key, role: ROLE, idx: -1, cur: -1, busy: false };   /* no parte sola: espera que la persona presione «Iniciar» */
   document.querySelector('#demo-coach .dc-title').textContent = DEMOS[key].title;
-  demoUi(true); await gotoStep(0);
+  document.querySelector('#demo-coach .dc-text').innerHTML = `${DEMOS[key].desc}<div class="dc-end-note">Cuando estés lista o listo, presiona <b>Iniciar</b>. Después avanzas y retrocedes tú con «Siguiente» y «Anterior».</div>`;
+  demoUi(true); paintCoach();
+  /* Primero te lleva a la pantalla de la demostración; recién ahí queda esperando «Iniciar» */
+  const s = DEMOS[key].start; if (s) { if (location.hash === '#' + s) render(); else location.hash = s; window.scrollTo(0, 0); }
 }
 ACT.demo = key => { startDemo(key); };
 const stopDemo = () => { RUN++; DEMO = null; demoUi(false); IMP_DEMO.wb = null; };
 document.addEventListener('click', e => {
   if (e.target.closest('#demo-stop')) stopDemo();
+  else if (e.target.closest('#demo-start')) { if (DEMO && DEMO.cur < 0 && !DEMO.busy) gotoStep(0); }
   else if (e.target.closest('#demo-prev')) { if (DEMO && !DEMO.busy && DEMO.idx > 0) gotoStep(DEMO.idx - 1); }
   else if (e.target.closest('#demo-next')) { if (!DEMO || DEMO.busy) return; if (DEMO.idx >= DEMOS[DEMO.key].steps.length - 1) stopDemo(); else gotoStep(DEMO.idx + 1); }
 });
 document.addEventListener('keydown', e => {
   if (!DEMO) return;
   if (e.key === 'Escape') stopDemo();
-  else if (e.key === 'ArrowRight') document.getElementById('demo-next').click();
+  else if (e.key === 'ArrowRight') document.getElementById(DEMO.cur < 0 ? 'demo-start' : 'demo-next').click();
   else if (e.key === 'ArrowLeft') document.getElementById('demo-prev').click();
 });
 
@@ -1274,7 +1281,7 @@ const OK_USER = 'a[href^="#/"], [data-act="demo"], [data-act="xl-open"], [data-a
 const SEED41 = { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 10 } };
 const A4tr = rowOf('#results', 'Cuenta Directa');
 const DEMOS = {
-  config: { roles: ['admin'], short: 'Configurar agencia', title: 'Configurar el ajuste de una agencia', desc: 'Elige descuento o recargo por precio, usa la aplicación masiva y guarda.',
+  config: { roles: ['admin'], start: '/agencias', short: 'Configurar agencia', title: 'Configurar el ajuste de una agencia', desc: 'Elige descuento o recargo por precio, usa la aplicación masiva y guarda.',
     end: 'Los cambios afectan a las cotizaciones nuevas. Las existentes se actualizan con el botón «Actualizar» (demostración 3).',
     steps: [
       ['Entra a <b>Agencias › Ver agencias</b>. Como administrador ves la columna <b>Ajuste de precios</b>.', async D => { await D.go('/agencias'); await D.hl('.table th:nth-child(4), .table td:nth-child(4)', 2400); }],
@@ -1289,7 +1296,7 @@ const DEMOS = {
       ['Revisa la tabla y presiona <b>Guardar cambios</b>.', async D => { await D.click('#f-agency button[type="submit"]'); await D.wait(700); }],
       ['En la ficha de la agencia, la sección <b>Ajuste de precios</b> muestra la descripción, la referencia y el resultado de ejemplo de cada precio.', async D => { await D.hl('.row > .col-lg-6:last-child .card', 3200); }]
     ] },
-  cotizar: { roles: ['admin', 'ejecutivo'], short: 'Cotizar', title: 'Cotizar con una agencia', desc: 'Al elegir la agencia, el catálogo y la cotización muestran precios ya ajustados.',
+  cotizar: { roles: ['admin', 'ejecutivo'], start: '/cotizaciones/nueva', short: 'Cotizar', title: 'Cotizar con una agencia', desc: 'Al elegir la agencia, el catálogo y la cotización muestran precios ya ajustados.',
     end: 'Al cambiar la agencia, todos los precios se recalculan desde el Precio mensual. Después puedes negociar a mano.',
     steps: [
       ['Ve a <b>Cotizaciones › Crear cotización</b>.', async D => { await D.go('/cotizaciones/nueva'); }],
@@ -1302,7 +1309,7 @@ const DEMOS = {
       ['Los precios siguen siendo editables. Si bajas del <b>precio mínimo</b>, aparece una alerta ⚠.', async D => { await D.type('[data-k=unit][data-i="0"]', '900000'); await D.hl('.c-min', 2600); }],
       ['Guarda la cotización: conserva las condiciones con que fue valorizada.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
     ] },
-  sync: { roles: ['admin', 'ejecutivo'], short: 'Actualizar cotización', title: 'Actualizar una cotización existente', desc: 'Lleva una cotización guardada a las condiciones vigentes de su agencia.',
+  sync: { roles: ['admin', 'ejecutivo'], start: '/cotizaciones/D41/editar', short: 'Actualizar cotización', title: 'Actualizar una cotización existente', desc: 'Lleva una cotización guardada a las condiciones vigentes de su agencia.',
     end: 'Recuerda: se reemplazan los precios manuales y los mínimos de todas las líneas. Revisa antes de guardar.',
     steps: [
       [() => 'Abre una cotización ya guardada: <b>CA-0041</b>. Se valorizó cuando MediaPlan tenía otro perfil de precios' + (isAdmin() ? ' (5 % de descuento en el mensual).' : '.'), async D => { repriceDeal(dealOf('D41'), SEED41); await D.go('/cotizaciones/D41/editar'); await D.hl('#bids-table tbody tr:first-child', 2600); }],
@@ -1313,7 +1320,7 @@ const DEMOS = {
       [() => 'Los precios se recalcularon con el ajuste vigente de MediaPlan' + (isAdmin() ? ' (−10 % en el mensual)' : '') + '. El precio manual desapareció.', async D => { await D.hl('#bids-table', 3200); }],
       ['Los cambios se guardan cuando presionas <b>Guardar cambios</b>.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
     ] },
-  import: { roles: ['admin'], short: 'Importar con Excel', title: 'Importar ajustes con Excel', desc: 'Hoja Ajustes de precios, códigos 0/1/2 e importación inmediata.',
+  import: { roles: ['admin'], start: '/importar/agencias', short: 'Importar con Excel', title: 'Importar ajustes con Excel', desc: 'Hoja Ajustes de precios, códigos 0/1/2 e importación inmediata.',
     end: 'Importar ajustes no recalcula cotizaciones existentes: usa «Actualizar» en cada una.',
     steps: [
       ['Ve a <b>Agencias › Importar agencias</b>.', async D => { await D.go('/importar/agencias'); await D.hl('#f-imp', 2200); }],
