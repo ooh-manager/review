@@ -224,6 +224,7 @@
     .xl-table thead th { background:#e8f2ec; color:#1e5c3a; font-weight:600; }
     .xl-table .xl-rn { background:#f3f5f8; color:#8d99a8; text-align:center; width:34px; }
     .howto { margin-bottom:1rem; }
+    .be-top-header .page-title { flex:0 1 auto; margin-right:18px; } #home-btn[hidden] { display:none; } #home-btn { white-space:nowrap; }
     /* Sin menú lateral: la navegación es por las demostraciones y los enlaces del manual */
     .be-left-sidebar, #menu-toggle { display:none !important; } .be-content { margin-left:0 !important; } .be-navbar-header { width:auto !important; padding:0 12px 0 16px; }
     body:not(.demo-on) #content :is(input, select, textarea, .custom-control-label, .btn:not([data-act=demo])) { cursor:default; }
@@ -254,7 +255,7 @@
   <nav class="navbar navbar-expand fixed-top be-top-header">
     <div class="container-fluid">
       <div class="be-navbar-header"><button class="menu-toggle d-lg-none" id="menu-toggle" type="button" aria-label="Menú"><span class="icon zmdi zmdi-menu"></span></button><a class="navbar-brand" href="#/inicio"><span class="brand-mark">O</span><span class="brand-text">OOH Manager</span></a></div>
-      <div class="page-title"><span>Manual de uso</span></div>
+      <div class="page-title"><span>Manual de uso</span></div><a class="btn btn-primary btn-sm mr-auto" id="home-btn" href="#/inicio" hidden><span class="icon zmdi zmdi-home"></span> Volver al inicio</a>
       <div class="be-right-navbar">
         <ul class="nav navbar-nav float-right be-user-nav">
           <li class="nav-item"><a class="nav-link" href="#"><span class="avatar">VD</span><span class="user-name">Vendedor Demo</span></a></li>
@@ -593,6 +594,7 @@ function render() {
 const go = h => { location.hash = h; };
 function paintRole() {
   document.getElementById('role-bar').innerHTML = `<div class="rb-row"><span class="lbl">Instrucciones para el perfil</span><div class="btn-group btn-group-sm" role="group"><button type="button" class="btn btn-secondary ${isAdmin() ? 'active' : ''}" data-act="role" data-id="admin">${icon('shield-security')} Administrador</button><button type="button" class="btn btn-secondary ${isAdmin() ? '' : 'active'}" data-act="role" data-id="ejecutivo">${icon('account')} Ejecutivo</button></div><span class="small text-muted">${isAdmin() ? 'Ves y configuras los ajustes de precios de las agencias. Las pantallas son de referencia.' : 'No ves los ajustes de precios de las agencias. Las pantallas son de referencia.'}</span></div>`;
+  document.getElementById('home-btn').hidden = (location.hash.replace(/^#/, '').split('?')[0] || '/inicio') === '/inicio';
   document.getElementById('demo-banner').innerHTML = `<span class="db-title">${icon('play-circle-outline')} Aprende con demostraciones guiadas</span>${demoKeys().map(k => `<button type="button" class="btn" data-act="demo" data-id="${k}" title="${esc(DEMOS[k].desc)}">▶ ${DEMOS[k].short}</button>`).join('')}<span class="db-sub">${isAdmin() ? 'Perfil administrador: 4 demostraciones disponibles.' : 'Perfil ejecutivo: 2 demostraciones disponibles, mostradas con la vista del ejecutivo.'} Avanza a tu ritmo con «Siguiente» y «Anterior».</span>`;
 }
 ACT.role = r => { ROLE = r; try { sessionStorage.setItem('aj-role', r); } catch (_) {} $('[data-toggle=tooltip]').tooltip('dispose'); paintMenu(); render(); };
