@@ -234,6 +234,11 @@
     #demo-coach .dc-count { font-size:.8rem; color:#9fb3c8; } #demo-coach .dc-nav .btn { margin-left:6px; min-width:104px; }
     #demo-coach .dc-end-note { margin-top:8px; padding-top:8px; border-top:1px solid #34475b; font-size:.9rem; color:#cfe0f3; }
     #demo-coach .btn:disabled { opacity:.4; }
+    #demo-coach .dc-left { display:flex; align-items:center; gap:12px; }
+    #demo-coach .dc-time { background:rgba(255,255,255,.16); padding:3px 12px; border-radius:14px; font-variant-numeric:tabular-nums; font-size:.85rem; font-weight:500; color:#fff; }
+    #demo-coach .dc-status { display:flex; align-items:center; gap:12px; margin-top:10px; font-size:.82rem; color:#9fb3c8; }
+    #demo-coach .dc-st-bar { flex:1; height:5px; background:#34475b; border-radius:3px; overflow:hidden; } #demo-coach .dc-st-bar i { display:block; height:100%; width:0; background:#4caf50; transition:width .3s linear; }
+    #demo-coach.dc-busy .dc-st-text { color:#ffc766; } #demo-coach.dc-busy .dc-st-bar i { background:#ff9800; }
     body.demo-on .main-content { padding-bottom:280px; }
     /* Banner de demostraciones */
     .role-bar { display:block; padding:0; }
@@ -276,7 +281,7 @@
   <div class="dc-head"><span class="dc-title"></span><button type="button" class="btn btn-sm btn-light" id="demo-stop">Cerrar demostración</button></div>
   <div class="dc-text"></div>
   <div class="progress"><div class="progress-bar" style="width:0"></div></div>
-  <div class="dc-foot"><span class="dc-count"></span><span class="dc-nav"><button type="button" class="btn btn-sm btn-success" id="demo-start" hidden>▶ Iniciar</button><button type="button" class="btn btn-sm btn-secondary" id="demo-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="demo-next">Siguiente ▶</button></span></div>
+  <div class="dc-foot"><span class="dc-left"><span class="dc-time">0:00 / 0:00</span><span class="dc-count"></span></span><span class="dc-nav"><button type="button" class="btn btn-sm btn-success" id="demo-start" hidden>▶ Iniciar</button><button type="button" class="btn btn-sm btn-secondary" id="demo-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="demo-next">Siguiente ▶</button></span></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
@@ -1170,6 +1175,7 @@ function bring(el) {
   window.scrollBy({ top: r.top - want, behavior: 'smooth' });
 }
 /* fast = reconstruye el estado de pasos anteriores sin animación (para «Anterior») */
+let SYNTH_UNTIL = 0;   /* el navegador marca como «de usuario» los eventos que genera un clic de la demostración (envío de formularios, etiquetas); durante este margen no se bloquean */
 function mkDriver(id, fast) {
   const chk = () => { if (id !== RUN) throw STOP; };
   const cur = () => document.getElementById('demo-cursor');
@@ -1187,7 +1193,7 @@ function mkDriver(id, fast) {
       c.style.transform = `translate(${Math.round(r.left + Math.min(r.width * 0.5, 70))}px, ${Math.round(r.top + r.height / 2)}px)`;
       await D.wait(900); return el;
     },
-    click: async sel => { const el = await D.point(sel); if (!fast) { const c = cur(); c.classList.add('click'); await D.wait(280); c.classList.remove('click'); } el.click(); await D.wait(500); },
+    click: async sel => { const el = await D.point(sel); if (!fast) { const c = cur(); c.classList.add('click'); await D.wait(280); c.classList.remove('click'); } SYNTH_UNTIL = Date.now() + 800; el.click(); await D.wait(500); },
     select: async (sel, v) => { const el = await D.point(sel); el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); await D.wait(700); },
     type: async (sel, txt) => {
       const el = await D.point(sel); el.focus(); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1209,27 +1215,48 @@ function mkDriver(id, fast) {
   return D;
 }
 function demoUi(on) {
-  ['demo-shield', 'demo-coach'].forEach(i => { document.getElementById(i).hidden = !on; });
+  ['demo-coach'].forEach(i => { document.getElementById(i).hidden = !on; });
   document.body.classList.toggle('demo-on', on);
   if (!on) { document.getElementById('demo-cursor').hidden = true; clearFrames(); }
 }
 const stepText = (demo, i) => { const s = demo.steps[i][0]; return (typeof s === 'function' ? s() : s) + (i === demo.steps.length - 1 && demo.end ? `<div class="dc-end-note">${demo.end}</div>` : ''); };
+/* Duración (en segundos) de cada paso, medida en la demostración; alimenta el reloj tipo «0:03 / 0:32» del panel */
+const stepSecs = (key, i, role) => ((DEMOS[key].secs || {})[role] || (DEMOS[key].secs || {}).admin || [])[i] || 3;
+const totalSecs = (key, role) => DEMOS[key].steps.reduce((s, _, i) => s + stepSecs(key, i, role), 0);
+const fmtTime = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+let COACH_TIMER = null;
+function paintTime() {
+  const st = DEMO; if (!st) return;
+  const total = totalSecs(st.key, st.role); let el = 0;
+  if (st.cur >= 0) {
+    let base = 0; for (let k = 0; k < st.cur; k++) base += stepSecs(st.key, k, st.role);
+    const len = stepSecs(st.key, st.cur, st.role);
+    el = st.busy ? base + Math.min(len, Math.max(0, (Date.now() - st.t0) / 1000 - st.pre)) : base + len;
+  }
+  const c = document.getElementById('demo-coach');
+  c.querySelector('.dc-time').textContent = fmtTime(el) + ' / ' + fmtTime(total);
+  c.querySelector('.progress-bar').style.width = (total ? Math.min(100, (el / total) * 100) : 0) + '%';
+}
+const tickCoach = () => { if (DEMO && DEMO.busy) paintTime(); };
 function paintCoach() {
   const st = DEMO; if (!st) return; const n = DEMOS[st.key].steps.length, c = document.getElementById('demo-coach');
-  const intro = st.cur < 0;   /* antes de iniciar: un solo botón «Iniciar» en lugar de Anterior / Siguiente */
+  const intro = st.cur < 0, last = st.idx >= n - 1;   /* antes de iniciar: un solo botón «Iniciar» en lugar de Anterior / Siguiente */
   document.getElementById('demo-start').hidden = !intro; document.getElementById('demo-prev').hidden = intro; document.getElementById('demo-next').hidden = intro;
-  if (intro) { c.querySelector('.dc-count').textContent = `${n} pasos`; c.querySelector('.progress-bar').style.width = '0'; return; }
-  c.querySelector('.dc-count').textContent = `Paso ${st.cur + 1} de ${n}`;
-  c.querySelector('.progress-bar').style.width = Math.round(((st.cur + 1) / n) * 100) + '%';
-  document.getElementById('demo-prev').disabled = st.busy || st.idx <= 0;
-  const nx = document.getElementById('demo-next'); nx.disabled = st.busy;
-  nx.innerHTML = st.idx >= n - 1 ? 'Finalizar' : 'Siguiente ▶';
-  nx.classList.toggle('btn-success', st.idx >= n - 1); nx.classList.toggle('btn-primary', st.idx < n - 1);
+  c.querySelector('.dc-count').textContent = intro ? `${n} pasos` : `Paso ${st.cur + 1} de ${n}`;
+  if (!intro) {
+    document.getElementById('demo-prev').disabled = st.busy || st.idx <= 0;
+    const nx = document.getElementById('demo-next'); nx.disabled = st.busy;
+    nx.innerHTML = last ? 'Finalizar' : 'Siguiente ▶';
+    nx.classList.toggle('btn-success', last); nx.classList.toggle('btn-primary', !last);
+  }
+  paintTime();
 }
 async function gotoStep(target) {
   const st = DEMO; if (!st || st.busy) return;
   const demo = DEMOS[st.key], txt = document.querySelector('#demo-coach .dc-text'), id = ++RUN;
-  st.busy = true; st.cur = target; clearFrames(); paintCoach();
+  st.busy = true; st.cur = target; clearFrames();
+  st.t0 = Date.now(); st.pre = target <= st.idx ? Math.round(target * 0.8) : 0;   /* al volver, el reloj espera a que se rehaga lo anterior */
+  clearInterval(COACH_TIMER); COACH_TIMER = setInterval(tickCoach, 250); paintCoach();
   try {
     if (target <= st.idx) {   /* volver: se rehace el estado de los pasos previos al instante y se anima solo el paso elegido */
       txt.innerHTML = '<i>Volviendo al paso…</i>'; resetDemo(); const F = mkDriver(id, true); await F.role(st.role);
@@ -1241,7 +1268,7 @@ async function gotoStep(target) {
   } catch (e) {
     if (e !== STOP) { console.error(e); txt.innerHTML = 'No pude mostrar este paso en esta pantalla. Cierra la demostración y vuélvela a abrir, o recarga la página.'; }
   } finally {
-    if (DEMO === st && id === RUN) { st.busy = false; document.getElementById('demo-cursor').hidden = true; paintCoach(); }
+    if (DEMO === st && id === RUN) { clearInterval(COACH_TIMER); st.busy = false; document.getElementById('demo-cursor').hidden = true; paintCoach(); }
   }
 }
 async function startDemo(key) {
@@ -1249,13 +1276,15 @@ async function startDemo(key) {
   ++RUN; $('.modal').modal('hide'); resetDemo();
   DEMO = { key, role: ROLE, idx: -1, cur: -1, busy: false };   /* no parte sola: espera que la persona presione «Iniciar» */
   document.querySelector('#demo-coach .dc-title').textContent = DEMOS[key].title;
-  document.querySelector('#demo-coach .dc-text').innerHTML = `${DEMOS[key].desc}<div class="dc-end-note">Cuando estés lista o listo, presiona <b>Iniciar</b>. Después avanzas y retrocedes tú con «Siguiente» y «Anterior».</div>`;
+  document.querySelector('#demo-coach .dc-text').innerHTML = `<div>Presiona <b>Iniciar</b> para comenzar la demostración</div>`;
   demoUi(true); paintCoach();
   /* Primero te lleva a la pantalla de la demostración; recién ahí queda esperando «Iniciar» */
   const s = DEMOS[key].start; if (s) { if (location.hash === '#' + s) render(); else location.hash = s; window.scrollTo(0, 0); }
 }
 ACT.demo = key => { startDemo(key); };
-const stopDemo = () => { RUN++; DEMO = null; demoUi(false); IMP_DEMO.wb = null; };
+const stopDemo = () => { RUN++; clearInterval(COACH_TIMER); DEMO = null; demoUi(false); IMP_DEMO.wb = null; };
+/* Cambiar de perfil o volver al inicio detiene la demostración (otra demostración la reemplaza) */
+document.addEventListener('click', e => { if (DEMO && e.isTrusted && e.target.closest && e.target.closest('#home-btn, [data-act="role"]')) stopDemo(); }, true);
 document.addEventListener('click', e => {
   if (e.target.closest('#demo-stop')) stopDemo();
   else if (e.target.closest('#demo-start')) { if (DEMO && DEMO.cur < 0 && !DEMO.busy) gotoStep(0); }
@@ -1272,7 +1301,9 @@ document.addEventListener('keydown', e => {
 /* Solo instrucciones: las pantallas son de referencia y la persona no puede operarlas. Las demostraciones usan eventos sintéticos (no confiables) y sí pueden. */
 const OK_USER = 'a[href^="#/"], [data-act="demo"], [data-act="xl-open"], [data-act="imp-help"], .calc-ok';
 ['click', 'submit', 'input', 'change', 'keydown', 'keypress', 'beforeinput', 'mousedown'].forEach(type => document.addEventListener(type, e => {
-  if (!e.isTrusted || DEMO || !e.target.closest || !e.target.closest('#content') || e.target.closest(OK_USER)) return;
+  if (!e.isTrusted || !e.target.closest || Date.now() < SYNTH_UNTIL) return;
+  const inContent = !!e.target.closest('#content'), inModal = !!DEMO && !!e.target.closest('#modal-host');   /* durante una demostración también se protege el cuadro abierto */
+  if ((!inContent && !inModal) || e.target.closest(DEMO ? '[data-act="demo"]' : OK_USER)) return;
   if (type === 'mousedown' && !e.target.closest('select, input, textarea')) return;
   if (type === 'keydown' && !e.target.closest('input, select, textarea, button')) return;
   e.preventDefault(); e.stopImmediatePropagation();
@@ -1281,57 +1312,40 @@ const OK_USER = 'a[href^="#/"], [data-act="demo"], [data-act="xl-open"], [data-a
 const SEED41 = { tarifa: { t: 'desc', p: 5 }, minimo: { t: '', p: 0 }, prod: { t: '', p: 0 }, serv: { t: 'desc', p: 10 } };
 const A4tr = rowOf('#results', 'Cuenta Directa');
 const DEMOS = {
-  config: { roles: ['admin'], start: '/agencias', short: 'Configurar agencia', title: 'Configurar el ajuste de una agencia', desc: 'Elige descuento o recargo por precio, usa la aplicación masiva y guarda.',
-    end: 'Los cambios afectan a las cotizaciones nuevas. Las existentes se actualizan con el botón «Actualizar» (demostración 3).',
+  config: { roles: ['admin'], secs: { admin: [5, 4, 6, 13, 4] }, start: '/agencias', short: 'Configurar agencia', title: 'Configurar el ajuste de una agencia', desc: 'Elige descuento o recargo por precio, usa la aplicación masiva y guarda.',
+    end: 'Los cambios afectan a las cotizaciones nuevas. Las existentes se actualizan con el botón «Actualizar» (demostración Actualizar cotización).',
     steps: [
-      ['Entra a <b>Agencias › Ver agencias</b>. Como administrador ves la columna <b>Ajuste de precios</b>.', async D => { await D.go('/agencias'); await D.hl('.table th:nth-child(4), .table td:nth-child(4)', 2400); }],
-      ['Cada etiqueta muestra un precio y su ajuste: <b>rojo = descuento</b>, <b>azul = recargo</b>, gris = sin ajuste (±0 %). «Cuenta Directa» todavía no tiene ajustes.', async D => { await D.hl(A4tr, 2800); }],
-      ['Presiona el lápiz para <b>editar</b> la agencia.', async D => { await D.click('a[href="#/agencias/A4/editar"]'); await D.wait(400); }],
-      ['En la tarjeta <b>Ajuste de precios</b> hay una fila por cada precio: mínimo, mensual, producción y servicios adicionales. Cada uno admite <b>solo un tipo</b>.', async D => { await D.hl('.adj-table', 2800); }],
-      ['Para el <b>Precio mensual</b> elige el tipo <b>Descuento</b>.', async D => { await D.select('[data-adj-t=tarifa]', 'desc'); }],
-      ['Escribe el porcentaje: <b>12</b>. Admite hasta dos decimales y el descuento no puede superar 100 %.', async D => { await D.type('[data-adj-p=tarifa]', '12'); }],
-      ['La columna <b>Ejemplo</b> muestra cómo quedaría un precio de referencia con ese ajuste.', async D => { await D.hl('[data-adj-ex=tarifa]', 2400); }],
-      ['Para aplicar el mismo ajuste a varios precios, márcalos: <b>Precio producción</b> y <b>Servicios adicionales</b>.', async D => { await D.click('label[for=ac-prod]'); await D.click('label[for=ac-serv]'); }],
-      ['En «Aplicar el mismo ajuste de forma masiva» elige <b>Recargo</b>, escribe <b>4</b> y presiona <b>Aplicar a los seleccionados</b>.', async D => { await D.select('[data-bulk-t]', 'rec'); await D.type('[data-bulk-p]', '4'); await D.click('[data-act=adj-bulk-sel]'); await D.wait(900); }],
-      ['Revisa la tabla y presiona <b>Guardar cambios</b>.', async D => { await D.click('#f-agency button[type="submit"]'); await D.wait(700); }],
-      ['En la ficha de la agencia, la sección <b>Ajuste de precios</b> muestra la descripción, la referencia y el resultado de ejemplo de cada precio.', async D => { await D.hl('.row > .col-lg-6:last-child .card', 3200); }]
+      ['En <b>Agencias › Ver agencias</b>, el administrador ve la columna <b>Ajuste de precios</b>. Cada etiqueta muestra un precio y su ajuste: <b>rojo = descuento</b>, <b>azul = recargo</b>, gris = sin ajuste (±0 %). «Cuenta Directa» todavía no tiene ajustes.', async D => { await D.go('/agencias'); await D.hl('.table th:nth-child(4), .table td:nth-child(4)', 2000); await D.wait(1800); await D.hl(A4tr, 2000); }],
+      ['Presiona el lápiz para <b>editar</b> la agencia. En la tarjeta <b>Ajuste de precios</b> hay una fila por cada precio: mínimo, mensual, producción y servicios adicionales. Cada uno admite <b>solo un tipo</b>.', async D => { await D.click('a[href="#/agencias/A4/editar"]'); await D.wait(400); await D.hl('.adj-table', 2000); }],
+      ['Para el <b>Precio mensual</b> elige <b>Descuento</b> y escribe <b>12</b>. Admite hasta dos decimales y el descuento no puede superar 100 %. La columna <b>Ejemplo</b> muestra cómo quedaría un precio de referencia.', async D => { await D.select('[data-adj-t=tarifa]', 'desc'); await D.type('[data-adj-p=tarifa]', '12'); await D.hl('[data-adj-ex=tarifa]', 2000); }],
+      ['Para repetir el mismo ajuste en varios precios, márcalos (<b>Precio producción</b> y <b>Servicios adicionales</b>), elige <b>Recargo</b>, escribe <b>4</b> y presiona <b>Aplicar a los seleccionados</b>.', async D => { await D.click('label[for=ac-prod]'); await D.click('label[for=ac-serv]'); await D.select('[data-bulk-t]', 'rec'); await D.type('[data-bulk-p]', '4'); await D.click('[data-act=adj-bulk-sel]'); await D.wait(900); await D.hl('.adj-table', 2000); }],
+      ['Presiona <b>Guardar cambios</b>. En la ficha de la agencia, la sección <b>Ajuste de precios</b> muestra la descripción, la referencia y el resultado de ejemplo de cada precio.', async D => { await D.click('#f-agency button[type="submit"]'); await D.wait(700); await D.hl('.row > .col-lg-6:last-child .card', 2000); }]
     ] },
-  cotizar: { roles: ['admin', 'ejecutivo'], start: '/cotizaciones/nueva', short: 'Cotizar', title: 'Cotizar con una agencia', desc: 'Al elegir la agencia, el catálogo y la cotización muestran precios ya ajustados.',
+  cotizar: { roles: ['admin', 'ejecutivo'], secs: { admin: [7, 6, 4, 5, 9], ejecutivo: [7, 4, 4, 5, 9] }, start: '/cotizaciones/nueva', short: 'Cotizar', title: 'Cotizar con una agencia', desc: 'Al elegir la agencia, el catálogo y la cotización muestran precios ya ajustados.',
     end: 'Al cambiar la agencia, todos los precios se recalculan desde el Precio mensual. Después puedes negociar a mano.',
     steps: [
-      ['Ve a <b>Cotizaciones › Crear cotización</b>.', async D => { await D.go('/cotizaciones/nueva'); }],
-      ['Escribe el título y elige el anunciante.', async D => { await D.type('[name=title]', 'Campaña de ejemplo'); await D.select('[name=client]', 'C1'); }],
-      [() => isAdmin() ? 'Elige la agencia <b>Vía Pública Group</b>, que tiene recargos. Aparecen <b>las etiquetas de su ajuste</b> (solo el administrador las ve).' : 'Elige la agencia <b>Vía Pública Group</b>. Como ejecutivo <b>no ves las etiquetas ni los porcentajes</b> de la agencia, pero los precios se ajustan igual.', async D => { await D.select('[name=agency]', 'A2'); await D.hl(isAdmin() ? '#adj-panel' : '[name=agency]', 2600); }],
-      ['El <b>catálogo</b> ya muestra los precios con el ajuste de la agencia aplicado.', async D => { await D.hl('#cat-results table', 2600); }],
-      ['Haz clic en un soporte del catálogo para agregarlo: <b>B-003</b> (Valla).', async D => { await D.click(rowOf('#cat-results', 'B-003')); }],
-      [() => `El <b>precio individual</b>, el <b>mínimo</b> y la <b>producción</b> vienen ajustados. El Precio mensual de B-003 es ${clp(itemOf('B-003').tarifa)} y en la cotización aparece como ${clp(adjVal({ t: 'rec', p: 8 }, itemOf('B-003').tarifa))}${isAdmin() ? ' (recargo de 8 %)' : ''}.`, async D => { await D.hl('#bids-table tbody tr', 3200); }],
-      ['Si cambias de agencia, <b>todos los precios se recalculan</b> desde el Precio mensual. Probemos con <b>MediaPlan Chile</b>.', async D => { await D.select('[name=agency]', 'A1'); await D.wait(900); await D.hl('#bids-table tbody tr', 2600); }],
-      ['Los precios siguen siendo editables. Si bajas del <b>precio mínimo</b>, aparece una alerta ⚠.', async D => { await D.type('[data-k=unit][data-i="0"]', '900000'); await D.hl('.c-min', 2600); }],
-      ['Guarda la cotización: conserva las condiciones con que fue valorizada.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
+      ['En <b>Cotizaciones › Crear cotización</b>, escribe el título y elige el anunciante.', async D => { await D.go('/cotizaciones/nueva'); await D.type('[name=title]', 'Campaña de ejemplo'); await D.select('[name=client]', 'C1'); }],
+      [() => isAdmin() ? 'Elige la agencia <b>Vía Pública Group</b>, que tiene recargos. Aparecen <b>las etiquetas de su ajuste</b> (solo el administrador las ve) y el <b>catálogo</b> ya muestra los precios ajustados.' : 'Elige la agencia <b>Vía Pública Group</b>. Como ejecutivo <b>no ves las etiquetas ni los porcentajes</b>, pero el <b>catálogo</b> ya muestra los precios ajustados.', async D => { await D.select('[name=agency]', 'A2'); if (isAdmin()) { await D.hl('#adj-panel', 1800); await D.wait(1600); } await D.hl('#cat-results table', 2000); }],
+      [() => `Haz clic en un soporte del catálogo para agregarlo: <b>B-003</b> (Valla). El <b>precio individual</b>, el <b>mínimo</b> y la <b>producción</b> vienen ajustados: el Precio mensual de B-003 es ${clp(itemOf('B-003').tarifa)} y en la cotización aparece como ${clp(adjVal({ t: 'rec', p: 8 }, itemOf('B-003').tarifa))}${isAdmin() ? ' (recargo de 8 %)' : ''}.`, async D => { await D.click(rowOf('#cat-results', 'B-003')); await D.hl('#bids-table tbody tr', 2000); }],
+      ['Si cambias de agencia, <b>todos los precios se recalculan</b> desde el Precio mensual. Probemos con <b>MediaPlan Chile</b>.', async D => { await D.select('[name=agency]', 'A1'); await D.wait(900); await D.hl('#bids-table tbody tr', 2000); }],
+      ['Los precios siguen siendo editables: si bajas del <b>precio mínimo</b>, aparece una alerta ⚠. Después presiona <b>Crear cotización</b>: queda con las condiciones con que fue valorizada.', async D => { await D.type('[data-k=unit][data-i="0"]', '900000'); await D.hl('.c-min', 2000); await D.wait(1800); await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
     ] },
-  sync: { roles: ['admin', 'ejecutivo'], start: '/cotizaciones/D41/editar', short: 'Actualizar cotización', title: 'Actualizar una cotización existente', desc: 'Lleva una cotización guardada a las condiciones vigentes de su agencia.',
+  sync: { roles: ['admin', 'ejecutivo'], secs: { admin: [5, 6, 6, 6], ejecutivo: [5, 6, 6, 6] }, start: '/cotizaciones/D41/editar', short: 'Actualizar cotización', title: 'Actualizar una cotización existente', desc: 'Lleva una cotización guardada a las condiciones vigentes de su agencia.',
     end: 'Recuerda: se reemplazan los precios manuales y los mínimos de todas las líneas. Revisa antes de guardar.',
     steps: [
-      [() => 'Abre una cotización ya guardada: <b>CA-0041</b>. Se valorizó cuando MediaPlan tenía otro perfil de precios' + (isAdmin() ? ' (5 % de descuento en el mensual).' : '.'), async D => { repriceDeal(dealOf('D41'), SEED41); await D.go('/cotizaciones/D41/editar'); await D.hl('#bids-table tbody tr:first-child', 2600); }],
-      ['Cambiar el porcentaje de una agencia <b>no modifica</b> las cotizaciones ya creadas. Para actualizarlas está el botón <b>↻ Actualizar</b>, junto al selector de agencia.', async D => { await D.hl('[data-act=pricing-sync]', 2800); }],
-      ['Antes, negociemos un precio a mano en la primera línea: <b>1.500.000</b>.', async D => { await D.type('[data-k=unit][data-i="0"]', '1500000'); }],
-      ['Presiona el botón de actualizar.', async D => { await D.click('[data-act=pricing-sync]'); await D.wait(700); }],
-      ['La confirmación avisa que se <b>reemplazan los precios manuales</b> y los mínimos por los vigentes, y que la agencia no cambia. Confirma con <b>Actualizar</b>.', async D => { await D.hl('.modal-body', 3200); await D.click('#ok-btn'); await D.wait(700); }],
-      [() => 'Los precios se recalcularon con el ajuste vigente de MediaPlan' + (isAdmin() ? ' (−10 % en el mensual)' : '') + '. El precio manual desapareció.', async D => { await D.hl('#bids-table', 3200); }],
-      ['Los cambios se guardan cuando presionas <b>Guardar cambios</b>.', async D => { await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
+      [() => 'Abre una cotización ya guardada: <b>CA-0041</b>. Se valorizó cuando MediaPlan tenía otro perfil de precios' + (isAdmin() ? ' (5 % de descuento en el mensual)' : '') + '. Cambiar el porcentaje de una agencia <b>no modifica</b> las cotizaciones ya creadas: para actualizarlas está el botón <b>↻ Actualizar</b>, junto al selector de agencia.', async D => { repriceDeal(dealOf('D41'), SEED41); await D.go('/cotizaciones/D41/editar'); await D.hl('#bids-table tbody tr:first-child', 2000); await D.wait(1800); await D.hl('[data-act=pricing-sync]', 2000); }],
+      ['Negociemos un precio a mano en la primera línea: <b>1.500.000</b>. Luego presiona el botón <b>↻ Actualizar</b>.', async D => { await D.type('[data-k=unit][data-i="0"]', '1500000'); await D.click('[data-act=pricing-sync]'); await D.wait(700); }],
+      ['La confirmación avisa que se <b>reemplazan los precios manuales</b> y los mínimos por los vigentes, y que la agencia no cambia. Confirma con <b>Actualizar</b>.', async D => { await D.hl('.modal-body', 2200); await D.wait(1600); await D.click('#ok-btn'); await D.wait(700); }],
+      [() => 'Los precios se recalcularon con el ajuste vigente de MediaPlan' + (isAdmin() ? ' (−10 % en el mensual)' : '') + ' y el precio manual desapareció. Los cambios se guardan al presionar <b>Guardar cambios</b>.', async D => { await D.hl('#bids-table', 2200); await D.wait(1800); await D.click('#f-deal button[type="submit"]'); await D.wait(700); }]
     ] },
-  import: { roles: ['admin'], start: '/importar/agencias', short: 'Importar con Excel', title: 'Importar ajustes con Excel', desc: 'Hoja Ajustes de precios, códigos 0/1/2 e importación inmediata.',
+  import: { roles: ['admin'], secs: { admin: [4, 1, 7, 7, 5] }, start: '/importar/agencias', short: 'Importar con Excel', title: 'Importar ajustes con Excel', desc: 'Hoja Ajustes de precios, códigos 0/1/2 e importación inmediata.',
     end: 'Importar ajustes no recalcula cotizaciones existentes: usa «Actualizar» en cada una.',
     steps: [
-      ['Ve a <b>Agencias › Importar agencias</b>.', async D => { await D.go('/importar/agencias'); await D.hl('#f-imp', 2200); }],
-      ['El archivo Excel tiene hasta cuatro hojas. Veamos un archivo de ejemplo.', async D => { await D.click('[data-act=xl-open]'); await D.wait(900); }],
-      ['Hoja <b>Agencias</b>: datos de la agencia, <b>sin columnas de ajustes</b>. La columna <b>ID</b> vincula todo el archivo.', async D => { await D.hl('#xl-body th[data-col="0"], #xl-body td[data-col="0"]', 2600); }],
-      ['Hoja <b>Ajustes de precios</b>: por cada agencia, un par <b>tipo + porcentaje</b> para cada precio, en este orden y con los diez encabezados.', async D => { await D.click('.xl-tab[data-id="2"]'); await D.hl('#xl-body thead', 3000); }],
-      ['El tipo usa códigos fijos: <b>0</b> = Sin ajuste, <b>1</b> = Recargo, <b>2</b> = Descuento. El porcentaje va a su derecha.', async D => { await D.hl('#xl-body td[data-kind]', 3000); }],
-      ['La hoja <b>Referencias</b> es solo informativa: te recuerda los ID de las agencias y los códigos.', async D => { await D.click('.xl-tab[data-id="3"]'); await D.wait(1800); }],
+      ['En <b>Agencias › Importar agencias</b>, abre el archivo de ejemplo. El Excel tiene hasta cuatro hojas: <b>Agencias</b>, <b>Contactos</b>, <b>Ajustes de precios</b> y <b>Referencias</b> (esta última es solo informativa: recuerda los ID y los códigos).', async D => { await D.go('/importar/agencias'); await D.click('[data-act=xl-open]'); await D.wait(900); }],
+      ['Hoja <b>Agencias</b>: datos de la agencia, <b>sin columnas de ajustes</b>. La columna <b>ID</b> vincula todo el archivo.', async D => { await D.hl('#xl-body th[data-col="0"], #xl-body td[data-col="0"]', 2200); }],
+      ['Hoja <b>Ajustes de precios</b>: por cada agencia, un par <b>tipo + porcentaje</b> para cada precio, en este orden y con los diez encabezados. El tipo usa códigos fijos: <b>0</b> = Sin ajuste, <b>1</b> = Recargo, <b>2</b> = Descuento.', async D => { await D.click('.xl-tab[data-id="2"]'); await D.hl('#xl-body thead', 2000); await D.wait(1800); await D.hl('#xl-body td[data-kind]', 2000); }],
       ['Cierra el archivo, elige la operación <b>Actualizar agencias (por ID)</b>, carga tu archivo y presiona <b>Importar</b>.', async D => { $('.modal').modal('hide'); await D.wait(700); await D.select('[name=operation]', '1'); IMP_DEMO.wb = demoWbOk(); document.querySelector('.custom-file-label').textContent = 'agencias-ejemplo.xlsx'; await D.click('#f-imp button[type="submit"]'); await D.wait(1500); }],
-      ['Cuando termina, recibes un <b>correo con los resultados</b>: agencias y ajustes actualizados, y las filas no importadas.', async D => { await D.hl('#imp-result', 3200); IMP_DEMO.wb = null; }],
-      ['Comprobemos: «Cuenta Directa» ahora tiene sus ajustes.', async D => { await D.go('/agencias'); await D.hl(A4tr, 3000); }]
+      ['Cuando termina, recibes un <b>correo con los resultados</b>: agencias y ajustes actualizados, y las filas no importadas. Comprobemos: «Cuenta Directa» ahora tiene sus ajustes.', async D => { await D.hl('#imp-result', 2200); await D.wait(1800); IMP_DEMO.wb = null; await D.go('/agencias'); await D.hl(A4tr, 2000); }]
     ] }
 };
 const demoKeys = () => Object.keys(DEMOS).filter(k => DEMOS[k].roles.includes(ROLE));
