@@ -240,6 +240,18 @@
     #demo-coach .dc-st-bar { flex:1; height:5px; background:#34475b; border-radius:3px; overflow:hidden; } #demo-coach .dc-st-bar i { display:block; height:100%; width:0; background:#4caf50; transition:width .3s linear; }
     #demo-coach.dc-busy .dc-st-text { color:#ffc766; } #demo-coach.dc-busy .dc-st-bar i { background:#ff9800; }
     body.demo-on .main-content { padding-bottom:280px; }
+    /* Escritorio: el asistente de la demostración queda a la izquierda (como en el manual de conexión con Claude) y el contenido se corre a la derecha */
+    @media (min-width: 900px) {
+      body.demo-on .be-content { padding-left:348px; }
+      body.demo-on .main-content { padding-bottom:24px; }
+      body.demo-on .modal { padding-left:348px; }
+      body.demo-on #demo-coach { left:16px; top:76px; bottom:auto; transform:none; width:316px; max-height:calc(100vh - 92px); overflow:auto; }
+      body.demo-on #demo-coach .dc-text { font-size:.92rem; min-height:0; }
+      body.demo-on #demo-coach .dc-end-note { font-size:.85rem; }
+      body.demo-on #demo-coach .dc-foot { flex-direction:column; align-items:stretch; }
+      body.demo-on #demo-coach .dc-nav { display:flex; gap:6px; }
+      body.demo-on #demo-coach .dc-nav .btn { flex:1; margin-left:0; min-width:0; }
+    }
     /* Banner de demostraciones */
     .role-bar { display:block; padding:0; }
     .role-bar .rb-row { padding:.45rem 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -1170,7 +1182,7 @@ function resetDemo() { Object.assign(DB, JSON.parse(DB0)); $('.modal').modal('hi
 /* Sube el elemento a la zona libre de la pantalla: bajo la barra superior y sobre el panel de pasos (que ocupa ~200 px abajo) */
 function bring(el) {
   if (el.closest('.modal')) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-  const r = el.getBoundingClientRect(), top = 125, free = innerHeight - top - 215;
+  const r = el.getBoundingClientRect(), top = 125, free = innerHeight - top - (matchMedia('(min-width: 900px)').matches ? 30 : 215);   /* en escritorio el asistente va al costado: no tapa abajo */
   const want = r.height < free ? top + (free - r.height) / 2 : top;
   window.scrollBy({ top: r.top - want, behavior: 'smooth' });
 }
