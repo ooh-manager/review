@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de conexión · Claude y OOH Manager</title>
+<!-- Manual interactivo con demostraciones animadas. Réplica de Configuración › Conectores de Claude (según capturas reales) y de las pantallas de OOH Manager (maqueta mcp-auth-mockup-v2). Los datos son de ejemplo. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234285f4'/%3E%3Ctext x='16' y='22.5' font-size='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EO%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap">
+<style>
+  /* ---------- Base del manual ---------- */
+  * { box-sizing: border-box; }
+  html { font-size: 15px; }
+  body { margin: 0; font-family: 'Roboto', -apple-system, 'Segoe UI', Arial, sans-serif; background: #f1f5f5; color: #3c4858; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  h1, h2, h3 { color: #254752; margin: 0; }
+  a { color: #1f7d69; }
+  code { color: #c2185b; background: #fdf0f5; padding: .1rem .3rem; border-radius: 4px; font-size: .9em; }
+  .top { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 1px 3px rgba(20,30,60,.08); position: sticky; top: 0; z-index: 2650; gap: 14px; }   /* por encima del escudo de la demostración: «Volver al inicio» siempre activo */
+  .brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 1.1rem; color: #254752; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #269982, #2fae93); color: #fff; display: inline-grid; place-items: center; font-weight: 700; }
+  .top .ttl { font-size: 1.1rem; font-weight: 500; color: #254752; }
+  .btn { display: inline-block; border: 1px solid transparent; border-radius: 6px; font: inherit; font-weight: 500; padding: .4rem .9rem; cursor: pointer; text-decoration: none; }
+  .btn-primary { background: #269982; color: #fff; } .btn-primary:hover { background: #1f7d69; }
+  .btn-success { background: #34a853; color: #fff; }
+  .btn-secondary { background: #eef1f5; border-color: #dde2e8; color: #3c4858; }
+  .btn-light { background: #fff; color: #254752; }
+  .btn-sm { padding: .2rem .6rem; font-size: .85rem; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn:focus-visible, a:focus-visible { outline: 3px solid #ff9800; outline-offset: 2px; }
+  .banner { background: linear-gradient(100deg,#254752 0%,#269982 60%,#269982 100%); color: #fff; padding: .9rem 24px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; box-shadow: 0 2px 6px rgba(37,71,82,.25); position: relative; z-index: 2650; }
+  .banner .bt { font-weight: 700; font-size: 1.05rem; margin-right: 6px; }
+  .banner .sub { flex-basis: 100%; font-size: .82rem; opacity: .92; margin-top: -4px; }
+  .banner .btn { background: #fff; color: #254752; border-radius: 20px; font-weight: 600; font-size: .85rem; padding: .3rem .95rem; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .banner .btn:hover { background: #e8f6f3; color: #254752; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 24px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .card h3 { font-size: 1.05rem; }
+  .card p { margin: 0; color: #5f6b7a; font-size: .92rem; }
+  .card .btn { align-self: flex-start; margin-top: auto; }
+  .tag { display: inline-block; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: #7b8798; font-weight: 500; }
+  .alert { display: flex; border-radius: 8px; overflow: hidden; background: #e8f6f3; color: #254752; }
+  .alert .ic { width: 48px; flex: none; background: #269982; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1.2rem; }
+  .alert .msg { padding: .8rem 1rem; }
+  .sec { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .sec h2 { font-size: 1.25rem; }
+  .tw { overflow-x: auto; background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(16,24,40,.08); }
+  table.t { border-collapse: collapse; width: 100%; min-width: 520px; font-size: .92rem; }
+  .t th, .t td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef1f5; vertical-align: top; }
+  .t th { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: #6b7788; font-weight: 500; }
+  footer { color: #7b8798; font-size: .85rem; }
+
+  /* ---------- Escenario ---------- */
+  .stage-wrap { position: relative; }
+  .stage { position: relative; background: #121211; border-radius: 12px; overflow: hidden; min-height: 600px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #ece9e2; box-shadow: 0 8px 28px rgba(20,30,60,.25); }
+  .stage-tag { position: absolute; right: 12px; top: 10px; z-index: 5; font-size: .72rem; background: rgba(255,255,255,.14); color: #fff; padding: 3px 10px; border-radius: 20px; pointer-events: none; }
+  .stage * { box-sizing: border-box; }
+
+  /* Claude (réplica) */
+  .cl-bg { position: absolute; inset: 0; display: flex; background: #1b1b1a; }
+  .cl-bg .sb { width: 200px; padding: 18px 14px; display: flex; flex-direction: column; gap: 14px; color: #a09d96; font-size: .85rem; border-right: 1px solid #2a2a28; }
+  .cl-bg .sb b { color: #ece9e2; font-size: 1.2rem; font-weight: 500; font-family: Georgia, serif; }
+  .cl-bg .mn { flex: 1; padding: 28px 40px; color: #8a8780; font-family: Georgia, serif; font-size: 1.6rem; }
+  .cl-dim { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+  .cl-modal { position: relative; z-index: 2; width: min(960px, calc(100% - 32px)); height: 540px; margin: 30px auto; background: #262624; border: 1px solid #3a3a37; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+  .cl-mh { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #3a3a37; font-weight: 500; }
+  .cl-x { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; cursor: pointer; font-size: 1.2rem; color: #ece9e2; }
+  .cl-mb { flex: 1; display: flex; min-height: 0; }
+  .cl-nav { width: 220px; flex: none; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid #3a3a37; overflow-y: auto; font-size: .88rem; }
+  .cl-nav .sec { color: #a09d96; font-size: .72rem; padding: 10px 10px 4px; display: block; }
+  .cl-nav .it { padding: 7px 10px; border-radius: 6px; display: flex; gap: 10px; align-items: center; }
+  .cl-nav .it i { font-style: normal; width: 16px; text-align: center; opacity: .7; }
+  .cl-nav .it.on { background: #3a3a37; }
+  .cl-ct { flex: 1; min-width: 0; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; position: relative; }
+  .cl-ct h2 { color: #ece9e2; font-size: 1.15rem; font-weight: 500; }
+  .cl-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #3a3a37; font-size: .9rem; align-items: center; }
+  .cl-row span:last-child { color: #a09d96; }
+  .cl-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cl-top h2 { margin-right: 4px; font-size: 1.4rem; }
+  .cl-seg { display: inline-flex; background: #1b1b1a; border-radius: 8px; padding: 3px; font-size: .85rem; }
+  .cl-seg span { padding: 4px 12px; border-radius: 6px; color: #a09d96; } .cl-seg .on { background: #3a3a37; color: #ece9e2; }
+  .cl-search { margin-left: auto; }
+  .cl-input { background: #1b1b1a; border: 1px solid #3a3a37; color: #ece9e2; border-radius: 8px; padding: 8px 11px; font: inherit; font-size: .88rem; width: 100%; }
+  .cl-input:focus { outline: none; }
+  .cl-btn { display: inline-flex; align-items: center; gap: 6px; background: #3a3a37; color: #ece9e2; border-radius: 7px; padding: 6px 12px; font-size: .85rem; font-weight: 500; cursor: pointer; white-space: nowrap; border: 0; font-family: inherit; }
+  .cl-btn.w { background: #f0eee6; color: #1b1b1a; }
+  .cl-btn.red { color: #ff7b72; background: transparent; }
+  .cl-menu { position: absolute; right: 22px; top: 66px; background: #1b1b1a; border: 1px solid #3a3a37; border-radius: 9px; padding: 5px; z-index: 6; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+  .cl-toast { position: absolute; right: 22px; bottom: 18px; background: #2f2f2c; border: 1px solid #4a4a46; border-radius: 9px; padding: 9px 14px; font-size: .88rem; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+  .cl-menu .mi { padding: 8px 12px; border-radius: 6px; background: #3a3a37; font-size: .88rem; cursor: pointer; }
+  .cl-table { width: 100%; font-size: .88rem; }
+  .cl-th, .cl-tr { display: grid; grid-template-columns: 1fr 90px 120px; gap: 10px; padding: 10px 6px; align-items: center; }
+  .cl-th { color: #a09d96; font-size: .78rem; border-bottom: 1px solid #3a3a37; }
+  .cl-tr { border-bottom: 1px solid #2f2f2c; }
+  .cl-tr .nm { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
+  .cl-ico { width: 22px; height: 22px; border-radius: 6px; background: #3a3a37; display: inline-grid; place-items: center; font-size: .7rem; flex: none; }
+  .cl-scroll { max-height: 330px; overflow-y: auto; }
+  .cl-muted { color: #a09d96; font-size: .82rem; }
+  .cl-dlg-bg { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; justify-content: center; align-items: flex-start; padding: 24px 12px; z-index: 7; overflow: hidden; }
+  .cl-dlg { width: min(520px, 100%); max-height: 100%; background: #262624; border: 1px solid #3a3a37; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 14px 40px rgba(0,0,0,.6); }
+  .cl-dlg .dh { padding: 16px 18px 6px; font-weight: 500; font-size: 1.02rem; display: flex; justify-content: space-between; }
+  .cl-dlg .db { padding: 6px 18px 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; font-size: .86rem; color: #cfccc4; }
+  .cl-dlg .df { padding: 12px 18px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #3a3a37; }
+  .cl-dlg a { color: #5aa0f0; }
+  .cl-opt { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+  .cl-radio { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 2px solid #6a6963; margin-top: 3px; }
+  .cl-radio.on { border-color: #2f7bf5; background: radial-gradient(#2f7bf5 45%, transparent 50%); }
+  .cl-opt b { color: #ece9e2; font-weight: 500; }
+  .cl-chip { font-size: .68rem; background: #3a3a37; color: #cfccc4; border-radius: 20px; padding: 1px 8px; margin-left: 6px; }
+  .cl-h { color: #ece9e2; font-weight: 500; margin-top: 6px; }
+  .cl-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; color: #a09d96; }
+  .cl-bigico { width: 56px; height: 56px; border-radius: 14px; background: #1b1b1a; display: grid; place-items: center; color: #a09d96; font-size: 1.4rem; }
+  .mono { font-family: Consolas, Menlo, monospace; font-size: .82rem; }
+  .cl-perm { border: 1px solid #3a3a37; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .cl-select { display: inline-flex; gap: 6px; background: #3a3a37; border-radius: 20px; padding: 5px 12px; font-size: .82rem; align-items: center; }
+  .cl-scope { font-family: Consolas, Menlo, monospace; background: #1b1b1a; border: 1px solid #3a3a37; border-radius: 5px; padding: 1px 7px; font-size: .8rem; color: #ece9e2; }
+
+  /* Chat (referencial) */
+  .chat { position: absolute; inset: 0; display: flex; background: #1b1b1a; }
+  .chat .sb { width: 200px; padding: 18px 14px; color: #a09d96; font-size: .85rem; display: flex; flex-direction: column; gap: 14px; border-right: 1px solid #2a2a28; }
+  .chat .sb b { color: #ece9e2; font-size: 1.2rem; font-weight: 500; font-family: Georgia, serif; }
+  .chat .mn { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 56px 24px 20px; gap: 14px; max-width: 760px; margin: 0 auto; }
+  .chat .msgs { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .bub { align-self: flex-end; background: #2f2f2c; border-radius: 12px; padding: 9px 14px; max-width: 85%; font-size: .92rem; }
+  .cl-tool-card { border: 1px solid #4a4a46; border-radius: 12px; padding: 12px 14px; background: #262624; display: flex; flex-direction: column; gap: 8px; font-size: .88rem; }
+  .cl-answer { background: #232321; border: 1px solid #2f2f2c; border-radius: 12px; padding: 10px 14px; font-size: .9rem; line-height: 1.5; }
+  .chat .box { border: 1px solid #3a3a37; border-radius: 14px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; background: #262624; }
+  .chat .box input { flex: 1; background: transparent; border: 0; color: #ece9e2; font: inherit; font-size: .92rem; outline: none; min-width: 0; }
+  .chat .snd { width: 32px; height: 32px; border-radius: 8px; background: #c96442; color: #fff; display: grid; place-items: center; cursor: pointer; }
+  .mcp-used { font-size: .78rem; color: #a09d96; }
+
+  /* OOH Manager (maqueta v2) */
+  .br { position: relative; z-index: 2; width: min(720px, calc(100% - 32px)); margin: 30px auto; background: #f1f5f5; border-radius: 10px; overflow: hidden; border: 1px solid #3a3a37; color: #333f48; font-family: 'Be Vietnam Pro', Arial, sans-serif; }
+  .br .bar { display: flex; align-items: center; gap: 8px; background: #e3e8ea; padding: 8px 12px; font-size: .78rem; color: #5b6770; }
+  .br .bar .dots { display: flex; gap: 5px; } .br .bar .dots i { width: 10px; height: 10px; border-radius: 50%; background: #c3ccd0; }
+  .br .bar .url { flex: 1; background: #fff; border-radius: 14px; padding: 3px 12px; font-family: Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .man { padding: 22px 12px 28px; }
+  .man .mcard { max-width: 500px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(37,71,82,.08), 0 8px 24px rgba(37,71,82,.06); }
+  .man .mbar { height: 4px; background: #00ac8f; }
+  .man .mhead { padding: 20px 32px 4px; font-weight: 700; color: #254752; letter-spacing: .01em; }
+  .man .mbody { padding: 10px 32px 26px; font-size: .92rem; }
+  .man h1 { font-size: 1.3rem; line-height: 1.3; color: #254752; margin: 0 0 8px; font-weight: 700; }
+  .man p { margin: 0 0 12px; }
+  .man .muted { color: #5b6770; font-size: .85rem; }
+  .man .lbl { display: block; font-size: .82rem; font-weight: 600; color: #254752; margin: 10px 0 5px; }
+  .man input { width: 100%; height: 40px; border: 1px solid #d5dfe0; border-radius: 6px; padding: 0 12px; font: inherit; color: #333f48; background: #fff; }
+  .man .mb { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 22px; border-radius: 6px; font-weight: 700; border: 1px solid transparent; cursor: pointer; }
+  .man .mb.p { background: #269982; color: #fff; } .man .mb.s { background: #fff; color: #254752; border-color: #d5dfe0; }
+  .man .mb.block { width: 100%; margin-top: 12px; }
+  .man .mapp { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .man .mico { width: 44px; height: 44px; border-radius: 10px; background: #e8f6f3; color: #269982; display: grid; place-items: center; font-weight: 700; font-size: 1.2rem; flex: none; }
+  .man .mico + div h1 { margin: 0; } .man .mico + div p { margin: 0; }
+  .man table.man-summary { width: 100%; border-collapse: collapse; border: 1px solid #d5dfe0; margin: 0 0 14px; font-size: .85rem; }
+  .man .man-summary td { padding: 9px 12px; border-top: 1px solid #d5dfe0; } .man .man-summary tr:first-child td { border-top: 0; }
+  .man .man-summary td:first-child { width: 38%; background: #f6f9f9; color: #5b6770; font-weight: 600; }
+  .man .man-summary code { background: #f6f9f9; color: #254752; font-family: Consolas, monospace; }
+  .man .man-notice { padding: 10px 14px; border-left: 4px solid #00ac8f; background: #e8f6f3; border-radius: 4px; margin-bottom: 14px; font-size: .85rem; }
+  .man .man-notice.warn { border-color: #e0a100; background: #fdf5df; }
+  .man .man-notice strong { display: block; color: #254752; }
+  .man .acts { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
+  /* ---------- Demostración ---------- */
+  #shield { position: fixed; inset: 0; z-index: 2500; background: rgba(15,23,42,.06); cursor: progress; }
+  #cursor { position: fixed; left: 0; top: 0; width: 26px; height: 26px; z-index: 2600; pointer-events: none; transition: transform .85s cubic-bezier(.4,0,.2,1); }
+  #cursor svg { filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+  #cursor.click::after { content: ''; position: absolute; left: -12px; top: -12px; width: 30px; height: 30px; border-radius: 50%; background: rgba(38,153,130,.45); animation: dpulse .3s ease-out; }
+  @keyframes dpulse { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+  .frame { position: fixed; z-index: 2550; pointer-events: none; border: 3px solid #ff9800; border-radius: 10px; background: rgba(255,152,0,.07); box-shadow: 0 0 0 4px rgba(255,152,0,.25); animation: dframe 1.2s ease-in-out infinite; }
+  @keyframes dframe { 50% { box-shadow: 0 0 0 9px rgba(255,152,0,.08); } }
+  #coach { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(700px, calc(100% - 24px)); z-index: 2700; background: #254752; color: #fff; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.35); padding: 14px 18px; }
+  #coach .dh { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+  #coach .dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: #a9c9c2; }
+  #coach .tx { font-size: 1rem; line-height: 1.45; min-height: 2.9em; }
+  #coach .tx code { background: #3b6170; color: #ffd9a0; }
+  #coach .tm { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #3b6170; }
+  #coach .dtime { background: rgba(255,255,255,.16); padding: 2px 10px; border-radius: 14px; font-variant-numeric: tabular-nums; font-size: .8rem; font-weight: 500; white-space: nowrap; }
+  #coach .pg { flex: 1; height: 5px; background: #3b6170; border-radius: 6px; overflow: hidden; } #coach .pb { height: 100%; background: #269982; width: 0; transition: width .3s linear; }
+  #coach .df { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; }
+  #coach .dc { font-size: .8rem; color: #a9c9c2; } #coach .dn .btn { margin-left: 6px; min-width: 104px; }
+  #coach .endn { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3b6170; font-size: .9rem; color: #d5ebe6; }
+  body.demo-on main { padding-bottom: 290px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 720px) {
+    .cl-nav, .cl-bg .sb, .chat .sb { display: none; }
+    .cl-modal { height: 560px; margin: 44px auto 16px; }
+    .cl-th, .cl-tr { grid-template-columns: 1fr 70px 100px; }
+    .man .mbody, .man .mhead { padding-left: 16px; padding-right: 16px; }
+    .top .ttl { font-size: .95rem; }
+  }
+  #home { display: flex; flex-direction: column; gap: 24px; }
+  /* Vista de demostración: asistente a la izquierda, réplica ocupa el resto y cabe en pantalla */
+  @media (min-width: 900px) {
+    html.view-demo main { max-width: none; margin: 0; padding: 16px 16px 16px 348px; }
+    html.view-demo .stage { min-height: 520px; height: calc(100vh - 190px); }
+    html.view-demo .cl-modal { height: calc(100% - 40px); margin: 20px auto; width: min(1100px, calc(100% - 32px)); }
+    html.view-demo .br { width: min(860px, calc(100% - 32px)); margin: 20px auto; }
+    html.view-demo #coach { left: 16px; top: 172px; bottom: auto; transform: none; width: 316px; max-height: calc(100vh - 188px); overflow: auto; }
+    html.view-demo #coach .tx { font-size: .92rem; min-height: 0; }
+    html.view-demo #coach .endn { font-size: .85rem; }
+    html.view-demo #coach .df { flex-direction: column; align-items: stretch; }
+    html.view-demo #coach .dn { display: flex; gap: 6px; } html.view-demo #coach .dn .btn { flex: 1; margin-left: 0; min-width: 0; }
+    html.view-demo body.demo-on main { padding-bottom: 16px; }
+  }
+  .top .btn { text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) { #cursor { transition: none; } .frame { animation: none; } }
+</style>
+</head>
+<body>
+<header class="top"><span class="brand"><span class="brand-mark">O</span>OOH Manager</span><span class="ttl">Manual de conexión con Claude</span><a class="btn btn-primary btn-sm" id="home-btn" href="#inicio" hidden>← Volver al inicio</a></header>
+
+<div class="banner" id="banner">
+  <span class="bt">▶ Demostraciones paso a paso</span>
+  <button class="btn" type="button" data-demo="personal">Cuenta personal</button>
+  <button class="btn" type="button" data-demo="admin">Cuenta empresa · Administrador</button>
+  <button class="btn" type="button" data-demo="miembro">Cuenta empresa · Miembro</button>
+  <span class="sub">Las pantallas son una réplica con datos de ejemplo.</span>
+</div>
+
+<main>
+  <div id="home">
+
+  <section class="sec">
+    <h2>¿Cuál es tu caso?</h2>
+    <div class="cards">
+      <div class="card"><span class="tag">Cuenta personal</span><h3>Lo hago todo yo</h3><p>Agregas el conector, lo conectas con tu usuario de OOH Manager y listo.</p><button class="btn btn-primary" type="button" data-demo="personal">▶ Ver demostración</button></div>
+      <div class="card"><span class="tag">Cuenta empresa</span><h3>Soy administrador</h3><p>Agregas el conector una sola vez, con los mismos pasos. Queda en la organización y le aparece a cada miembro.</p><button class="btn btn-primary" type="button" data-demo="admin">▶ Ver demostración</button></div>
+      <div class="card"><span class="tag">Cuenta empresa</span><h3>Soy miembro del equipo</h3><p>No agregas nada: buscas el conector en tu lista, lo conectas con tu usuario de OOH Manager y listo.</p><button class="btn btn-primary" type="button" data-demo="miembro">▶ Ver demostración</button></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Antes de empezar</h2>
+    <div class="card"><p>• Necesitas la <b>dirección del conector</b> de tu empresa, que te debe entregar OOH Manager. Empieza con <code>https://</code> y termina en <code>/mcp</code>.</p><p>• Necesitas tener un <b>usuario activo en OOH Manager</b>. </p><p>• En una cuenta empresa de Claude, solo quien administra la organización puede agregar conectores.</p></div>
+  </section>
+
+  <section class="sec">
+    <h2>Si algo no funciona</h2>
+    <div class="tw"><table class="t"><thead><tr><th>Qué ves</th><th>Qué hacer</th></tr></thead><tbody>
+      <tr><td>No puedo agregar el conector</td><td>En una cuenta empresa solo lo agrega quien administra la organización.</td></tr>
+      <tr><td>Error al autorizar en OOH Manager</td><td>Reintenta en unos minutos. Si persiste, avisa a OOH con la hora aproximada.</td></tr>
+      <tr><td>Conecta, pero Claude no muestra herramientas de OOH Manager</td><td>Abre la conexión en Configuración › Conectores, presiona los tres puntos (⋯) y elige «Actualizar herramientas». Si sigue igual, pide a OOH Manager confirmar que el servicio está habilitado para tu empresa.</td></tr>
+      <tr><td>Error de autorización al consultar</td><td>La sesión venció o se revocó. Desconecta y vuelve a conectar OOH Manager.</td></tr>
+      <tr><td>La pantalla de OOH Manager no tiene botón para autorizar</td><td>No continúes y avisa a tu administrador o a OOH.</td></tr>
+    </tbody></table></div>
+  </section>
+  <footer>Soporte: ayuda@oohpublicidad.cl · Los nombres de botones de Claude pueden cambiar con sus actualizaciones.</footer>
+  </div>
+  <section id="demo-view" hidden>
+    <div class="stage-wrap"><div class="stage-tag" id="stage-tag"></div><div class="stage" id="stage"></div></div>
+  </section>
+</main>
+
+<div id="shield" hidden></div>
+<div id="cursor" hidden><svg width="26" height="26" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.4L20.5 11z" fill="#fff" stroke="#254752" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+<div id="coach" hidden>
+  <div class="dh"><span class="dt"></span><button type="button" class="btn btn-sm btn-light" id="d-stop">Cerrar demostración</button></div>
+  <div class="tx"></div>
+  <div class="df"><span class="dc"></span><span class="dn"><button type="button" class="btn btn-sm btn-success" id="d-start" hidden>▶ Iniciar</button><button type="button" class="btn btn-sm btn-secondary" id="d-prev">◀ Anterior</button><button type="button" class="btn btn-sm btn-primary" id="d-next">Siguiente ▶</button></span></div>
+  <div class="tm"><span class="dtime">0:00 / 0:00</span><div class="pg"><div class="pb"></div></div></div>
+</div>
+
+<script>
+(function () {
+'use strict';
+const URL_EJ = 'https://empresa.oohmanager.cl/mcp';
+const NAV_PREF = ['General','Cuenta','Privacidad','Facturación','Uso','Capacidades','Memoria','Sistemas de diseño','Claude Code','Claude in Chrome'];
+const NAV_PERS = ['Skills','Conectores','Plugins'];
+const FILL = ['Integración con GitHub','Gmail','Google Calendar','Google Drive','Slack','Notion','Asana','Canva','Linear'];
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/* ---------- Estado de la réplica ---------- */
+let S;
+const freshState = (mode) => ({ scene: 'list', mode: mode || 'personal', menu: false, name: '', url: '', search: '', email: '', pass: '', chat: '', variant: 'normal', added: false, connected: false, phase: 0, dots: false, refreshed: false });
+S = freshState('personal');
+const $stage = document.getElementById('stage'), $tag = document.getElementById('stage-tag');
+
+/* ---------- Escenas ---------- */
+function shell(active, inner, overlay) {
+  const nav = `<span class="sec">Preferencias</span>` + NAV_PREF.map(n => `<div class="it${n === active ? ' on' : ''}"><i>◦</i>${n}</div>`).join('') +
+    `<span class="sec">Personalización</span>` + NAV_PERS.map(n => `<div class="it${n === active ? ' on' : ''}"${n === 'Conectores' ? ' data-act="goto-list"' : ''}><i>◦</i>${n}</div>`).join('');
+  return `<div class="cl-bg"><div class="sb"><b>Claude</b><span>＋ Crear</span><span>⌕ Buscar</span><span>Proyectos</span><span>Artefactos</span><span>Programadas</span></div><div class="mn">Artefactos</div></div><div class="cl-dim"></div>
+  <div class="cl-modal"><div class="cl-mh"><span>Configuración</span><span class="cl-x" data-act="close">✕</span></div><div class="cl-mb"><div class="cl-nav">${nav}</div><div class="cl-ct">${inner}${overlay || ''}</div></div></div>`;
+}
+function rowsHtml() {
+  let rows = [];
+  if (S.mode === 'miembro') rows = FILL.map(n => ({ n, man: false })).concat([{ n: 'OOH Manager', man: true }]);
+  else { rows = [{ n: 'Integración con GitHub', man: false }]; if (S.added) rows.push({ n: 'OOH Manager', man: true }); }
+  rows = rows.filter(r => !S.search || norm(r.n).includes(norm(S.search)));
+  if (!rows.length) return `<div class="cl-muted" style="padding:18px 6px">No hay conectores que coincidan.</div>`;
+  return rows.map(r => `<div class="cl-tr${r.man ? ' cl-row-man' : ''}"><span class="nm"><span class="cl-ico">${r.man ? 'M' : r.n[0]}</span>${r.n}</span><span class="cl-muted">Web</span><span><span class="cl-btn"${r.man ? ' data-act="connect-row"' : ''}>Conectar</span></span></div>`).join('');
+}
+function listInner() {
+  return `<div class="cl-top"><h2>Conectores</h2><span class="cl-seg"><span class="on">Tuyos</span><span>Descubrir</span></span>
+    <input class="cl-input cl-search" style="max-width:190px" data-field="search" placeholder="Buscar" readonly value="${S.search}"><span class="cl-btn" data-act="open-menu">＋ Agregar ▾</span></div>
+    ${S.menu ? '<div class="cl-menu"><div class="mi" data-act="add-custom">Agregar conector personalizado</div></div>' : ''}
+    <div class="cl-table"><div class="cl-th"><span>Conector</span><span>Tipo</span><span>Estado</span></div><div class="cl-scroll">${rowsHtml()}</div></div>`;
+}
+function dlgShell(title, body, foot) { return `<div class="cl-dlg-bg"><div class="cl-dlg"><div class="dh"><span>${title}</span><span>✕</span></div><div class="db">${body}</div><div class="df">${foot}</div></div></div>`; }
+const OPT = (on, t, chip, d) => `<div class="cl-opt"><span class="cl-radio${on ? ' on' : ''}"></span><div><b>${t}</b>${chip ? '<span class="cl-chip">Detectado</span>' : ''}<div class="cl-muted">${d}</div></div></div>`;
+const SCENES = {
+  general: () => shell('General', `<h2>Apariencia</h2><div class="cl-row"><span>Tema</span><span>Sistema</span></div><div class="cl-row"><span>Fuente de la interfaz</span><span>Predeterminada</span></div><div class="cl-row"><span>Tamaño del texto de la conversación</span><span>Medio</span></div><h2>Tareas</h2><div class="cl-row"><span>Navegador preferido</span><span>Navegador integrado</span></div>`),
+  list: () => shell('Conectores', listInner()),
+  add1: () => shell('Conectores', listInner(), dlgShell('Agregar conector personalizado',
+    `<div>Conecta Claude a tus datos y herramientas. <a>Obtén más información sobre los conectores</a> o comienza con <a>los preconfigurados</a>.</div>
+     <input class="cl-input" data-field="name" readonly placeholder="Nombre" value="${S.name}"><div class="cl-muted">Se muestra en la lista de conectores.</div>
+     <input class="cl-input mono" data-field="url" readonly placeholder="${URL_EJ}" value="${S.url}"><div class="cl-muted">La dirección HTTPS donde el servidor acepta solicitudes MCP, por ejemplo https://mcp.example.com/mcp.</div>
+     <div class="cl-muted" style="margin-top:4px">Solo usa conectores de desarrolladores en los que confías. Anthropic no controla qué herramientas ponen a disposición los desarrolladores y no puede verificar que funcionen según lo previsto o que no cambien.</div>`,
+    `<span class="cl-btn">Cancelar</span><span class="cl-btn w" data-act="continue">Continuar</span>`)),
+  add2: () => shell('Conectores', listInner(), dlgShell('Agregar conector personalizado',
+    `<div><b style="color:#ece9e2">${S.name || 'OOH Manager'}</b><div class="mono cl-muted">${S.url || URL_EJ}</div></div>
+     <div class="cl-h">Autenticación</div><div class="cl-auth">${OPT(1, 'Iniciar sesión ahora', 1, 'Cada usuario inicia sesión a través del flujo OAuth del servidor antes de poder usar cualquier herramienta o recurso.')}${OPT(0, 'Iniciar sesión cuando sea necesario', 0, 'Claude se conecta sin credenciales primero y solicita a los usuarios que inicien sesión cuando el servidor lo pide.')}${OPT(0, 'Sin inicio de sesión', 0, 'Para servidores con acceso abierto o que usan una clave de API en lugar de OAuth.')}</div>
+     <div class="cl-h">Cliente OAuth</div><div class="cl-oauth">${OPT(1, 'Usar la identidad publicada de Claude', 1, 'El servidor lee los datos del cliente de Claude desde una URL alojada por Anthropic (CIMD). No requiere configuración.')}${OPT(0, 'Registrar automáticamente', 0, 'Claude registra clientes OAuth en el servidor a medida que los usuarios se conectan (DCR).')}${OPT(0, 'Usa tu propio cliente OAuth', 0, 'Ingresa un ID de cliente que hayas registrado tú mismo en el servidor.')}</div>
+     <div class="cl-h">Encabezados de solicitud</div><span class="cl-btn" style="align-self:flex-start">＋ Agregar encabezado</span><div class="cl-muted">› Avanzada</div>`,
+    `<span class="cl-btn">Cancelar</span><span class="cl-btn w" data-act="add-confirm">Agregar</span>`)),
+  pending: () => shell('Conectores', `<div class="cl-muted">← Tus conectores</div><div class="cl-center"><div class="cl-bigico">▦</div><div class="mono">${S.url || URL_EJ}</div><div>Comenzaste a conectarte a ${S.name || 'OOH Manager'} pero no terminaste.</div><span class="cl-btn w" data-act="connect">Conectar</span></div>`),
+  connected: () => shell('Conectores', `<div class="cl-muted">← Tus conectores</div><div class="cl-top"><span class="cl-ico" style="width:30px;height:30px">▦</span><h2 style="font-size:1.1rem">${S.name || 'OOH Manager'}</h2><span class="cl-btn" style="margin-left:auto">Desconectar</span><span class="cl-btn cl-dots" data-act="open-dots">⋯</span></div>
+    ${S.dots ? '<div class="cl-menu" style="top:100px"><div class="mi cl-refresh" data-act="refresh-tools">Actualizar herramientas</div></div>' : ''}<div class="mono cl-muted">${S.url || URL_EJ}</div>
+    <div class="cl-h">Permisos de herramientas</div><div class="cl-muted">Elige cuándo Claude puede usar estas herramientas en modo manual.</div>
+    <div class="cl-perm cl-perms"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span>Herramientas de solo lectura <span class="cl-scope">mcp.read</span></span><span class="cl-select">✋ Requiere aprobación ▾</span></div><div class="cl-muted">Consultas a tus datos de OOH Manager. Las que puedes usar dependen de los permisos de tu usuario en OOH Manager.</div></div>${S.refreshed ? '<div class="cl-toast">✓ Herramientas actualizadas</div>' : ''}`),
+  login: () => `<div class="br"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">empresa.oohmanager.cl/oauth/authorize</span></div><div class="man"><div class="mcard"><div class="mbar"></div><div class="mhead">OOH Manager</div><div class="mbody"><h1>Inicia sesión</h1><p class="muted">Para autorizar la aplicación, primero ingresa a tu cuenta.</p><label class="lbl">Correo electrónico</label><input data-field="email" readonly placeholder="nombre@empresa.cl" value="${S.email}"><label class="lbl">Contraseña</label><input data-field="pass" type="password" readonly placeholder="Tu contraseña" value="${S.pass}"><span class="mb p block" data-act="login">Iniciar sesión</span></div></div></div></div>`,
+  consent: () => `<div class="br"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">empresa.oohmanager.cl/oauth/authorize</span></div><div class="man"><div class="mcard"><div class="mbar"></div><div class="mhead">OOH Manager</div><div class="mbody"><div class="mapp"><div class="mico">C</div><div><h1>Autorizar aplicación</h1><p class="muted">Claude solicita acceso a tu cuenta</p></div></div><p>Claude solicita acceso de lectura a tu inventario Comercial.</p>
+    <table class="man-summary"><tr><td>Origen</td><td>https://claude.ai</td></tr><tr><td>Acceso solicitado</td><td><code>mcp.read</code></td></tr></table>
+    ${S.variant === 'enable' ? '<div class="man-notice warn"><strong>Aplicación aún no habilitada</strong>Al continuar, se habilitará esta aplicación para tu empresa y se autorizará su acceso de solo lectura. No puede realizar cambios.</div>' : '<div class="man-notice"><strong>Solo lectura</strong>Esta aplicación tendrá acceso de solo lectura al inventario Comercial. No puede realizar cambios.</div>'}
+    <div class="acts"><span class="mb s">Cancelar</span><span class="mb p" data-act="authorize">${S.variant === 'enable' ? 'Habilitar y autorizar' : 'Autorizar'}</span></div></div></div></div></div>`,
+  chat: () => `<div class="chat"><div class="sb"><b>Claude</b><span>＋ Crear</span><span>⌕ Buscar</span><span>Proyectos</span></div><div class="mn"><div class="msgs">
+    ${S.phase >= 1 ? '<div class="bub">¿Qué soportes tenemos en Las Condes?</div>' : ''}
+    ${S.phase === 1 ? '<div class="cl-tool-card"><b>Claude quiere usar una herramienta de OOH Manager</b><span class="cl-muted">Consulta de solo lectura (mcp.read)</span><span style="display:flex;gap:8px"><span class="cl-btn w" data-act="allow">Permitir</span><span class="cl-btn">Denegar</span></span></div>' : ''}
+    ${S.phase >= 2 ? '<div class="mcp-used">▸ Usó OOH Manager</div><div class="cl-answer">Estos son los soportes visibles para tu usuario en Las Condes (datos de ejemplo): <b>B-002</b> · Centro Comercial · Alto Las Condes y <b>B-013</b> · Caminero. ¿Quieres revisar su disponibilidad en un rango de fechas?</div>' : ''}
+    </div><div class="box"><input data-field="chat" readonly placeholder="Escribe tu pregunta" value="${S.chat}"><span class="snd" data-act="send">↑</span></div></div></div>`
+};
+const TAGS = { general: 'Réplica de Claude', list: 'Réplica de Claude', add1: 'Réplica de Claude', add2: 'Réplica de Claude', pending: 'Réplica de Claude', connected: 'Réplica de Claude', login: 'Pantalla de OOH Manager · referencial', consent: 'Pantalla de OOH Manager', chat: 'Chat de Claude · referencial' };
+function render() { $stage.innerHTML = SCENES[S.scene](); $tag.textContent = TAGS[S.scene] + ' · datos de ejemplo'; }
+
+/* ---------- Acciones de la réplica ---------- */
+const ACT = {
+  'goto-list': () => { S.scene = 'list'; S.menu = false; },
+  'open-menu': () => { S.menu = !S.menu; },
+  'add-custom': () => { S.scene = 'add1'; S.menu = false; },
+  'continue': () => { S.scene = 'add2'; },
+  'add-confirm': () => { if (S.mode === 'admin') { S.added = true; S.scene = 'list'; } else S.scene = 'pending'; },
+  'connect': () => { S.scene = 'login'; }, 'connect-row': () => { S.scene = 'login'; },
+  'login': () => { S.scene = 'consent'; },
+  'authorize': () => { S.scene = 'connected'; S.connected = true; },
+  'open-dots': () => { S.dots = !S.dots; },
+  'refresh-tools': () => { S.dots = false; S.refreshed = true; },
+  'close': () => { if (S.connected) { S.scene = 'chat'; S.phase = 0; } },
+  'send': () => { S.phase = 1; S.chat = ''; },
+  'allow': () => { S.phase = 2; }
+};
+/* La réplica solo responde a las demostraciones (eventos sintéticos); los clics reales no hacen nada. */
+$stage.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  if (e.isTrusted) return;
+  const f = ACT[a.dataset.act]; if (f) { f(); render(); }
+});
+['mousedown', 'keydown', 'input', 'focusin'].forEach(t => $stage.addEventListener(t, e => { if (e.isTrusted && e.target.matches && e.target.matches('input')) e.preventDefault(); }, true));
+
+/* ---------- Motor de demostraciones ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const STOP = { stop: true };
+let RUN = 0, DEMO = null;
+const q = s => typeof s === 'function' ? s() : document.querySelector(s);
+const clearFrames = () => document.querySelectorAll('.frame').forEach(e => e.remove());
+function bring(el) {
+  if (el.closest('.cl-dlg .db')) el.scrollIntoView({ block: 'center' });
+  const r =el.getBoundingClientRect(), top = 90, free = innerHeight - top - 250;
+  const want = r.height < free ? top + (free - r.height) / 2 : top;
+  window.scrollBy({ top: r.top - want, behavior: 'smooth' });
+}
+function mkDriver(id, fast) {
+  const chk = () => { if (id !== RUN) throw STOP; };
+  const cur = () => document.getElementById('cursor');
+  const nap = ms => fast ? Math.min(ms, 40) : ms;
+  const D = {
+    wait: async ms => { await sleep(nap(ms)); chk(); },
+    point: async sel => {
+      clearFrames();
+      const el = q(sel); if (!el) throw new Error('No se encontró ' + sel);
+      if (fast) return el;
+      bring(el); await D.wait(550);
+      const r = el.getBoundingClientRect(), c = cur(); c.hidden = false;
+      c.style.transform = `translate(${Math.round(r.left + Math.min(r.width * 0.5, 70))}px, ${Math.round(r.top + r.height / 2)}px)`;
+      await D.wait(900); return el;
+    },
+    click: async sel => { const el = await D.point(sel); if (!fast) { const c = cur(); c.classList.add('click'); await D.wait(280); c.classList.remove('click'); } el.click(); await D.wait(500); },
+    type: async (sel, txt) => {
+      await D.point(sel); const f = q(sel).dataset.field; S[f] = '';
+      for (const ch of String(txt)) {
+        S[f] += ch;
+        if (fast) continue;
+        if (f === 'search') { render(); } else { const el = q(sel); if (el) el.value = S[f]; }
+        await D.wait(f === 'url' ? 35 : 80);
+      }
+      render(); await D.wait(400);
+    },
+    set: async fn => { fn(); render(); await D.wait(300); },
+    scrollList: async () => { const el = q('.cl-scroll'); if (!el || fast) return; bring(el); await D.wait(500); el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); await D.wait(1300); },
+    hl: async sel => {
+      if (fast) return;
+      const els = typeof sel === 'function' ? [].concat(sel() || []) : Array.from(document.querySelectorAll(sel));
+      if (!els.length) throw new Error('No se encontró ' + sel);
+      clearFrames(); bring(els[0]); await D.wait(650);
+      const rs = els.map(e => e.getBoundingClientRect()), l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), rt = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom));
+      const f = document.createElement('div'); f.className = 'frame';
+      f.style.cssText = `left:${l - 6}px;top:${t - 6}px;width:${rt - l + 12}px;height:${b - t + 12}px`; document.body.appendChild(f); await D.wait(300);
+    }
+  };
+  return D;
+}
+function demoUi(on) {
+  ['shield', 'coach'].forEach(i => { document.getElementById(i).hidden = !on; });
+  document.body.classList.toggle('demo-on', on);
+  if (!on) { document.getElementById('cursor').hidden = true; clearFrames(); }
+}
+const coach = document.getElementById('coach');
+const stepText = (demo, i) => demo.steps[i][0] + (i === demo.steps.length - 1 && demo.end ? `<div class="endn">${demo.end}</div>` : '');
+/* Reloj: suma la duración de los pasos anteriores más lo transcurrido del paso en curso */
+const stepSecs = (key, i) => DEMOS[key].secs[i] || 3;
+const totalSecs = key => DEMOS[key].steps.reduce((s, _, i) => s + stepSecs(key, i), 0);
+const fmtTime = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+let TIMER = null;
+function paintTime() {
+  const st = DEMO; if (!st) return;
+  const total = totalSecs(st.key); let el = 0;
+  if (st.cur >= 0) {
+    let base = 0; for (let k = 0; k < st.cur; k++) base += stepSecs(st.key, k);
+    const len = stepSecs(st.key, st.cur);
+    el = st.busy ? base + Math.min(len, Math.max(0, (Date.now() - st.t0) / 1000 - st.pre)) : base + len;
+  }
+  coach.querySelector('.dtime').textContent = fmtTime(el) + ' / ' + fmtTime(total);
+  coach.querySelector('.pb').style.width = (total ? Math.min(100, (el / total) * 100) : 0) + '%';
+}
+function paint() {
+  const st = DEMO; if (!st) return; const n = DEMOS[st.key].steps.length, intro = st.cur < 0;
+  document.getElementById('d-start').hidden = !intro; document.getElementById('d-prev').hidden = intro; document.getElementById('d-next').hidden = intro;
+  coach.querySelector('.dc').textContent = intro ? `${n} pasos · ${fmtTime(totalSecs(st.key))}` : `Paso ${st.cur + 1} de ${n}`;
+  paintTime();
+  if (intro) return;
+  document.getElementById('d-prev').disabled = st.busy || st.idx <= 0;
+  const nx = document.getElementById('d-next'); nx.disabled = st.busy;
+  nx.textContent = st.idx >= n - 1 ? 'Finalizar' : 'Siguiente ▶';
+  nx.classList.toggle('btn-success', st.idx >= n - 1); nx.classList.toggle('btn-primary', st.idx < n - 1);
+}
+async function gotoStep(target) {
+  const st = DEMO; if (!st || st.busy) return;
+  const demo = DEMOS[st.key], txt = coach.querySelector('.tx'), id = ++RUN;
+  st.busy = true; st.cur = target; clearFrames();
+  st.t0 = Date.now(); st.pre = target <= st.idx ? Math.round(target * 0.8) : 0;   /* al volver, el reloj espera a que se rehaga lo anterior */
+  clearInterval(TIMER); TIMER = setInterval(() => { if (DEMO && DEMO.busy) paintTime(); }, 250); paint();
+  try {
+    if (target <= st.idx) {
+      txt.innerHTML = '<i>Volviendo al paso…</i>'; S = freshState(demo.mode); render(); const F = mkDriver(id, true);
+      for (let i = 0; i < target; i++) await demo.steps[i][1](F);
+    }
+    clearFrames(); txt.innerHTML = stepText(demo, target);
+    await demo.steps[target][1](mkDriver(id, false));
+    st.idx = target;
+  } catch (e) {
+    if (e !== STOP) { console.error(e); txt.innerHTML = 'No pude mostrar este paso en esta pantalla. Cierra la demostración y vuélvela a abrir, o recarga la página.'; }
+  } finally {
+    if (DEMO === st && id === RUN) { clearInterval(TIMER); st.busy = false; document.getElementById('cursor').hidden = true; paint(); }
+  }
+}
+function startDemo(key) {
+  ++RUN; const demo = DEMOS[key];
+  S = freshState(demo.mode); S.scene = demo.firstScene || 'general'; render();
+  DEMO = { key, idx: -1, cur: -1, busy: false };
+  coach.querySelector('.dt').textContent = demo.title;
+  coach.querySelector('.tx').innerHTML = `<div>Presiona <b>Iniciar</b> para comenzar la demostración</div>`;
+  demoUi(true); paint();
+  window.scrollTo(0, 0);
+}
+const stopDemo = () => { RUN++; clearInterval(TIMER); DEMO = null; demoUi(false); };
+document.addEventListener('click', e => {
+  const d = e.target.closest('[data-demo]');
+  if (d) { const h = 'demo-' + d.dataset.demo; if (location.hash === '#' + h) route(); else location.hash = h; return; }
+  if (e.target.closest('#d-stop')) { stopDemo(); location.hash = 'inicio'; }
+  else if (e.target.closest('#d-start')) { if (DEMO && DEMO.cur < 0 && !DEMO.busy) gotoStep(0); }
+  else if (e.target.closest('#d-prev')) { if (DEMO && !DEMO.busy && DEMO.idx > 0) gotoStep(DEMO.idx - 1); }
+  else if (e.target.closest('#d-next')) { if (!DEMO || DEMO.busy) return; if (DEMO.idx >= DEMOS[DEMO.key].steps.length - 1) stopDemo(); else gotoStep(DEMO.idx + 1); }
+});
+document.addEventListener('keydown', e => {
+  if (!DEMO) return;
+  if (e.key === 'Escape') stopDemo();
+  else if (e.key === 'ArrowRight') document.getElementById(DEMO.cur < 0 ? 'd-start' : 'd-next').click();
+  else if (e.key === 'ArrowLeft') document.getElementById('d-prev').click();
+});
+
+/* ---------- Pasos (agrupados: máximo 3-4 acciones por paso) ---------- */
+const NOMBRE = 'OOH Manager';
+/* Duración (segundos) de cada paso: alimenta el reloj «0:03 / 0:32» */
+const A_OPEN = async D => { await D.hl('.cl-nav .it[data-act=goto-list]'); await D.click('[data-act=goto-list]'); };
+const A_ADD = async D => { await D.click('[data-act=open-menu]'); await D.click('[data-act=add-custom]'); await D.type('[data-field=name]', NOMBRE); await D.type('[data-field=url]', URL_EJ); await D.click('[data-act=continue]'); await D.hl('.cl-auth .cl-opt:first-child'); await D.wait(1500); await D.hl('.cl-oauth .cl-opt:first-child'); await D.click('[data-act=add-confirm]'); };
+const A_LOGIN = async D => { await D.hl('.br'); await D.type('[data-field=email]', 'nombre@empresa.cl'); await D.type('[data-field=pass]', '••••••••••'); await D.click('[data-act=login]'); };
+const A_AUTH = async D => { await D.hl('.man-summary'); await D.click('[data-act=authorize]'); await D.hl('.cl-perms'); };
+const A_REFRESH = async D => { await D.click('[data-act=open-dots]'); await D.click('[data-act=refresh-tools]'); await D.hl('.cl-toast'); await D.click('[data-act=close]'); };
+const A_CHAT = async D => { await D.type('[data-field=chat]', '¿Qué soportes tenemos en Las Condes?'); await D.click('[data-act=send]'); await D.click('[data-act=allow]'); await D.hl('.cl-answer'); };
+const T_FORM = 'Escribe el <b>nombre</b> (por ejemplo <code>OOH Manager</code>) y la <b>dirección</b> que te entregó OOH Manager: empieza con <code>https://</code> y termina en <code>/mcp</code>. Presiona <b>Continuar</b>. Claude marca como <b>Detectado</b> la configuración correcta: <b>no cambies nada</b>.';
+const T_AUTH = 'Revisa el <b>origen</b> (<code>claude.ai</code>) y el <b>acceso</b> (solo lectura) y presiona <b>Autorizar</b>. Claude confirma la conexión.';
+const T_REFRESH = 'Actualiza las herramientas para que Claude vea todas las disponibles de OOH Manager: presiona los <b>tres puntos (⋯)</b> junto a la conexión y elige <b>Actualizar herramientas</b>. Si Claude no muestra las herramientas o algo no funciona, repite este paso. Cierra Configuración.';
+const T_CHAT = 'Pregúntale a Claude. La primera vez pide permiso para usar OOH Manager: presiona <b>Permitir</b>. Responde con los datos que tu usuario puede ver.';
+
+const DEMOS = {
+  personal: { mode: 'personal', title: 'Cuenta personal', secs: [24, 14, 8, 11],
+    end: 'Listo: ya puedes consultar OOH Manager desde Claude. Si algo falla, revisa «Si algo no funciona».',
+    steps: [
+      ['Abre <b>Configuración</b> › <b>Conectores</b>. Presiona <b>Agregar</b> y elige <b>Agregar conector personalizado</b>. ' + T_FORM + ' Presiona <b>Agregar</b> y luego <b>Conectar</b>.', async D => { await A_OPEN(D); await A_ADD(D); await D.click('[data-act=connect]'); }],
+      ['Se abre <b>OOH Manager</b>: ingresa con tu correo y contraseña de siempre y presiona <b>Iniciar sesión</b> (si ya tenías sesión, se salta). ' + T_AUTH, async D => { await A_LOGIN(D); await A_AUTH(D); }],
+      [T_REFRESH, A_REFRESH],
+      [T_CHAT, A_CHAT]
+    ] },
+  admin: { mode: 'admin', title: 'Cuenta empresa · Administrador', secs: [23],
+    end: 'Tu parte terminó. Comparte con el equipo la demostración «Miembro».',
+    steps: [
+      ['Abre <b>Configuración</b> › <b>Conectores</b>. Presiona <b>Agregar</b> y elige <b>Agregar conector personalizado</b>. ' + T_FORM + ' Presiona <b>Agregar</b>. El conector queda en la lista de la organización y cada miembro lo verá en <b>Conectores</b>. Agregarlo <b>no da acceso a los datos</b>: cada persona lo conecta con su propio usuario de OOH Manager.', async D => { await A_OPEN(D); await A_ADD(D); await D.hl('.cl-row-man'); }]
+    ] },
+  miembro: { mode: 'miembro', title: 'Cuenta empresa · Miembro', secs: [25, 8, 11],
+    end: 'Listo: ya puedes consultar OOH Manager desde Claude con tu usuario.',
+    steps: [
+      ['Abre <b>Configuración</b> › <b>Conectores</b>. Busca <b>OOH Manager</b> en <b>Tuyos</b>: baja con el scroll o escribe su nombre en el buscador. Presiona <b>Conectar</b>. Se abre <b>OOH Manager</b>: ingresa con tu correo y contraseña de siempre y presiona <b>Iniciar sesión</b> (si ya tenías sesión, se salta). ' + T_AUTH, async D => { await A_OPEN(D); await D.scrollList(); await D.type('[data-field=search]', 'OOH Manager'); await D.hl('.cl-row-man'); await D.click('[data-act=connect-row]'); await A_LOGIN(D); await A_AUTH(D); }],
+      [T_REFRESH, A_REFRESH],
+      [T_CHAT, A_CHAT]
+    ] }
+};
+/* ---------- Vistas: inicio y demostración (por hash) ---------- */
+function route() {
+  const m = /^#demo-(\w+)$/.exec(location.hash), home = document.getElementById('home'), view = document.getElementById('demo-view'), btn = document.getElementById('home-btn');
+  if (m && DEMOS[m[1]]) {
+    home.hidden = true; view.hidden = false; btn.hidden = false; document.documentElement.classList.add('view-demo');
+    startDemo(m[1]);
+  } else {
+    if (DEMO) stopDemo();
+    home.hidden = false; view.hidden = true; btn.hidden = true; document.documentElement.classList.remove('view-demo');
+    window.scrollTo(0, 0);
+  }
+}
+window.addEventListener('hashchange', route);render();
+route();
+})();
+</script>
+</body>
+</html>
